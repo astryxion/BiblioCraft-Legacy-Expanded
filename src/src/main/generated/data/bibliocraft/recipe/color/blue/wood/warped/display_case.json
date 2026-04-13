@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:display_cases",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "S": {
+      "item": "minecraft:warped_slab"
+    },
+    "W": {
+      "item": "minecraft:blue_wool"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "SWS",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:blue_warped_display_case"
+  }
+}

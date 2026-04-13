@@ -1,0 +1,20 @@
+{
+  "type": "bibliocraft:printing_table_merging",
+  "component_mergers": {
+    "bibliocraft:written_big_book_content": {
+      "author": "first",
+      "current_page": "first",
+      "generation": "min",
+      "pages": "append",
+      "title": "first"
+    }
+  },
+  "duration": 200,
+  "ingredient": {
+    "item": "bibliocraft:big_book"
+  },
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:written_big_book"
+  }
+}

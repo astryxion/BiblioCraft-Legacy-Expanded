@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:display_cases",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "S": {
+      "item": "minecraft:jungle_slab"
+    },
+    "W": {
+      "item": "minecraft:purple_wool"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "SWS",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:purple_jungle_display_case"
+  }
+}

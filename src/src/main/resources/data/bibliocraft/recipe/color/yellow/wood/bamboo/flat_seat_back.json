@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:flat_seat_backs",
+  "key": {
+    "R": {
+      "tag": "forge:rods/wooden"
+    },
+    "S": {
+      "item": "minecraft:bamboo_slab"
+    },
+    "W": {
+      "item": "minecraft:yellow_wool"
+    }
+  },
+  "pattern": [
+    "RWR",
+    "RSR",
+    "R R"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:yellow_bamboo_flat_seat_back"
+  }
+}

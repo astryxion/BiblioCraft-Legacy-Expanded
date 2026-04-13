@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_lantern",
+  "key": {
+    "C": {
+      "item": "minecraft:black_candle"
+    },
+    "G": {
+      "tag": "forge:glass_panes"
+    },
+    "I": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "pattern": [
+    "GIG",
+    "ICI",
+    "GIG"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:black_fancy_gold_lantern"
+  }
+}

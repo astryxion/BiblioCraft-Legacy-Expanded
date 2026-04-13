@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:tables",
+  "key": {
+    "P": {
+      "item": "minecraft:acacia_planks"
+    },
+    "S": {
+      "item": "minecraft:acacia_slab"
+    }
+  },
+  "pattern": [
+    "SSS",
+    " P ",
+    " P "
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:acacia_table"
+  }
+}

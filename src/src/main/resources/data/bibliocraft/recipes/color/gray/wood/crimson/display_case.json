@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:display_cases",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "S": {
+      "item": "minecraft:crimson_slab"
+    },
+    "W": {
+      "item": "minecraft:gray_wool"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "SWS",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:gray_crimson_display_case"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_seat_backs",
+  "key": {
+    "#": {
+      "item": "bibliocraft:lime_warped_flat_seat_back"
+    },
+    "S": {
+      "item": "minecraft:warped_slab"
+    }
+  },
+  "pattern": [
+    "S#S"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:lime_warped_fancy_seat_back"
+  }
+}

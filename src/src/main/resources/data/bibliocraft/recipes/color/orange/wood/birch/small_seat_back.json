@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:small_seat_backs",
+  "key": {
+    "S": {
+      "item": "minecraft:birch_slab"
+    },
+    "W": {
+      "item": "minecraft:orange_wool"
+    }
+  },
+  "pattern": [
+    "W",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:orange_birch_small_seat_back"
+  }
+}

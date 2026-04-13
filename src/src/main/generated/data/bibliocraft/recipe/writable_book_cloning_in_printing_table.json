@@ -1,0 +1,16 @@
+{
+  "type": "bibliocraft:printing_table_cloning",
+  "data_components": [
+    "minecraft:writable_book_content"
+  ],
+  "duration": 100,
+  "ingredients": [
+    {
+      "item": "minecraft:writable_book"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "minecraft:writable_book"
+  }
+}

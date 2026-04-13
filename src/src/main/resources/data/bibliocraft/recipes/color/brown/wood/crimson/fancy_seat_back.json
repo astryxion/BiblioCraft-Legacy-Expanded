@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_seat_backs",
+  "key": {
+    "#": {
+      "item": "bibliocraft:brown_crimson_flat_seat_back"
+    },
+    "S": {
+      "item": "minecraft:crimson_slab"
+    }
+  },
+  "pattern": [
+    "S#S"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:brown_crimson_fancy_seat_back"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:small_seat_backs",
+  "key": {
+    "S": {
+      "item": "minecraft:bamboo_slab"
+    },
+    "W": {
+      "item": "minecraft:magenta_wool"
+    }
+  },
+  "pattern": [
+    "W",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:magenta_bamboo_small_seat_back"
+  }
+}

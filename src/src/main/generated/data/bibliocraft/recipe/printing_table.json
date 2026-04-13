@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "PPP",
+    "BRB"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:printing_table"
+  }
+}

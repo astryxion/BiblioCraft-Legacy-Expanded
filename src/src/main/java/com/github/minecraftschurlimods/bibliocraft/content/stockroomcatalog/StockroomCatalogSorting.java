@@ -1,0 +1,33 @@
+package com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog;
+
+import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
+import com.github.minecraftschurlimods.bibliocraft.util.StringRepresentableEnum;
+import net.minecraft.network.FriendlyByteBuf;
+
+public interface StockroomCatalogSorting extends StringRepresentableEnum {
+    String getTranslationKey();
+
+    enum Item implements StockroomCatalogSorting {
+        ALPHABETICAL_ASC, ALPHABETICAL_DESC, COUNT_ASC, COUNT_DESC;
+
+        public static void write(FriendlyByteBuf buf, Item item) { buf.writeByte(item.ordinal()); }
+        public static Item read(FriendlyByteBuf buf) { return values()[buf.readByte()]; }
+
+        @Override
+        public String getTranslationKey() {
+            return "gui." + BibliocraftApi.MOD_ID + ".stockroom_catalog.sorting.item." + getSerializedName();
+        }
+    }
+
+    enum Container implements StockroomCatalogSorting {
+        ALPHABETICAL_ASC, ALPHABETICAL_DESC, DISTANCE_ASC, DISTANCE_DESC;
+
+        public static void write(FriendlyByteBuf buf, Container c) { buf.writeByte(c.ordinal()); }
+        public static Container read(FriendlyByteBuf buf) { return values()[buf.readByte()]; }
+
+        @Override
+        public String getTranslationKey() {
+            return "gui." + BibliocraftApi.MOD_ID + ".stockroom_catalog.sorting.container." + getSerializedName();
+        }
+    }
+}

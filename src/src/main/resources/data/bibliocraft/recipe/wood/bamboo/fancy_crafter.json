@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_crafter",
+  "key": {
+    "C": {
+      "item": "minecraft:glass_pane"
+    },
+    "F": {
+      "tag": "forge:feathers"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "I": {
+      "tag": "forge:dyes/black"
+    },
+    "P": {
+      "item": "minecraft:bamboo_planks"
+    },
+    "T": {
+      "item": "minecraft:crafting_table"
+    }
+  },
+  "pattern": [
+    "ITF",
+    "PGP",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:bamboo_fancy_crafter"
+  }
+}

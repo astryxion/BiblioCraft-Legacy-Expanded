@@ -1,0 +1,21 @@
+{
+  "values": [
+    "#bibliocraft:bookcases",
+    "#bibliocraft:display_cases",
+    "#bibliocraft:fancy_armor_stands/wood",
+    "#bibliocraft:fancy_clocks",
+    "#bibliocraft:fancy_crafters",
+    "#bibliocraft:fancy_signs",
+    "#bibliocraft:grandfather_clocks",
+    "#bibliocraft:labels",
+    "#bibliocraft:potion_shelves",
+    "#bibliocraft:seats",
+    "#bibliocraft:seat_backs",
+    "#bibliocraft:shelves",
+    "#bibliocraft:tables",
+    "#bibliocraft:tool_racks",
+    "bibliocraft:disc_rack",
+    "bibliocraft:wall_disc_rack",
+    "bibliocraft:printing_table"
+  ]
+}

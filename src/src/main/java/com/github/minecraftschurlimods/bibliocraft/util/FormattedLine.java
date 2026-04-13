@@ -1,0 +1,63 @@
+package com.github.minecraftschurlimods.bibliocraft.util;
+
+import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.ExtraCodecs;
+
+public record FormattedLine(String text, Style style, int size, Mode mode, Alignment alignment) {
+    public static final int MIN_SIZE = 5;
+    public static final int MAX_SIZE = 35;
+    private static final Codec<Style> STYLE_CODEC = Codec.STRING.xmap(
+            s -> Component.Serializer.fromJson(s).getStyle(),
+            style -> Component.Serializer.toJson(Component.literal("").withStyle(style)));
+    public static final Codec<FormattedLine> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            Codec.STRING.fieldOf("text").forGetter(FormattedLine::text),
+            STYLE_CODEC.fieldOf("style").forGetter(FormattedLine::style),
+            ExtraCodecs.intRange(MIN_SIZE, MAX_SIZE).fieldOf("size").forGetter(FormattedLine::size),
+            Mode.CODEC.fieldOf("mode").forGetter(FormattedLine::mode),
+            Alignment.CODEC.fieldOf("alignment").forGetter(FormattedLine::alignment)
+    ).apply(inst, FormattedLine::new));
+
+    public static final FormattedLine DEFAULT = new FormattedLine("", Style.EMPTY, 10, Mode.NORMAL, Alignment.LEFT);
+
+    public FormattedLine withText(String text) {
+        return new FormattedLine(text, style, size, mode, alignment);
+    }
+
+    public FormattedLine withStyle(Style style) {
+        return new FormattedLine(text, style, size, mode, alignment);
+    }
+
+    public FormattedLine withSize(int size) {
+        return new FormattedLine(text, style, size, mode, alignment);
+    }
+
+    public FormattedLine withMode(Mode mode) {
+        return new FormattedLine(text, style, size, mode, alignment);
+    }
+
+    public FormattedLine withAlignment(Alignment alignment) {
+        return new FormattedLine(text, style, size, mode, alignment);
+    }
+
+    public enum Mode implements StringRepresentableEnum {
+        NORMAL, SHADOW, GLOWING;
+        public static final Codec<Mode> CODEC = CodecUtil.enumCodec(Mode::values);
+
+        public String getTranslationKey() {
+            return "gui." + BibliocraftApi.MOD_ID + ".formatted_line.mode." + getSerializedName();
+        }
+    }
+
+    public enum Alignment implements StringRepresentableEnum {
+        LEFT, CENTER, RIGHT;
+        public static final Codec<Alignment> CODEC = CodecUtil.enumCodec(Alignment::values);
+
+        public String getTranslationKey() {
+            return "gui." + BibliocraftApi.MOD_ID + ".formatted_line.alignment." + getSerializedName();
+        }
+    }
+}

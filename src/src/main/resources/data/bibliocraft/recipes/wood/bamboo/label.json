@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:labels",
+  "key": {
+    "S": {
+      "item": "minecraft:bamboo_slab"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:bamboo_label"
+  }
+}

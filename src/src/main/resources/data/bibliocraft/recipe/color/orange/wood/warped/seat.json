@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:seats",
+  "key": {
+    "R": {
+      "tag": "forge:rods/wooden"
+    },
+    "S": {
+      "item": "minecraft:warped_slab"
+    },
+    "W": {
+      "item": "minecraft:orange_wool"
+    }
+  },
+  "pattern": [
+    " W ",
+    " S ",
+    "RSR"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:orange_warped_seat"
+  }
+}

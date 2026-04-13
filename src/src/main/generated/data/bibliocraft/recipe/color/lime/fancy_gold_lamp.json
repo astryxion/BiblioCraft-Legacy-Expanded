@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_lamp",
+  "key": {
+    "C": {"item":"minecraft:lime_stained_glass"},
+    "G": {
+      "item": "minecraft:glowstone"
+    },
+    "I": {
+      "tag": "forge:ingots/gold"
+    },
+    "N": {
+      "tag": "forge:nuggets/gold"
+    }
+  },
+  "pattern": [
+    "CGC",
+    " I ",
+    "NIN"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:lime_fancy_gold_lamp"
+  }
+}

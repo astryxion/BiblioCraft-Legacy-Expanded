@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_lantern",
+  "key": {
+    "C": {
+      "item": "minecraft:pink_candle"
+    },
+    "G": {
+      "tag": "forge:glass_panes"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "pattern": [
+    "GIG",
+    "ICI",
+    "GIG"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:pink_fancy_iron_lantern"
+  }
+}

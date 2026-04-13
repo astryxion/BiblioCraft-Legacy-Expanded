@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "S S",
+    "I S"
+  ],
+  "result": {
+    "count": 1,
+    "item": "bibliocraft:plumb_line"
+  }
+}
