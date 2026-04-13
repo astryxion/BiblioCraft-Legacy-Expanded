@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.minecraftschurlimods.bibliocraft.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientBlockEntityDataMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

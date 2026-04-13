@@ -1,0 +1,27 @@
+package com.github.minecraftschurlimods.bibliocraft.content.clipboard;
+
+import com.github.minecraftschurlimods.bibliocraft.init.BCDataComponents;
+import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
+import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+
+public record ClipboardSyncPacket(ClipboardContent content, InteractionHand hand) implements CustomPacketPayload {
+    public static final Type<ClipboardSyncPacket> TYPE = new Type<>(BCUtil.bcLoc("clipboard_sync"));
+    public static final StreamCodec<FriendlyByteBuf, ClipboardSyncPacket> STREAM_CODEC = StreamCodec.composite(
+            ClipboardContent.STREAM_CODEC, ClipboardSyncPacket::content,
+            CodecUtil.INTERACTION_HAND_STREAM_CODEC, ClipboardSyncPacket::hand,
+            ClipboardSyncPacket::new);
+
+    public void handleServer(ServerPlayer player) {
+        player.getItemInHand(hand).set(BCDataComponents.CLIPBOARD_CONTENT.get(), content);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+}

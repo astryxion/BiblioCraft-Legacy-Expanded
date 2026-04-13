@@ -1,0 +1,27 @@
+package com.github.minecraftschurlimods.bibliocraft.content.bigbook;
+
+import com.github.minecraftschurlimods.bibliocraft.init.BCDataComponents;
+import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
+import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+
+public record BigBookSyncPacket(BigBookContent content, InteractionHand hand) implements CustomPacketPayload {
+    public static final Type<BigBookSyncPacket> TYPE = new Type<>(BCUtil.bcLoc("big_book_sync"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, BigBookSyncPacket> STREAM_CODEC = StreamCodec.composite(
+            BigBookContent.STREAM_CODEC, BigBookSyncPacket::content,
+            CodecUtil.INTERACTION_HAND_STREAM_CODEC, BigBookSyncPacket::hand,
+            BigBookSyncPacket::new);
+
+    public void handleServer(ServerPlayer player) {
+        player.getItemInHand(hand).set(BCDataComponents.BIG_BOOK_CONTENT.get(), content);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+}
