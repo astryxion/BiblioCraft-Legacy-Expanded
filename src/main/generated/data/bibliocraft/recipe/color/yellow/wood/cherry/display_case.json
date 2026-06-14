@@ -3,15 +3,9 @@
   "category": "misc",
   "group": "bibliocraft:display_cases",
   "key": {
-    "G": {
-      "tag": "forge:glass"
-    },
-    "S": {
-      "item": "minecraft:cherry_slab"
-    },
-    "W": {
-      "item": "minecraft:yellow_wool"
-    }
+    "G": "#c:glass_blocks",
+    "S": "minecraft:cherry_slab",
+    "W": "minecraft:yellow_wool"
   },
   "pattern": [
     "SGS",
@@ -19,7 +13,6 @@
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:yellow_cherry_display_case"
+    "id": "bibliocraft:yellow_cherry_display_case"
   }
 }

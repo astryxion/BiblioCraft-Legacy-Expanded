@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "bibliocraft:fancy_armor_stands",
   "key": {
-    "R": {
-      "tag": "forge:rods/wooden"
-    },
-    "S": {
-      "item": "minecraft:birch_slab"
-    }
+    "R": "#c:rods/wooden",
+    "S": "minecraft:birch_slab"
   },
   "pattern": [
     " R ",
@@ -16,7 +12,6 @@
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:birch_fancy_armor_stand"
+    "id": "bibliocraft:birch_fancy_armor_stand"
   }
 }

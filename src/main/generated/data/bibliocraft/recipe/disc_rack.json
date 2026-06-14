@@ -2,19 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "R": {
-      "tag": "forge:rods/wooden"
-    },
-    "S": {
-      "tag": "minecraft:wooden_slabs"
-    }
+    "R": "#c:rods/wooden",
+    "S": "#minecraft:wooden_slabs"
   },
   "pattern": [
     "RRR",
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:disc_rack"
+    "id": "bibliocraft:disc_rack"
   }
 }

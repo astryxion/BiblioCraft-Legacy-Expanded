@@ -3,21 +3,11 @@
   "category": "misc",
   "group": "bibliocraft:typewriter",
   "key": {
-    "B": {
-      "tag": "forge:storage_blocks/iron"
-    },
-    "C": {
-      "item": "minecraft:gray_terracotta"
-    },
-    "D": {
-      "tag": "forge:dyes/black"
-    },
-    "I": {
-      "tag": "forge:ingots/iron"
-    },
-    "P": {
-      "item": "minecraft:paper"
-    }
+    "B": "#c:storage_blocks/iron",
+    "C": "minecraft:gray_terracotta",
+    "D": "#c:dyes/black",
+    "I": "#c:ingots/iron",
+    "P": "minecraft:paper"
   },
   "pattern": [
     "IPI",
@@ -25,7 +15,6 @@
     "CCC"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:gray_typewriter"
+    "id": "bibliocraft:gray_typewriter"
   }
 }

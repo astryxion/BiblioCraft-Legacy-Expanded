@@ -1,0 +1,327 @@
+package at.minecraftschurli.mods.bibliocraft.content.printingtable;
+
+import at.minecraftschurli.mods.bibliocraft.init.BCBlockEntities;
+import at.minecraftschurli.mods.bibliocraft.init.BCBlocks;
+import at.minecraftschurli.mods.bibliocraft.init.BCFluids;
+import at.minecraftschurli.mods.bibliocraft.init.BCRecipes;
+import at.minecraftschurli.mods.bibliocraft.util.BCUtil;
+import at.minecraftschurli.mods.bibliocraft.util.block.BCItemHandler;
+import at.minecraftschurli.mods.bibliocraft.util.block.BCMenuBlockEntity;
+import at.minecraftschurli.mods.bibliocraft.util.block.LimitedAccessItemHandler;
+import at.minecraftschurli.mods.bibliocraft.util.slot.HasToggleableSlots;
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+public class PrintingTableBlockEntity extends BCMenuBlockEntity implements HasToggleableSlots {
+    private static final String MODE_KEY = "mode";
+    private static final String DURATION_KEY = "duration";
+    private static final String PLAYER_NAME_KEY = "player_name";
+    private static final String DISABLED_SLOTS_KEY = "disabled_slots";
+    private static final int SLOT_DISABLED = 1;
+    private static final int SLOT_ENABLED = 0;
+    private static final IntList INPUTS = IntList.of(IntStream.range(0, 10).toArray());
+    private static final IntList OUTPUTS = IntList.of(10);
+    public static final String TANK_KEY = "tank";
+    private final LimitedAccessItemHandler inputItemHandler;
+    private final LimitedAccessItemHandler outputItemHandler;
+    private final PrintingTableTank tank;
+    private final Direction[] directions;
+    private final boolean[] disabledSlots = new boolean[9];
+    @Nullable
+    private PrintingTableRecipe recipe;
+    @Nullable
+    private PrintingTableRecipeInput recipeInput;
+    private PrintingTableMode mode = PrintingTableMode.BIND;
+    private int levelCost = 0;
+    private int duration = 0;
+    private int maxDuration = 0;
+    @Nullable
+    private Component playerName = null;
+
+    public PrintingTableBlockEntity(BlockPos pos, BlockState state) {
+        super(BCBlockEntities.PRINTING_TABLE.get(), 11, defaultName("printing_table"), pos, state);
+        this.tank = new PrintingTableTank(this, state.is(BCBlocks.IRON_PRINTING_TABLE.get()));
+        Direction facing = state.getValue(PrintingTableBlock.FACING);
+        this.directions = new Direction[]{Direction.UP, facing, facing.getClockWise(), facing.getOpposite(), facing.getCounterClockWise(), Direction.DOWN};
+        this.inputItemHandler = getItemHandler().forInput(INPUTS);
+        this.outputItemHandler = getItemHandler().forOutput(OUTPUTS);
+    }
+
+    @SuppressWarnings("unused")
+    public static void tick(Level level, BlockPos pos, BlockState state, PrintingTableBlockEntity blockEntity) {
+        if (blockEntity.duration < blockEntity.maxDuration && blockEntity.isExperienceFull()) {
+            blockEntity.duration++;
+        }
+        if (blockEntity.duration >= blockEntity.maxDuration) {
+            blockEntity.duration = 0;
+            if (!level.isClientSide()) {
+                blockEntity.finishRecipe();
+            }
+        }
+        if (!blockEntity.isExperienceFull()) {
+            blockEntity.pullExperience();
+        }
+        blockEntity.setChanged();
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int id, Inventory inventory) {
+        return new PrintingTableMenu(id, inventory, this);
+    }
+
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        input.read(MODE_KEY, PrintingTableMode.CODEC).ifPresent(mode -> this.mode = mode);
+        duration = input.getIntOr(DURATION_KEY, 0);
+        input.read(PLAYER_NAME_KEY, ComponentSerialization.CODEC).ifPresent(this::setPlayerName);
+        input.child(TANK_KEY).ifPresent(tank::deserialize);
+        int[] tagSlots = input.getIntArray(DISABLED_SLOTS_KEY).orElse(new int[9]);
+        for (int i = 0; i < 9; i++) {
+            disabledSlots[i] = canDisableSlot(i) && tagSlots[i] == SLOT_DISABLED;
+        }
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.store(MODE_KEY, PrintingTableMode.CODEC, getMode());
+        output.putInt(DURATION_KEY, duration);
+        if (playerName != null) {
+            output.store(PLAYER_NAME_KEY, ComponentSerialization.CODEC, playerName);
+        }
+        tank.serialize(output.child(TANK_KEY));
+        int[] tagSlots = new int[9];
+        for (int i = 0; i < 9; i++) {
+            tagSlots[i] = disabledSlots[i] ? SLOT_DISABLED : SLOT_ENABLED;
+        }
+        output.putIntArray(DISABLED_SLOTS_KEY, tagSlots);
+    }
+
+    @Override
+    public boolean isValid(int slot, ItemVariant resource) {
+        return slot < 10 && !resource.isBlank() && resource.getItem().getCraftingRemainder(resource.toStack(1)) == null && !isSlotDisabled(slot) && super.isValid(slot, resource);
+    }
+
+    public PrintingTableTank getFluidStorage() {
+        return tank;
+    }
+
+    @Override
+    public void setSlotDisabled(int slot, boolean disabled) {
+        if (!canDisableSlot(slot)) return;
+        disabledSlots[slot] = disabled;
+        setChanged();
+    }
+
+    @Override
+    public boolean isSlotDisabled(int slot) {
+        return isCraftingSlot(slot) && disabledSlots[slot];
+    }
+
+    @Override
+    public boolean canDisableSlot(int slot) {
+        return isCraftingSlot(slot) && isEmpty(slot);
+    }
+
+    public void onLoad() {
+        if (!level().isClientSide()) {
+            calculateRecipe(true);
+        } else {
+            ClientPlayNetworking.send(new PrintingTableSetRecipePacket(getBlockPos(), 0, 0, 0));
+        }
+    }
+
+    public PrintingTableMode getMode() {
+        return mode;
+    }
+
+    public void setMode(PrintingTableMode mode) {
+        this.mode = mode;
+        calculateRecipe(false);
+        setChanged();
+    }
+
+    @Nullable
+    public Component getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(Component playerName) {
+        this.playerName = playerName;
+    }
+
+    public int getExperience() {
+        return tank.getAmountAsInt(0) / PrintingTableTank.EXPERIENCE_MULTIPLIER;
+    }
+
+    public void addExperience(int experience) {
+        int amount = tank.getAmountAsInt(0);
+        tank.set(0, amount == 0 ? getExperienceResource() : tank.getResource(0), amount + experience * PrintingTableTank.EXPERIENCE_MULTIPLIER);
+    }
+
+    private FluidVariant getExperienceResource() {
+        return FluidVariant.of(BCFluids.EXPERIENCE.get());
+    }
+
+    public float getProgress() {
+        return !isExperienceFull() || maxDuration == 0 ? 0 : duration / (float) maxDuration;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public int getMaxDuration() {
+        return maxDuration;
+    }
+
+    public int getLevelCost() {
+        return levelCost;
+    }
+
+    public int getExperienceCost() {
+        return BCUtil.getExperienceForLevel(levelCost);
+    }
+
+    public boolean isExperienceFull() {
+        return tank.isFull();
+    }
+
+    public void setFromPacket(PrintingTableSetRecipePacket packet) {
+        duration = packet.duration();
+        maxDuration = packet.maxDuration();
+        levelCost = packet.levelCost();
+        tank.clear();
+        setChanged();
+    }
+
+    public void setSlot(int slot, ItemStack stack) {
+        if (isSlotDisabled(slot) && !stack.isEmpty()) {
+            setSlotDisabled(slot, false);
+        }
+        recipeInput = null;
+        if (recipe == null || !recipe.matches(getRecipeInput(), BCUtil.nonNull(getLevel()))) {
+            calculateRecipe(false);
+            setChanged();
+        }
+    }
+
+    private void finishRecipe() {
+        if (recipe == null) return;
+        List<@Nullable ItemStackTemplate> remainingItems = recipe.getRemainingItems(getRecipeInput());
+        ItemStack result = recipe.postProcess(recipe.assemble(getRecipeInput()), this);
+        if (result.isEmpty()) return;
+        BCItemHandler itemHandler = getItemHandler();
+        try (var transaction = Transaction.openOuter()) {
+            for (int i = 0; i < 10; i++) {
+                ItemVariant resource = itemHandler.getResource(i);
+                if (resource.isBlank()) continue;
+                int extracted = itemHandler.extract(i, resource, 1, transaction);
+                if (extracted != 1) return;
+            }
+            ItemVariant resultResource = ItemVariant.of(result);
+            ItemVariant resultSlotResource = itemHandler.getResource(10);
+            if (!resultSlotResource.isBlank() && !resultResource.equals(resultSlotResource)) return;
+            int amount = itemHandler.getAmountAsInt(10);
+            int capacity = itemHandler.getCapacityAsInt(10, resultSlotResource);
+            if (amount + result.count() > capacity) return;
+            itemHandler.set(10, resultResource, amount + result.count());
+            transaction.commit();
+        }
+        for (int i = 0; i < remainingItems.size(); i++) {
+            ItemStackTemplate remaining = remainingItems.get(i);
+            if (remaining != null) {
+                itemHandler.set(i, ItemVariant.of(remaining.create()), remaining.count());
+            }
+        }
+        calculateRecipe(false);
+        setChanged();
+    }
+
+    private void pullExperience() {
+        try (Transaction t = Transaction.openOuter()) {
+            for (Direction direction : directions) {
+                Storage<FluidVariant> capability = BCUtil.getFluidHandler(level(), getBlockPos().relative(direction), direction);
+                if (capability == null) continue;
+                tank.fillFromCapability(capability, t);
+                if (isExperienceFull()) break;
+            }
+            t.commit();
+        }
+    }
+
+    private void calculateRecipe(boolean onLoad) {
+        if (!(level() instanceof ServerLevel serverLevel)) return;
+        PrintingTableRecipeInput recipeInput = getRecipeInput();
+        recipe = serverLevel.recipeAccess().getRecipes().stream()
+                .filter(holder -> holder.value().getType() == BCRecipes.PRINTING_TABLE.get())
+                .map(holder -> (RecipeHolder<PrintingTableRecipe>) holder)
+                .filter(holder -> holder.value().matches(recipeInput, serverLevel))
+                .map(RecipeHolder::value)
+                .filter(e -> e.getMode() == mode)
+                .findFirst()
+                .orElse(null);
+        if (recipe != null) {
+            ItemStack output = getItem(10);
+            ItemStack result = recipe.assemble(recipeInput);
+            if (!output.isEmpty() && (output.getCount() + result.getCount() > output.getMaxStackSize() || !ItemStack.isSameItemSameComponents(output, result))) {
+                recipe = null;
+            }
+        }
+        if (!onLoad) {
+            duration = 0;
+        }
+        maxDuration = recipe == null ? 0 : recipe.getDuration();
+        levelCost = recipe == null ? 0 : recipe.getExperienceLevelCost(recipeInput.right().copy(), serverLevel);
+        tank.clear();
+        PrintingTableSetRecipePacket packet = new PrintingTableSetRecipePacket(getBlockPos(), duration, maxDuration, levelCost);
+        for (ServerPlayer player : PlayerLookup.tracking(serverLevel, ChunkPos.containing(getBlockPos()))) {
+            ServerPlayNetworking.send(player, packet);
+        }
+    }
+
+    private PrintingTableRecipeInput getRecipeInput() {
+        if (recipeInput == null) {
+            recipeInput = new PrintingTableRecipeInput(getContents().subList(0, 9), getItem(9), level().registryAccess());
+        }
+        return recipeInput;
+    }
+
+    private boolean isCraftingSlot(int slot) {
+        return slot >= 0 && slot < 9;
+    }
+
+    public void syncTank(PrintingTableTankSyncPacket packet) {
+        tank.update(packet);
+    }
+}

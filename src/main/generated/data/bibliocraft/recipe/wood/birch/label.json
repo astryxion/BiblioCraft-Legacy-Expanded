@@ -3,16 +3,13 @@
   "category": "misc",
   "group": "bibliocraft:labels",
   "key": {
-    "S": {
-      "item": "minecraft:birch_slab"
-    }
+    "S": "minecraft:birch_slab"
   },
   "pattern": [
     "SSS",
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:birch_label"
+    "id": "bibliocraft:birch_label"
   }
 }

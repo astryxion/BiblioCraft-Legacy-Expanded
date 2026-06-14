@@ -1,11 +1,12 @@
 pluginManagement {
+    plugins {
+        id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
+    }
     repositories {
-        maven {
-            name = "Fabric"
-            url = uri("https://maven.fabricmc.net/")
-        }
-        mavenCentral()
+        mavenLocal()
         gradlePluginPortal()
+        maven { url = uri("https://maven.fabricmc.net/") }
+        maven { url = uri("https://maven.minecraftschurli.at/maven-public") }
     }
 }
 

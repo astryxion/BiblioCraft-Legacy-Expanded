@@ -3,15 +3,9 @@
   "category": "misc",
   "group": "bibliocraft:fancy_lantern",
   "key": {
-    "C": {
-      "item": "minecraft:black_candle"
-    },
-    "G": {
-      "tag": "forge:glass_panes"
-    },
-    "I": {
-      "tag": "forge:ingots/gold"
-    }
+    "C": "minecraft:black_candle",
+    "G": "#c:glass_panes/colorless",
+    "I": "#c:ingots/gold"
   },
   "pattern": [
     "GIG",
@@ -19,7 +13,6 @@
     "GIG"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:black_fancy_gold_lantern"
+    "id": "bibliocraft:black_fancy_gold_lantern"
   }
 }

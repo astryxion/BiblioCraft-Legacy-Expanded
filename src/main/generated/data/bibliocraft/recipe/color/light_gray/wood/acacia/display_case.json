@@ -3,15 +3,9 @@
   "category": "misc",
   "group": "bibliocraft:display_cases",
   "key": {
-    "G": {
-      "tag": "forge:glass"
-    },
-    "S": {
-      "item": "minecraft:acacia_slab"
-    },
-    "W": {
-      "item": "minecraft:light_gray_wool"
-    }
+    "G": "#c:glass_blocks",
+    "S": "minecraft:acacia_slab",
+    "W": "minecraft:light_gray_wool"
   },
   "pattern": [
     "SGS",
@@ -19,7 +13,6 @@
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:light_gray_acacia_display_case"
+    "id": "bibliocraft:light_gray_acacia_display_case"
   }
 }

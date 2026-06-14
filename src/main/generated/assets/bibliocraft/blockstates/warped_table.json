@@ -1,230 +1,116 @@
 {
   "variants": {
-    "facing=east,type=all,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=all": {
+      "model": "bibliocraft:block/wood/warped/table/all",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=all,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=curve": {
+      "model": "bibliocraft:block/wood/warped/table/curve",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=curve,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=none": {
+      "model": "bibliocraft:block/wood/warped/table/none",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=curve,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=one": {
+      "model": "bibliocraft:block/wood/warped/table/one",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=none,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=straight": {
+      "model": "bibliocraft:block/wood/warped/table/straight",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=none,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=east,type=three": {
+      "model": "bibliocraft:block/wood/warped/table/three",
       "uvlock": true,
       "y": 90
     },
-    "facing=east,type=one,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=east,type=one,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=east,type=straight,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=east,type=straight,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=east,type=three,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=east,type=three,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 90
-    },
-    "facing=north,type=all,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=all": {
+      "model": "bibliocraft:block/wood/warped/table/all",
       "uvlock": true
     },
-    "facing=north,type=all,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=curve": {
+      "model": "bibliocraft:block/wood/warped/table/curve",
       "uvlock": true
     },
-    "facing=north,type=curve,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=none": {
+      "model": "bibliocraft:block/wood/warped/table/none",
       "uvlock": true
     },
-    "facing=north,type=curve,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=one": {
+      "model": "bibliocraft:block/wood/warped/table/one",
       "uvlock": true
     },
-    "facing=north,type=none,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=straight": {
+      "model": "bibliocraft:block/wood/warped/table/straight",
       "uvlock": true
     },
-    "facing=north,type=none,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=north,type=three": {
+      "model": "bibliocraft:block/wood/warped/table/three",
       "uvlock": true
     },
-    "facing=north,type=one,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=north,type=one,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=north,type=straight,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=north,type=straight,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=north,type=three,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=north,type=three,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true
-    },
-    "facing=south,type=all,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=all": {
+      "model": "bibliocraft:block/wood/warped/table/all",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=all,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=curve": {
+      "model": "bibliocraft:block/wood/warped/table/curve",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=curve,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=none": {
+      "model": "bibliocraft:block/wood/warped/table/none",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=curve,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=one": {
+      "model": "bibliocraft:block/wood/warped/table/one",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=none,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=straight": {
+      "model": "bibliocraft:block/wood/warped/table/straight",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=none,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=south,type=three": {
+      "model": "bibliocraft:block/wood/warped/table/three",
       "uvlock": true,
       "y": 180
     },
-    "facing=south,type=one,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=south,type=one,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=south,type=straight,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=south,type=straight,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=south,type=three,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=south,type=three,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 180
-    },
-    "facing=west,type=all,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=all": {
+      "model": "bibliocraft:block/wood/warped/table/all",
       "uvlock": true,
       "y": 270
     },
-    "facing=west,type=all,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=curve": {
+      "model": "bibliocraft:block/wood/warped/table/curve",
       "uvlock": true,
       "y": 270
     },
-    "facing=west,type=curve,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=none": {
+      "model": "bibliocraft:block/wood/warped/table/none",
       "uvlock": true,
       "y": 270
     },
-    "facing=west,type=curve,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=one": {
+      "model": "bibliocraft:block/wood/warped/table/one",
       "uvlock": true,
       "y": 270
     },
-    "facing=west,type=none,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=straight": {
+      "model": "bibliocraft:block/wood/warped/table/straight",
       "uvlock": true,
       "y": 270
     },
-    "facing=west,type=none,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=one,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=one,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=straight,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=straight,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=three,waterlogged=false": {
-      "model": "bibliocraft:block/wood/warped/table",
-      "uvlock": true,
-      "y": 270
-    },
-    "facing=west,type=three,waterlogged=true": {
-      "model": "bibliocraft:block/wood/warped/table",
+    "facing=west,type=three": {
+      "model": "bibliocraft:block/wood/warped/table/three",
       "uvlock": true,
       "y": 270
     }

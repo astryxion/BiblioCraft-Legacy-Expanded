@@ -1,0 +1,146 @@
+{
+  "values": [
+    "#minecraft:bookshelf_books",
+    "#minecraft:lectern_books",
+    {
+      "id": "actuallyadditions:booklet",
+      "required": false
+    },
+    {
+      "id": "aether:book_of_lore",
+      "required": false
+    },
+    {
+      "id": "akashictome:tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:boots_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:bow_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:chestplate_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:extraction_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:fishing_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:helmet_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:improved_scrap_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:leggings_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:other_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:pickaxe_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:scrap_tome",
+      "required": false
+    },
+    {
+      "id": "apothic_enchanting:weapon_tome",
+      "required": false
+    },
+    {
+      "id": "auroral:guide",
+      "required": false
+    },
+    {
+      "id": "chipped:alchemy_book",
+      "required": false
+    },
+    {
+      "id": "cookingforblockheads:crafting_book",
+      "required": false
+    },
+    {
+      "id": "cookingforblockheads:recipe_book",
+      "required": false
+    },
+    {
+      "id": "ftbquests:book",
+      "required": false
+    },
+    {
+      "id": "livingthings:lexicon",
+      "required": false
+    },
+    {
+      "id": "mahoutsukai:funbook",
+      "required": false
+    },
+    {
+      "id": "modern_industrialization:guidebook",
+      "required": false
+    },
+    {
+      "id": "minecolonies:ancient_tome",
+      "required": false
+    },
+    {
+      "id": "railcraft:routing_table_book",
+      "required": false
+    },
+    {
+      "id": "reliquary:alkahestry_tome",
+      "required": false
+    },
+    {
+      "id": "rftoolsbase:manual",
+      "required": false
+    },
+    {
+      "id": "silentgear:blueprint_book",
+      "required": false
+    },
+    {
+      "id": "solcarrot:food_book",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_magic_impregnation",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_oblivion",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_recycling",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_repairing",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_scribe",
+      "required": false
+    },
+    {
+      "id": "tombstone:book_of_soulbound",
+      "required": false
+    }
+  ]
+}

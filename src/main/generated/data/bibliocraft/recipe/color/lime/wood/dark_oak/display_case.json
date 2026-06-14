@@ -3,15 +3,9 @@
   "category": "misc",
   "group": "bibliocraft:display_cases",
   "key": {
-    "G": {
-      "tag": "forge:glass"
-    },
-    "S": {
-      "item": "minecraft:dark_oak_slab"
-    },
-    "W": {
-      "item": "minecraft:lime_wool"
-    }
+    "G": "#c:glass_blocks",
+    "S": "minecraft:dark_oak_slab",
+    "W": "minecraft:lime_wool"
   },
   "pattern": [
     "SGS",
@@ -19,7 +13,6 @@
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:lime_dark_oak_display_case"
+    "id": "bibliocraft:lime_dark_oak_display_case"
   }
 }

@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "forge:ingots/gold"
-    },
-    "N": {
-      "tag": "forge:nuggets/gold"
-    }
+    "I": "#c:ingots/gold",
+    "N": "#c:nuggets/gold"
   },
   "pattern": [
     "N",
@@ -15,7 +11,6 @@
     "N"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:gold_chain"
+    "id": "bibliocraft:gold_chain"
   }
 }

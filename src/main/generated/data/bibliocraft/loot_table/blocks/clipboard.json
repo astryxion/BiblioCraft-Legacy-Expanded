@@ -2,7 +2,7 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0,
+      "bonus_rolls": 0.0,
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
@@ -13,21 +13,18 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_nbt",
-              "source": "block_entity",
-              "ops": [
-                {
-                  "source": "clipboard_content",
-                  "target": "ClipboardContent",
-                  "op": "replace"
-                }
-              ]
+              "function": "minecraft:copy_components",
+              "include": [
+                "bibliocraft:clipboard_content"
+              ],
+              "source": "block_entity"
             }
           ],
           "name": "bibliocraft:clipboard"
         }
       ],
-      "rolls": 1
+      "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "bibliocraft:blocks/clipboard"
 }

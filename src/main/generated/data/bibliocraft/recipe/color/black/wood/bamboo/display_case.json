@@ -3,15 +3,9 @@
   "category": "misc",
   "group": "bibliocraft:display_cases",
   "key": {
-    "G": {
-      "tag": "forge:glass"
-    },
-    "S": {
-      "item": "minecraft:bamboo_slab"
-    },
-    "W": {
-      "item": "minecraft:black_wool"
-    }
+    "G": "#c:glass_blocks",
+    "S": "minecraft:bamboo_slab",
+    "W": "minecraft:black_wool"
   },
   "pattern": [
     "SGS",
@@ -19,7 +13,6 @@
     "SSS"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:black_bamboo_display_case"
+    "id": "bibliocraft:black_bamboo_display_case"
   }
 }

@@ -7,11 +7,8 @@
     }
   },
   "duration": 200,
-  "ingredient": {
-    "item": "bibliocraft:big_book"
-  },
+  "ingredient": "bibliocraft:big_book",
   "result": {
-    "count": 1,
-    "item": "bibliocraft:big_book"
+    "id": "bibliocraft:big_book"
   }
 }

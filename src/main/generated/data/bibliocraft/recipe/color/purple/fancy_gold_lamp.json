@@ -3,16 +3,10 @@
   "category": "misc",
   "group": "bibliocraft:fancy_lamp",
   "key": {
-    "C": {"item":"minecraft:purple_stained_glass"},
-    "G": {
-      "item": "minecraft:glowstone"
-    },
-    "I": {
-      "tag": "forge:ingots/gold"
-    },
-    "N": {
-      "tag": "forge:nuggets/gold"
-    }
+    "C": "minecraft:purple_stained_glass",
+    "G": "minecraft:glowstone",
+    "I": "#c:ingots/gold",
+    "N": "#c:nuggets/gold"
   },
   "pattern": [
     "CGC",
@@ -20,7 +14,6 @@
     "NIN"
   ],
   "result": {
-    "count": 1,
-    "item": "bibliocraft:purple_fancy_gold_lamp"
+    "id": "bibliocraft:purple_fancy_gold_lamp"
   }
 }
