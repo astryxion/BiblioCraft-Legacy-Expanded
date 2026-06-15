@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.bibliocraft.client;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
-import com.github.minecraftschurlimods.bibliocraft.client.ber.BookcaseBER;
 import com.github.minecraftschurlimods.bibliocraft.client.ber.TableBER;
+import com.github.minecraftschurlimods.bibliocraft.client.model.BookcaseBookModels;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -23,6 +23,6 @@ public final class TableClothModelCacheReloadListener implements SimpleSynchrono
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         TableBER.clearClothModelCache();
-        BookcaseBER.clearBookModelCache();
+        BookcaseBookModels.clearCache();
     }
 }

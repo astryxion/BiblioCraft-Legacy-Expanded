@@ -179,6 +179,7 @@ public class StockroomCatalogScreen extends Screen {
         EditBox searchBox = addRenderableWidget(new EditBox(minecraft.font, x + 33, 15, 140, 8, Component.empty()));
         searchBox.setTextColor(0);
         searchBox.setBordered(false);
+        searchBox.setValue(search);
         searchBox.setHint(Translations.STOCKROOM_CATALOG_SEARCH);
         searchBox.setResponder(e -> {
             search = e.toLowerCase(Locale.ROOT);
@@ -273,12 +274,11 @@ public class StockroomCatalogScreen extends Screen {
 
     public void setFromPacket(StockroomCatalogListPacket packet) {
         Level level = ClientUtil.getLevel();
+        data = packet.content();
+        stack.set(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), data);
         containers = packet.containers()
                 .stream()
-                .filter(e -> {
-                    BlockEntity be = level.getBlockEntity(e);
-                    return be instanceof Container;
-                })
+                .filter(e -> BCUtil.getItemHandler(level, e, null) != null)
                 .toList();
         items = packet.items();
         updateContents();

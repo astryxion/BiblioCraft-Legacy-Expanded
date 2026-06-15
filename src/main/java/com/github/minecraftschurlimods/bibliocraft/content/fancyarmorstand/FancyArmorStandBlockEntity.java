@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class FancyArmorStandBlockEntity extends BCMenuBlockEntity {
+    @Nullable
     private FancyArmorStandEntity entity;
 
     public FancyArmorStandBlockEntity(BlockPos pos, BlockState state) {
@@ -33,8 +34,10 @@ public class FancyArmorStandBlockEntity extends BCMenuBlockEntity {
     @Override
     public void setRemoved() {
         super.setRemoved();
-        entity.setRemoved(Entity.RemovalReason.KILLED);
-        entity = null;
+        if (entity != null) {
+            entity.setRemoved(Entity.RemovalReason.DISCARDED);
+            entity = null;
+        }
     }
 
     @Override

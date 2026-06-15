@@ -12,12 +12,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import com.github.minecraftschurlimods.bibliocraft.util.BCPackets;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -80,7 +82,9 @@ public class ClockBlockEntity extends BlockEntity {
         tickSound = packet.tickSound();
         addTriggers(packet.triggers());
         if (level instanceof ServerLevel serverLevel) {
-            BCPackets.sendToTracking(serverLevel, new ChunkPos(getBlockPos()), packet);
+            for (ServerPlayer trackingPlayer : PlayerLookup.tracking(serverLevel, new ChunkPos(getBlockPos()))) {
+                ServerPlayNetworking.send(trackingPlayer, packet);
+            }
         }
     }
 
@@ -98,7 +102,7 @@ public class ClockBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        tickSound = tag.getBoolean(TICK_SOUND_KEY);
+        tickSound = tag.contains(TICK_SOUND_KEY) ? tag.getBoolean(TICK_SOUND_KEY) : true;
         List<ClockTrigger> list = new ArrayList<>();
         for (Tag trigger : tag.getList(TRIGGERS_KEY, Tag.TAG_COMPOUND)) {
             list.add(CodecUtil.decodeNbt(ClockTrigger.CODEC, trigger));
@@ -122,6 +126,12 @@ public class ClockBlockEntity extends BlockEntity {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
         return tag;
+    }
+
+    public void applyUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (tag.contains(TRIGGERS_KEY) || tag.contains(TICK_SOUND_KEY)) {
+            loadAdditional(tag, registries);
+        }
     }
 
     public boolean getTickSound() {

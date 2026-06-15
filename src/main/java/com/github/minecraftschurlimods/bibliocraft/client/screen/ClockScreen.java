@@ -4,6 +4,7 @@ import com.github.minecraftschurlimods.bibliocraft.client.widget.ClockTriggerPan
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockBlockEntity;
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockSyncPacket;
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockTrigger;
+import com.github.minecraftschurlimods.bibliocraft.util.BCPackets;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
@@ -15,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import com.github.minecraftschurlimods.bibliocraft.util.BCPackets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +35,8 @@ public class ClockScreen extends Screen {
     public ClockScreen(BlockPos pos) {
         super(Translations.CLOCK_TITLE);
         this.pos = pos;
-        clock = (ClockBlockEntity) BCUtil.nonNull(ClientUtil.getLevel().getBlockEntity(pos));
-        triggers = new ArrayList<>(clock.getTriggers());
+        this.clock = (ClockBlockEntity) BCUtil.nonNull(ClientUtil.getLevel().getBlockEntity(pos));
+        this.triggers = new ArrayList<>(clock.getTriggers());
     }
 
     @Override

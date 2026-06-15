@@ -18,7 +18,7 @@ public final class BibliocraftClientNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(OpenBookInLecternPacket.TYPE, (payload, context) -> payload.handleClient(context.player()));
         ClientPlayNetworking.registerGlobalReceiver(StockroomCatalogListPacket.TYPE, (payload, context) -> payload.handleClient(context.player()));
-        ClientPlayNetworking.registerGlobalReceiver(ClockSyncPacket.TYPE, (payload, context) -> payload.handleClient(context.player()));
+        ClientPlayNetworking.registerGlobalReceiver(ClockSyncPacket.TYPE, (payload, context) -> payload.handle(context.player()));
         ClientPlayNetworking.registerGlobalReceiver(PrintingTableTankSyncPacket.TYPE, (payload, context) -> payload.handleClient(context.player()));
         ClientPlayNetworking.registerGlobalReceiver(PrintingTableSetRecipePacket.TYPE, (payload, context) -> payload.handleClient(context.player()));
     }

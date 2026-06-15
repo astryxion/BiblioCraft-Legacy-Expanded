@@ -42,9 +42,7 @@ public abstract class BCFacingInteractibleBlock extends BCFacingEntityBlock {
                 if (bcbe.getLockKey() != null && !BaseContainerBlockEntity.canUnlock(player, bcbe.getLockKey(), BCUtil.getNameAtPos(level, pos)))
                     return ItemInteractionResult.CONSUME;
                 ItemStack slotStack = bcbe.getItem(slot);
-                if (stack.isEmpty() || bcbe.canPlaceItem(slot, stack)) {
-                    bcbe.setItem(slot, stack);
-                    player.setItemInHand(hand, slotStack);
+                if (BCUtil.swapItem(stack, s -> player.setItemInHand(hand, s), bcbe, slot)) {
                     return ItemInteractionResult.SUCCESS;
                 }
             }

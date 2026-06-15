@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import com.github.minecraftschurlimods.bibliocraft.client.model.BlockModelData;
 
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Utility class holding various helper methods. Kept separate from {@link BCUtil} for classloading reasons.

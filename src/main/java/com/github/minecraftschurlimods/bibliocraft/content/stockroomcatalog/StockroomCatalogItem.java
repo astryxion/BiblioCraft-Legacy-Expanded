@@ -18,8 +18,9 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.Container;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 import java.util.Comparator;
@@ -46,7 +47,7 @@ public class StockroomCatalogItem extends Item {
                 .filter(e -> e.dimension() == level.dimension())
                 .map(GlobalPos::pos)
                 .filter(level::hasChunkAt)
-                .filter(e -> HopperBlockEntity.getContainerAt(level, e) != null)
+                .filter(e -> BCUtil.getItemHandler(level, e, null) != null)
                 .sorted(switch (containerSorting) {
                     case ALPHABETICAL_ASC, DISTANCE_ASC -> COMPARE_DISTANCE;
                     case ALPHABETICAL_DESC, DISTANCE_DESC -> BCUtil.reverseComparator(COMPARE_DISTANCE);
@@ -62,10 +63,10 @@ public class StockroomCatalogItem extends Item {
     public static List<StockroomCatalogItemEntry> calculateItems(List<BlockPos> positions, Level level, StockroomCatalogSorting.Item itemSorting) {
         SequencedMap<ItemStack, StockroomCatalogItemEntry> tempItems = new LinkedHashMap<>();
         for (BlockPos pos : positions) {
-            Container container = HopperBlockEntity.getContainerAt(level, pos);
-            if (container == null) continue;
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                ItemStack originalStack = container.getItem(i);
+            Storage<ItemVariant> handler = BCUtil.getItemHandler(level, pos, null);
+            if (!(handler instanceof SlottedStorage<ItemVariant> slotted)) continue;
+            for (int i = 0; i < slotted.getSlotCount(); i++) {
+                ItemStack originalStack = slotted.getSlot(i).getResource().toStack((int) slotted.getSlot(i).getAmount());
                 if (originalStack.isEmpty()) continue;
                 ItemStack stack = originalStack.copy();
                 int count = stack.getCount();
@@ -112,15 +113,18 @@ public class StockroomCatalogItem extends Item {
             boolean hasPositionAtNeighbor = hasNeighbor && list.positions().contains(neighborPos);
             GlobalPos globalPos = hasPositionAtNeighbor ? neighborPos : new GlobalPos(level.dimension(), pos);
             if (list.positions().contains(globalPos)) {
-                stack.update(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), StockroomCatalogContent.DEFAULT, component -> component.remove(globalPos));
-                player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_REMOVE_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
-                return InteractionResult.SUCCESS;
+                if (!level.isClientSide()) {
+                    stack.update(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), StockroomCatalogContent.DEFAULT, component -> component.remove(globalPos));
+                    player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_REMOVE_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
             }
-            Container container = HopperBlockEntity.getContainerAt(level, pos);
-            if (container != null) {
-                stack.update(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), StockroomCatalogContent.DEFAULT, component -> component.add(globalPos));
-                player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_ADD_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
-                return InteractionResult.SUCCESS;
+            if (BCUtil.getItemHandler(level, pos, context.getClickedFace()) != null) {
+                if (!level.isClientSide()) {
+                    stack.update(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), StockroomCatalogContent.DEFAULT, component -> component.add(globalPos));
+                    player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_ADD_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
             }
         }
         return super.useOn(context);

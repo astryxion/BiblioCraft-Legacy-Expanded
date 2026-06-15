@@ -47,16 +47,16 @@ public final class BCClientEventHandlerFabric {
      */
     private static void registerBlockRenderLayers() {
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.COOKIE_JAR.get(), RenderType.cutout());
-        BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_GOLD_LAMP.get(), RenderType.cutout());
-        BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_IRON_LAMP.get(), RenderType.cutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_GOLD_LAMP.get(), RenderType.translucent());
+        BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_IRON_LAMP.get(), RenderType.translucent());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_GOLD_LANTERN.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.CLEAR_FANCY_IRON_LANTERN.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.SOUL_FANCY_GOLD_LANTERN.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.SOUL_FANCY_IRON_LANTERN.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.GOLD_LANTERN.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(BCBlocks.GOLD_SOUL_LANTERN.get(), RenderType.cutout());
-        for (Block b : BCBlocks.FANCY_GOLD_LAMP.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.cutout());
-        for (Block b : BCBlocks.FANCY_IRON_LAMP.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.cutout());
+        for (Block b : BCBlocks.FANCY_GOLD_LAMP.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.translucent());
+        for (Block b : BCBlocks.FANCY_IRON_LAMP.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.translucent());
         for (Block b : BCBlocks.FANCY_GOLD_LANTERN.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.cutout());
         for (Block b : BCBlocks.FANCY_IRON_LANTERN.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.cutout());
         for (Block b : BCBlocks.DISPLAY_CASE.values()) BlockRenderLayerMap.INSTANCE.putBlock(b, RenderType.cutout());

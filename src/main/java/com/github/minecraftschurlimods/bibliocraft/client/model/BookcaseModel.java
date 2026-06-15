@@ -52,8 +52,7 @@ public class BookcaseModel extends DynamicBlockModel implements FabricBakedModel
 
     @Override
     public void emitBlockQuads(net.minecraft.world.level.BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        // Emit only the shelf (base). Books are rendered by BookcaseBER so they always show
-        // even when block view has no block entity during chunk build.
+        // Shelf only; books are rendered by BookcaseBER with matching facing rotation.
         BakedModel shelfOnly = new BakedModel() {
             @Override
             public List<BakedQuad> getQuads(@Nullable BlockState s, @Nullable Direction side, RandomSource rand) {
@@ -85,8 +84,7 @@ public class BookcaseModel extends DynamicBlockModel implements FabricBakedModel
     }
 
     /**
-     * Returns only the book quads (no shelf). Used by {@link com.github.minecraftschurlimods.bibliocraft.client.ber.BookcaseBER}
-     * so books render correctly even when block model data is not available during chunk build.
+     * Returns only the book quads (no shelf).
      */
     public List<BakedQuad> getBookQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, BlockModelData extraData) {
         List<BakedQuad> quads = new ArrayList<>();

@@ -32,7 +32,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
-import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -59,7 +58,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                     .pattern("CGC")
                     .pattern(" I ")
                     .pattern("NIN")
-                    .define('C', IntersectionIngredient.of(Ingredient.of(Tags.Items.GLASS_BLOCKS), Ingredient.of(TagKey.create(Registries.ITEM, BCUtil.cLoc("dyed/" + name)))))
+                    .define('C', stainedGlass(name))
                     .define('G', Items.GLOWSTONE)
                     .define('I', Tags.Items.INGOTS_GOLD)
                     .define('N', Tags.Items.NUGGETS_GOLD)
@@ -70,7 +69,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                     .pattern("CGC")
                     .pattern(" I ")
                     .pattern("NIN")
-                    .define('C', IntersectionIngredient.of(Ingredient.of(Tags.Items.GLASS_BLOCKS), Ingredient.of(TagKey.create(Registries.ITEM, BCUtil.cLoc("dyed/" + name)))))
+                    .define('C', stainedGlass(name))
                     .define('G', Items.GLOWSTONE)
                     .define('I', Tags.Items.INGOTS_IRON)
                     .define('N', Tags.Items.NUGGETS_IRON)
@@ -408,5 +407,9 @@ public final class BCRecipeProvider extends RecipeProvider {
         new PrintingTableBindingTypewriterPagesRecipe.Builder(Ingredient.of(Tags.Items.LEATHERS), 200)
                 .unlockedBy("has_leather", has(Tags.Items.LEATHERS))
                 .save(output, BCUtil.bcLoc("typewriter_pages_binding"));
+    }
+
+    private static Ingredient stainedGlass(String color) {
+        return Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(color + "_stained_glass")));
     }
 }

@@ -83,7 +83,7 @@ public class ClockTriggerEditScreen extends Screen {
                 parent.addTrigger(new ClockTrigger(Integer.parseInt(hours.getValue()), Integer.parseInt(minutes.getValue()), redstone.selected(), sound.selected()));
             } catch (NumberFormatException ignored) {
             }
-            onClose();
+            returnToParent();
         }).bounds(leftPos, topPos + HEIGHT + 4, WIDTH, 20).build());
         if (old != null) {
             hours.setValue(String.valueOf(old.hour()));
@@ -111,5 +111,16 @@ public class ClockTriggerEditScreen extends Screen {
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, WIDTH, HEIGHT);
+    }
+
+    @Override
+    public void onClose() {
+        returnToParent();
+    }
+
+    private void returnToParent() {
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
+        }
     }
 }

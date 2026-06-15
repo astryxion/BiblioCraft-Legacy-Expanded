@@ -1,12 +1,17 @@
 package com.github.minecraftschurlimods.bibliocraft.mixin;
 
+import com.github.minecraftschurlimods.bibliocraft.content.clipboard.ClipboardBlockEntity;
+import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,6 +31,16 @@ public class ClientBlockEntityDataMixin {
     private void bibliocraft$afterBlockEntityData(ClientboundBlockEntityDataPacket packet, CallbackInfo ci) {
         BlockPos pos = packet.getPos();
         Minecraft mc = Minecraft.getInstance();
+        CompoundTag tag = packet.getTag();
+        if (tag != null && mc.level != null) {
+            BlockEntity be = mc.level.getBlockEntity(pos);
+            HolderLookup.Provider registries = mc.level.registryAccess();
+            if (be instanceof ClockBlockEntity clock) {
+                clock.applyUpdateTag(tag, registries);
+            } else if (be instanceof ClipboardBlockEntity clipboard) {
+                clipboard.applyUpdateTag(tag, registries);
+            }
+        }
         Runnable invalidate = () -> {
             Level level = mc.level;
             if (level == null) return;

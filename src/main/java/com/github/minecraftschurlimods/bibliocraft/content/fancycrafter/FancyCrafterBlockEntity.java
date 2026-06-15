@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -41,6 +42,7 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
 
     private final boolean[] disabledSlots = new boolean[9];
     private int craftingTicksRemaining = MAX_CRAFTING_TICKS;
+    private int openCount;
     private RecipeHolder<CraftingRecipe> recipe;
 
     public FancyCrafterBlockEntity(BlockPos pos, BlockState state) {
@@ -51,8 +53,64 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
         return (int) IntStream.range(0, 9).filter(i -> !getItem(i).isEmpty() || isSlotDisabled(i)).count();
     }
 
+    public void startOpen(Player player) {
+        openCount++;
+    }
+
+    public void stopOpen(Player player) {
+        if (openCount > 0) {
+            openCount--;
+        }
+        if (openCount == 0) {
+            calculateRecipe();
+            setChanged();
+        }
+    }
+
+    public boolean isMenuOpen() {
+        return openCount > 0;
+    }
+
+    @Nullable
+    public RecipeHolder<CraftingRecipe> getRecipe() {
+        return recipe;
+    }
+
+    public List<ItemStack> getCraftingGridItems() {
+        return IntStream.range(0, 9)
+                .mapToObj(slot -> isSlotDisabled(slot) ? ItemStack.EMPTY : getItem(slot))
+                .toList();
+    }
+
+    public CraftingInput getCraftingInput() {
+        return CraftingInput.of(3, 3, getCraftingGridItems());
+    }
+
+    public void consumeCraftingIngredients() {
+        CraftingInput.Positioned positioned = CraftingInput.ofPositioned(3, 3, getCraftingGridItems());
+        CraftingInput positionedInput = positioned.input();
+        int left = positioned.left();
+        int top = positioned.top();
+        for (int row = 0; row < positionedInput.height(); row++) {
+            for (int col = 0; col < positionedInput.width(); col++) {
+                if (positionedInput.getItem(col, row).isEmpty()) continue;
+                int slot = col + left + (row + top) * 3;
+                if (isSlotDisabled(slot)) continue;
+                ItemStack stack = getItem(slot);
+                if (stack.isEmpty()) continue;
+                if (stack.getCount() <= 1) {
+                    super.setItem(slot, ItemStack.EMPTY);
+                } else {
+                    super.setItem(slot, stack.copyWithCount(stack.getCount() - 1));
+                }
+            }
+        }
+        calculateRecipe();
+        setChanged();
+    }
+
     public static void tick(Level level, BlockPos pos, BlockState state, FancyCrafterBlockEntity blockEntity) {
-        if (blockEntity.recipe == null) return;
+        if (blockEntity.isMenuOpen() || blockEntity.recipe == null) return;
         CraftingRecipe recipe = blockEntity.recipe.value();
         ItemStack result = recipe.getResultItem(level.registryAccess());
         ItemStack resultStack = blockEntity.getItem(9);
@@ -60,16 +118,16 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
             return;
         blockEntity.craftingTicksRemaining--;
         if (blockEntity.craftingTicksRemaining > 0) return;
-        CraftingInput input = CraftingInput.of(3, 3, blockEntity.getInputs());
+        CraftingInput input = blockEntity.getCraftingInput();
         ItemStack assembled = recipe.assemble(input, level.registryAccess());
         assembled.onCraftedBySystem(level);
         blockEntity.setItem(9, blockEntity.tryDispense(level, pos, assembled, state));
         blockEntity.craftingTicksRemaining = MAX_CRAFTING_TICKS;
-        recipe.getRemainingItems(CraftingInput.of(3, 3, blockEntity.getInputs()))
+        recipe.getRemainingItems(input)
                 .stream()
                 .filter(e -> !e.isEmpty())
                 .forEach(e -> blockEntity.tryDispense(level, pos, e, state));
-        List<ItemStack> inputs = new ArrayList<>(blockEntity.getInputs()
+        List<ItemStack> inputs = new ArrayList<>(blockEntity.getCraftingGridItems()
                 .stream()
                 .filter(e -> !e.isEmpty())
                 .toList());
@@ -88,11 +146,7 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
             }
             toRemove.forEach(inputs::remove);
         }
-        blockEntity.getInputs()
-                .stream()
-                .filter(e -> !e.isEmpty())
-                .forEach(e -> e.shrink(1));
-        blockEntity.setChanged();
+        blockEntity.consumeCraftingIngredients();
     }
 
     @Override
@@ -157,6 +211,7 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
     public void setSlotDisabled(int slot, boolean disabled) {
         if (!canDisableSlot(slot)) return;
         disabledSlots[slot] = disabled;
+        calculateRecipe();
         setChanged();
     }
 
@@ -185,11 +240,13 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
         return false;
     }
 
-    private void calculateRecipe() {
-        RecipeManager recipes = level().getRecipeManager();
-        CraftingInput input = CraftingInput.of(3, 3, getInputs());
-        recipe = recipes.getRecipeFor(RecipeType.CRAFTING, input, level()).orElse(null);
-        items.setStackInSlot(9, recipe == null ? ItemStack.EMPTY : recipe.value().getResultItem(level().registryAccess()).copy());
+    public void calculateRecipe() {
+        Level level = level();
+        if (level == null) return;
+        RecipeManager recipes = level.getRecipeManager();
+        CraftingInput input = getCraftingInput();
+        recipe = recipes.getRecipeFor(RecipeType.CRAFTING, input, level).orElse(null);
+        items.setStackInSlot(RESULT_SLOT, recipe == null ? ItemStack.EMPTY : recipe.value().getResultItem(level.registryAccess()).copy());
     }
 
     private ItemStack tryDispense(Level level, BlockPos pos, ItemStack stack, BlockState state) {
@@ -205,7 +262,4 @@ public class FancyCrafterBlockEntity extends BCMenuBlockEntity implements HasTog
         return stack;
     }
 
-    private List<ItemStack> getInputs() {
-        return IntStream.range(0, 9).mapToObj(this::getItem).toList();
-    }
 }

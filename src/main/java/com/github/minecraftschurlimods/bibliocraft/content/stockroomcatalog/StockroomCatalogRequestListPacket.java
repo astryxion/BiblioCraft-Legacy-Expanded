@@ -1,5 +1,6 @@
 package com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog;
 
+import com.github.minecraftschurlimods.bibliocraft.init.BCDataComponents;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.lectern.LecternUtil;
@@ -27,9 +28,10 @@ public record StockroomCatalogRequestListPacket(StockroomCatalogSorting.Containe
 
     public void handleServer(ServerPlayer player) {
         ItemStack stack = target.map(player::getItemInHand, pos -> LecternUtil.tryGetLecternAndApply(player.level(), pos, LecternBlockEntity::getBook));
+        StockroomCatalogContent content = stack.getOrDefault(BCDataComponents.STOCKROOM_CATALOG_CONTENT.get(), StockroomCatalogContent.DEFAULT);
         List<BlockPos> containers = StockroomCatalogItem.calculatePositions(stack, player.level(), player, containerSorting);
         List<StockroomCatalogItemEntry> items = StockroomCatalogItem.calculateItems(containers, player.level(), itemSorting);
-        BCPackets.sendToPlayer(player, new StockroomCatalogListPacket(containers, items));
+        BCPackets.sendToPlayer(player, new StockroomCatalogListPacket(containers, items, content));
     }
 
     @Override

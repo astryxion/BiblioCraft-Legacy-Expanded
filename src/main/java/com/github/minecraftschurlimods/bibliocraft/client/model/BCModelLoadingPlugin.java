@@ -271,9 +271,9 @@ public final class BCModelLoadingPlugin implements PreparableModelLoadingPlugin<
     }
 
     /**
-     * Intentionally returns null: replacing with BookcaseGeometry causes "BlockModel parent has to be a block model"
-     * because the blockstate/variant system expects a BlockModel. Books are rendered by BookcaseBER instead,
-     * which gets book quads from the ModelManager by loading the same bookcase model resource and unwrapping.
+     * Cannot return BookcaseGeometry here: wood variants parent this template as a BlockModel,
+     * and vanilla requires parents to be block models (see latest.log crash).
+     * Books are rendered by BookcaseBER instead.
      */
     private static net.minecraft.client.resources.model.UnbakedModel loadBookcaseGeometry(com.google.gson.JsonObject json, net.fabricmc.fabric.api.client.model.loading.v1.ModelModifier.OnLoad.Context context) {
         return null;

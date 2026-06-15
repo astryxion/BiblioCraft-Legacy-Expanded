@@ -23,6 +23,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -152,6 +158,30 @@ public final class BCUtil {
         if (level <= 16) return level * level + 6 * level;
         if (level <= 31) return (int) (2.5 * level * level - 40.5 * level + 360);
         return (int) (4.5 * level * level + 162.5 * level + 2220);
+    }
+
+    @Nullable
+    public static Storage<ItemVariant> getItemHandler(Level level, BlockPos pos, @Nullable Direction direction) {
+        Storage<ItemVariant> storage = ItemStorage.SIDED.find(level, pos, direction);
+        if (storage != null) return storage;
+        Container container = HopperBlockEntity.getContainerAt(level, pos);
+        return container != null ? InventoryStorage.of(container, direction) : null;
+    }
+
+    /**
+     * Swap the given item stack with the contents of the given slot in the given block entity.
+     */
+    public static boolean swapItem(ItemStack stack, Consumer<ItemStack> itemSetter, BCBlockEntity blockEntity, int slot) {
+        ItemStack slotStack = blockEntity.getItem(slot);
+        if (stack.isEmpty() && slotStack.isEmpty()) {
+            return false;
+        }
+        if (!stack.isEmpty() && !blockEntity.canPlaceItem(slot, stack)) {
+            return false;
+        }
+        blockEntity.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack.copy());
+        itemSetter.accept(slotStack);
+        return true;
     }
 
     /**

@@ -32,15 +32,13 @@ public final class BibliocraftApi {
     }
 
     private static class InstanceHolder {
-        private static final Supplier<BibliocraftDatagenHelper> DATAGEN_HELPER = fromServiceLoader(BibliocraftDatagenHelper.class);
-        private static BibliocraftWoodTypeRegistry woodTypeRegistryCache;
+        private static final Supplier<BibliocraftDatagenHelper> DATAGEN_HELPER = memoize(fromServiceLoader(BibliocraftDatagenHelper.class));
+        private static final Supplier<BibliocraftWoodTypeRegistry> WOOD_TYPE_REGISTRY = memoize(fromServiceLoader(BibliocraftWoodTypeRegistry.class));
+        private static final Supplier<LockAndKeyBehaviors> LOCK_AND_KEY_BEHAVIORS = memoize(fromServiceLoader(LockAndKeyBehaviors.class));
+
         private static BibliocraftWoodTypeRegistry woodTypeRegistry() {
-            if (woodTypeRegistryCache == null) {
-                woodTypeRegistryCache = fromServiceLoader(BibliocraftWoodTypeRegistry.class).get();
-            }
-            return woodTypeRegistryCache;
+            return WOOD_TYPE_REGISTRY.get();
         }
-        private static final Supplier<LockAndKeyBehaviors> LOCK_AND_KEY_BEHAVIORS = fromServiceLoader(LockAndKeyBehaviors.class);
 
         private static <T> Supplier<T> fromServiceLoader(Class<T> clazz) {
             return () -> {
@@ -51,6 +49,20 @@ public final class BibliocraftApi {
                     LoggerFactory.getLogger(MOD_ID).error(exception.getMessage(), exception);
                     return exception;
                 });
+            };
+        }
+
+        private static <T> Supplier<T> memoize(Supplier<T> delegate) {
+            return new Supplier<>() {
+                private T value;
+
+                @Override
+                public T get() {
+                    if (value == null) {
+                        value = delegate.get();
+                    }
+                    return value;
+                }
             };
         }
     }

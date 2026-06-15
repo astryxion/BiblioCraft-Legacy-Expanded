@@ -80,6 +80,7 @@ sourceSets.matching { it.name != "main" }.forEach { ss ->
 }
 
 loom {
+    accessWidenerPath = file("src/main/resources/bibliocraft.accesswidener")
     mods {
         create("bibliocraft") {
             sourceSet(sourceSets.main.get())

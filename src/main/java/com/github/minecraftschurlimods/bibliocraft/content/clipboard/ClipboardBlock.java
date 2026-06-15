@@ -49,7 +49,6 @@ public class ClipboardBlock extends BCFacingEntityBlock {
         super.setPlacedBy(level, pos, state, entity, stack);
         if (level.getBlockEntity(pos) instanceof ClipboardBlockEntity clipboard) {
             clipboard.setContent(stack.getOrDefault(BCDataComponents.CLIPBOARD_CONTENT.get(), ClipboardContent.DEFAULT));
-            clipboard.setComponents(stack.getComponents());
         }
     }
 }

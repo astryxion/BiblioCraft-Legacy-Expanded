@@ -64,7 +64,7 @@ public final class BibliocraftNetworking {
     }
 
     private static void registerC2SReceivers() {
-        ServerPlayNetworking.registerGlobalReceiver(ClockSyncPacket.TYPE, (payload, context) -> payload.handleServer(context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(ClockSyncPacket.TYPE, (payload, context) -> payload.handle(context.player()));
         ServerPlayNetworking.registerGlobalReceiver(ClipboardSyncPacket.TYPE, (payload, context) -> payload.handleServer(context.player()));
         ServerPlayNetworking.registerGlobalReceiver(TypewriterSyncPacket.TYPE, (payload, context) -> payload.handleServer(context.player()));
         ServerPlayNetworking.registerGlobalReceiver(ToggleableSlotSyncPacket.TYPE, (payload, context) -> payload.handleServer(context.player()));

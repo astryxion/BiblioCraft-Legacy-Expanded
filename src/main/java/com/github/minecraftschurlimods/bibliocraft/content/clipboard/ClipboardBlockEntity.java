@@ -62,6 +62,12 @@ public class ClipboardBlockEntity extends BlockEntity {
         return tag;
     }
 
+    public void applyUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (tag.contains(CONTENT_KEY)) {
+            setContent(CodecUtil.decodeNbt(ClipboardContent.CODEC, tag.get(CONTENT_KEY)));
+        }
+    }
+
     public ClipboardContent getContent() {
         return content;
     }
