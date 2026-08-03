@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "bibliocraft:block/cookie_jar"
+    },
+    "open=true": {
+      "model": "bibliocraft:block/cookie_jar_open"
+    }
+  }
+}

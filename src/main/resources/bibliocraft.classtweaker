@@ -1,0 +1,25 @@
+classTweaker v1 official
+
+accessible method net/minecraft/client/data/models/blockstates/PropertyDispatch getEntries ()Ljava/util/Map;
+accessible field net/minecraft/client/renderer/blockentity/state/BlockEntityRenderState blockState Lnet/minecraft/world/level/block/state/BlockState;
+accessible field net/minecraft/world/level/block/entity/BaseContainerBlockEntity lockKey Lnet/minecraft/world/LockCode;
+accessible field net/minecraft/world/level/block/entity/BeaconBlockEntity lockKey Lnet/minecraft/world/LockCode;
+accessible field net/minecraft/world/level/block/entity/LecternBlockEntity pageCount I
+accessible method net/minecraft/world/level/block/entity/LecternBlockEntity setPage (I)V
+accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
+accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
+accessible field net/minecraft/client/data/models/model/ModelTemplate suffix Ljava/util/Optional;
+accessible field net/minecraft/client/data/models/model/ModelTemplate requiredSlots Ljava/util/Set;
+accessible field net/minecraft/client/data/models/BlockModelGenerators blockStateOutput Ljava/util/function/Consumer;
+accessible field net/minecraft/client/data/models/BlockModelGenerators itemModelOutput Lnet/minecraft/client/data/models/ItemModelOutput;
+accessible field net/minecraft/client/data/models/BlockModelGenerators modelOutput Ljava/util/function/BiConsumer;
+accessible method net/minecraft/client/data/models/BlockModelGenerators createFlatItemModelWithBlockTexture (Lnet/minecraft/world/item/Item;Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/resources/Identifier;
+accessible field net/minecraft/client/data/models/BlockModelGenerators ROTATION_HORIZONTAL_FACING Lnet/minecraft/client/data/models/blockstates/PropertyDispatch;
+accessible field net/minecraft/client/gui/components/AbstractSelectionList$Entry list Lnet/minecraft/client/gui/components/AbstractSelectionList;
+accessible class net/minecraft/client/data/models/ModelProvider$ItemInfoCollector
+accessible method net/minecraft/client/data/models/ModelProvider$ItemInfoCollector <init> ()V
+accessible class net/minecraft/client/data/models/ModelProvider$BlockStateGeneratorCollector
+accessible method net/minecraft/client/data/models/ModelProvider$BlockStateGeneratorCollector <init> ()V
+accessible class net/minecraft/client/data/models/ModelProvider$SimpleModelCollector
+accessible method net/minecraft/client/data/models/ModelProvider$SimpleModelCollector <init> ()V
+accessible method net/minecraft/client/gui/screens/MenuScreens register (Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;)V

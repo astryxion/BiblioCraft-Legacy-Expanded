@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/iron",
+    "S": "minecraft:smooth_stone_slab"
+  },
+  "pattern": [
+    " I ",
+    " I ",
+    "SSS"
+  ],
+  "result": {
+    "id": "bibliocraft:iron_fancy_armor_stand"
+  }
+}

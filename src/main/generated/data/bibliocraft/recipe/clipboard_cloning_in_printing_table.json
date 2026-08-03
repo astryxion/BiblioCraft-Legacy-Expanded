@@ -1,0 +1,13 @@
+{
+  "type": "bibliocraft:printing_table_cloning",
+  "data_components": [
+    "bibliocraft:clipboard_content"
+  ],
+  "duration": 100,
+  "ingredients": [
+    "bibliocraft:clipboard"
+  ],
+  "result": {
+    "id": "bibliocraft:clipboard"
+  }
+}

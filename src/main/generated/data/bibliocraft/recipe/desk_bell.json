@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:stone_button",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    " B ",
+    " I ",
+    "IRI"
+  ],
+  "result": {
+    "id": "bibliocraft:desk_bell"
+  }
+}

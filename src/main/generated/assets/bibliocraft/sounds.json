@@ -1,0 +1,95 @@
+{
+  "clock_chime": {
+    "sounds": [
+      "bibliocraft:clock/chime"
+    ],
+    "subtitle": "subtitles.bibliocraft.clock.chime"
+  },
+  "clock_tick": {
+    "sounds": [
+      "bibliocraft:clock/tick_0",
+      "bibliocraft:clock/tick_1",
+      "bibliocraft:clock/tick_2",
+      "bibliocraft:clock/tick_3",
+      "bibliocraft:clock/tick_4"
+    ],
+    "subtitle": "subtitles.bibliocraft.clock.tick"
+  },
+  "clock_tock": {
+    "sounds": [
+      "bibliocraft:clock/tock_0",
+      "bibliocraft:clock/tock_1",
+      "bibliocraft:clock/tock_2",
+      "bibliocraft:clock/tock_3",
+      "bibliocraft:clock/tock_4"
+    ],
+    "subtitle": "subtitles.bibliocraft.clock.tock"
+  },
+  "desk_bell": {
+    "sounds": [
+      "bibliocraft:desk_bell/0",
+      "bibliocraft:desk_bell/1",
+      "bibliocraft:desk_bell/2",
+      "bibliocraft:desk_bell/3"
+    ],
+    "subtitle": "subtitles.bibliocraft.desk_bell"
+  },
+  "display_case_close": {
+    "sounds": [
+      "bibliocraft:display_case/close"
+    ],
+    "subtitle": "subtitles.bibliocraft.display_case.close"
+  },
+  "display_case_open": {
+    "sounds": [
+      "bibliocraft:display_case/open"
+    ],
+    "subtitle": "subtitles.bibliocraft.display_case.open"
+  },
+  "tape_measure_close": {
+    "sounds": [
+      "bibliocraft:tape_measure/close"
+    ],
+    "subtitle": "subtitles.bibliocraft.tape_measure.close"
+  },
+  "tape_measure_open": {
+    "sounds": [
+      "bibliocraft:tape_measure/open"
+    ],
+    "subtitle": "subtitles.bibliocraft.tape_measure.open"
+  },
+  "typewriter_add_paper": {
+    "sounds": [
+      "bibliocraft:typewriter/add_paper"
+    ],
+    "subtitle": "subtitles.bibliocraft.typewriter.add_paper"
+  },
+  "typewriter_chime": {
+    "sounds": [
+      "bibliocraft:typewriter/chime"
+    ],
+    "subtitle": "subtitles.bibliocraft.typewriter.chime"
+  },
+  "typewriter_take_page": {
+    "sounds": [
+      "bibliocraft:typewriter/take_page"
+    ],
+    "subtitle": "subtitles.bibliocraft.typewriter.take_page"
+  },
+  "typewriter_type": {
+    "sounds": [
+      "bibliocraft:typewriter/type"
+    ],
+    "subtitle": "subtitles.bibliocraft.typewriter.type"
+  },
+  "typewriter_typing": {
+    "sounds": [
+      "bibliocraft:typewriter/typing_0",
+      "bibliocraft:typewriter/typing_1",
+      "bibliocraft:typewriter/typing_2",
+      "bibliocraft:typewriter/typing_3",
+      "bibliocraft:typewriter/typing_4"
+    ],
+    "subtitle": "subtitles.bibliocraft.typewriter.typing"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "bibliocraft",
+  "version": "${version}",
+  "name": "Bibliocraft Legacy",
+  "description": "Bibliocraft Legacy is a port of the original BiblioCraft Minecraft mod by Nuchaz. It adds various pieces of decorative and functional furniture into the game.",
+  "authors": [
+    "Astryxion"
+  ],
+  "contributors": [
+    "Nuchaz",
+    "XFactHD",
+    "IchHabeHunger54",
+    "Minecraftschurli"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/bibliocraft-legacy-expanded",
+    "issues": "https://github.com/astryxion/BiblioCraft-Legacy-Expanded/issues"
+  },
+  "license": "MIT",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "at.minecraftschurli.mods.bibliocraft.Bibliocraft"
+    ],
+    "client": [
+      "at.minecraftschurli.mods.bibliocraft.client.BibliocraftClient"
+    ],
+    "fabric-datagen": [
+      "at.minecraftschurli.mods.bibliocraft.datagen.BCDatagen"
+    ]
+  },
+  "accessWidener": "bibliocraft.classtweaker",
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": ">=26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "jei": "*"
+  }
+}

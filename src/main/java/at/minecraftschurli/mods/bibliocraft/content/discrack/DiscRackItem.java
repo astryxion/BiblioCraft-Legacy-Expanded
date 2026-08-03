@@ -1,0 +1,24 @@
+package at.minecraftschurli.mods.bibliocraft.content.discrack;
+
+import at.minecraftschurli.mods.bibliocraft.init.BCBlocks;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
+
+public class DiscRackItem extends BlockItem {
+    public DiscRackItem(Properties properties) {
+        super(BCBlocks.DISC_RACK.get(), properties.useBlockDescriptionPrefix());
+    }
+
+    @Override
+    @Nullable
+    protected BlockState getPlacementState(BlockPlaceContext context) {
+        boolean ground = context.getClickedFace() == Direction.UP;
+        Block block = ground ? BCBlocks.DISC_RACK.get() : BCBlocks.WALL_DISC_RACK.get();
+        BlockState state = block.defaultBlockState().setValue(DiscRackBlock.FACING, ground ? context.getHorizontalDirection().getClockWise() : context.getClickedFace());
+        return canPlace(context, state) ? state : null;
+    }
+}

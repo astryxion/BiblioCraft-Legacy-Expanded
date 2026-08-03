@@ -1,0 +1,8 @@
+{
+  "parent": "bibliocraft:block/template/fancy_lantern/hanging",
+  "textures": {
+    "chain": "bibliocraft:block/gold_chain",
+    "color": "buzzier_bees:block/soul_candle_lit",
+    "metal": "minecraft:block/gold_block"
+  }
+}

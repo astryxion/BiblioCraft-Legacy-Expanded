@@ -1,0 +1,13 @@
+{
+  "type": "bibliocraft:printing_table_merging",
+  "component_mergers": {
+    "minecraft:writable_book_content": {
+      "pages": "append"
+    }
+  },
+  "duration": 200,
+  "ingredient": "minecraft:writable_book",
+  "result": {
+    "id": "minecraft:writable_book"
+  }
+}

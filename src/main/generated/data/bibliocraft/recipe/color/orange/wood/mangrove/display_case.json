@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:display_cases",
+  "key": {
+    "G": "#c:glass_blocks",
+    "S": "minecraft:mangrove_slab",
+    "W": "minecraft:orange_wool"
+  },
+  "pattern": [
+    "SGS",
+    "SWS",
+    "SSS"
+  ],
+  "result": {
+    "id": "bibliocraft:orange_mangrove_display_case"
+  }
+}

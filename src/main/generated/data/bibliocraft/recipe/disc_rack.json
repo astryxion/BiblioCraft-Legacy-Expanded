@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": "#c:rods/wooden",
+    "S": "#minecraft:wooden_slabs"
+  },
+  "pattern": [
+    "RRR",
+    "SSS"
+  ],
+  "result": {
+    "id": "bibliocraft:disc_rack"
+  }
+}

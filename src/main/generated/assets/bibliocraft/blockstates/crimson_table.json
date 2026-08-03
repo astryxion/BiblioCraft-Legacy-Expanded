@@ -1,0 +1,118 @@
+{
+  "variants": {
+    "facing=east,type=all": {
+      "model": "bibliocraft:block/wood/crimson/table/all",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=east,type=curve": {
+      "model": "bibliocraft:block/wood/crimson/table/curve",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=east,type=none": {
+      "model": "bibliocraft:block/wood/crimson/table/none",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=east,type=one": {
+      "model": "bibliocraft:block/wood/crimson/table/one",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=east,type=straight": {
+      "model": "bibliocraft:block/wood/crimson/table/straight",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=east,type=three": {
+      "model": "bibliocraft:block/wood/crimson/table/three",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,type=all": {
+      "model": "bibliocraft:block/wood/crimson/table/all",
+      "uvlock": true
+    },
+    "facing=north,type=curve": {
+      "model": "bibliocraft:block/wood/crimson/table/curve",
+      "uvlock": true
+    },
+    "facing=north,type=none": {
+      "model": "bibliocraft:block/wood/crimson/table/none",
+      "uvlock": true
+    },
+    "facing=north,type=one": {
+      "model": "bibliocraft:block/wood/crimson/table/one",
+      "uvlock": true
+    },
+    "facing=north,type=straight": {
+      "model": "bibliocraft:block/wood/crimson/table/straight",
+      "uvlock": true
+    },
+    "facing=north,type=three": {
+      "model": "bibliocraft:block/wood/crimson/table/three",
+      "uvlock": true
+    },
+    "facing=south,type=all": {
+      "model": "bibliocraft:block/wood/crimson/table/all",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=south,type=curve": {
+      "model": "bibliocraft:block/wood/crimson/table/curve",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=south,type=none": {
+      "model": "bibliocraft:block/wood/crimson/table/none",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=south,type=one": {
+      "model": "bibliocraft:block/wood/crimson/table/one",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=south,type=straight": {
+      "model": "bibliocraft:block/wood/crimson/table/straight",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=south,type=three": {
+      "model": "bibliocraft:block/wood/crimson/table/three",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=west,type=all": {
+      "model": "bibliocraft:block/wood/crimson/table/all",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=west,type=curve": {
+      "model": "bibliocraft:block/wood/crimson/table/curve",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=west,type=none": {
+      "model": "bibliocraft:block/wood/crimson/table/none",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=west,type=one": {
+      "model": "bibliocraft:block/wood/crimson/table/one",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=west,type=straight": {
+      "model": "bibliocraft:block/wood/crimson/table/straight",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=west,type=three": {
+      "model": "bibliocraft:block/wood/crimson/table/three",
+      "uvlock": true,
+      "y": 270
+    }
+  }
+}

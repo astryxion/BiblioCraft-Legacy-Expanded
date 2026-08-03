@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:fancy_lamp",
+  "key": {
+    "C": "minecraft:magenta_stained_glass",
+    "G": "minecraft:glowstone",
+    "I": "#c:ingots/gold",
+    "N": "#c:nuggets/gold"
+  },
+  "pattern": [
+    "CGC",
+    " I ",
+    "NIN"
+  ],
+  "result": {
+    "id": "bibliocraft:magenta_fancy_gold_lamp"
+  }
+}

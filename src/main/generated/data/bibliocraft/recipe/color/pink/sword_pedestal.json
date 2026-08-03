@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "bibliocraft:sword_pedestal",
+  "key": {
+    "S": "minecraft:smooth_stone_slab",
+    "W": "minecraft:pink_wool"
+  },
+  "pattern": [
+    " S ",
+    "SWS"
+  ],
+  "result": {
+    "components": {
+      "minecraft:dyed_color": -816214
+    },
+    "id": "bibliocraft:sword_pedestal"
+  }
+}

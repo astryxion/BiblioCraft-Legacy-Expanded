@@ -1,0 +1,14 @@
+{
+  "type": "bibliocraft:printing_table_merging",
+  "component_mergers": {
+    "bibliocraft:big_book_content": {
+      "current_page": "first",
+      "pages": "append"
+    }
+  },
+  "duration": 200,
+  "ingredient": "bibliocraft:big_book",
+  "result": {
+    "id": "bibliocraft:big_book"
+  }
+}

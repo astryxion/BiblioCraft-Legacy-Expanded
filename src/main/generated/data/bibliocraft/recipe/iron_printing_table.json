@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:storage_blocks/iron",
+    "C": "#c:ingots/copper",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "CCC",
+    "III",
+    "BRB"
+  ],
+  "result": {
+    "id": "bibliocraft:iron_printing_table"
+  }
+}

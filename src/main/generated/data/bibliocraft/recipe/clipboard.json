@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": "#c:feathers",
+    "I": "#c:dyes/black",
+    "L": "#minecraft:wooden_pressure_plates",
+    "P": "minecraft:paper"
+  },
+  "pattern": [
+    "I F",
+    "PPP",
+    " L "
+  ],
+  "result": {
+    "id": "bibliocraft:clipboard"
+  }
+}
