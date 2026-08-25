@@ -1,13 +1,14 @@
 package com.github.minecraftschurlimods.bibliocraft.content.plumbline;
 
+import net.minecraft.util.text.TranslationTextComponent;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.block.BlockState;
 
 public class PlumbLineItem extends Item {
     public PlumbLineItem(Properties properties) {
@@ -15,7 +16,7 @@ public class PlumbLineItem extends Item {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
+    public ActionResultType useOn(ItemUseContext context) {
         Direction face = context.getClickedFace();
         if (face == Direction.UP || context.getPlayer() == null) return super.useOn(context);
         BlockPos pos = context.getClickedPos().offset(face.getNormal());
@@ -27,7 +28,7 @@ public class PlumbLineItem extends Item {
             state = context.getLevel().getBlockState(pos);
         }
         if (count <= 2) return super.useOn(context);
-        context.getPlayer().displayClientMessage(Component.translatable(Translations.PLUMB_LINE_DISTANCE_KEY, count), true);
-        return InteractionResult.SUCCESS;
+        context.getPlayer().displayClientMessage(new TranslationTextComponent(Translations.PLUMB_LINE_DISTANCE_KEY, count), true);
+        return ActionResultType.SUCCESS;
     }
 }

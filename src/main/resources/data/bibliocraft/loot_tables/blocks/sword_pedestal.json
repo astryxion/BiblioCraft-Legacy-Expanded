@@ -11,10 +11,44 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "ops": [
+                {
+                  "op": "replace",
+                  "source": "color",
+                  "target": "BlockEntityTag.color"
+                },
+                {
+                  "op": "replace",
+                  "source": "items",
+                  "target": "BlockEntityTag.items"
+                },
+                {
+                  "op": "replace",
+                  "source": "Lock",
+                  "target": "BlockEntityTag.Lock"
+                },
+                {
+                  "op": "replace",
+                  "source": "color.rgb",
+                  "target": "rgb"
+                },
+                {
+                  "op": "replace",
+                  "source": "color.show_in_tooltip",
+                  "target": "show_in_tooltip"
+                }
+              ],
+              "source": "block_entity"
+            }
+          ],
           "name": "bibliocraft:sword_pedestal"
         }
       ],
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "bibliocraft:blocks/sword_pedestal"
 }

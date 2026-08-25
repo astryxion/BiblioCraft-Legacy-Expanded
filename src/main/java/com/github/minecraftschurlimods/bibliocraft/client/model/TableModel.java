@@ -1,70 +1,81 @@
 package com.github.minecraftschurlimods.bibliocraft.client.model;
 
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import com.github.minecraftschurlimods.bibliocraft.content.table.TableBlock;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.BlockModel;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.SimpleModelState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.model.IModelTransform;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.JSONUtils;
+import java.util.Random;
+import net.minecraft.block.BlockState;
+import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.CustomLoaderBuilder;
-import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
-import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
+import net.minecraftforge.client.model.IModelConfiguration;
+import net.minecraftforge.client.model.IModelLoader;
+import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class TableModel extends DynamicBlockModel {
-    public static final IGeometryLoader<Geometry> LOADER = (jsonObject, context) -> {
-        Map<TableBlock.Type, BlockModel> map = new HashMap<>();
-        for (TableBlock.Type type : TableBlock.Type.values()) {
-            map.put(type, context.deserialize(GsonHelper.getAsJsonObject(jsonObject, type.getSerializedName()), BlockModel.class));
+    public static final IModelLoader<Geometry> LOADER = new IModelLoader<Geometry>() {
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager) {
         }
-        return new Geometry(map);
-    };
-    private final Map<TableBlock.Type, BakedModel> baseMap;
 
-    public TableModel(boolean useAmbientOcclusion, boolean isGui3d, boolean usesBlockLight, TextureAtlasSprite particle, Map<TableBlock.Type, BakedModel> baseMap) {
+        @Override
+        public Geometry read(JsonDeserializationContext context, JsonObject jsonObject) {
+            Map<TableBlock.Type, BlockModel> map = new HashMap<>();
+            for (TableBlock.Type type : TableBlock.Type.values()) {
+                map.put(type, context.deserialize(JSONUtils.getAsJsonObject(jsonObject, type.getSerializedName()), BlockModel.class));
+            }
+            return new Geometry(map);
+        }
+    };
+    private final Map<TableBlock.Type, IBakedModel> baseMap;
+
+    public TableModel(boolean useAmbientOcclusion, boolean isGui3d, boolean usesBlockLight, TextureAtlasSprite particle, Map<TableBlock.Type, IBakedModel> baseMap) {
         super(useAmbientOcclusion, isGui3d, usesBlockLight, particle);
         this.baseMap = baseMap;
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extraData) {
         TableBlock.Type type = TableBlock.Type.NONE;
         if (state != null && state.hasProperty(TableBlock.TYPE)) {
             type = state.getValue(TableBlock.TYPE);
         }
-        return baseMap.get(type).getQuads(state, side, rand, extraData, renderType);
+        return baseMap.get(type).getQuads(state, side, rand, extraData);
     }
 
     @Override
-    public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
-        return baseMap.get(TableBlock.Type.NONE).applyTransform(transformType, poseStack, applyLeftHandTransform);
+    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType transformType, MatrixStack poseStack) {
+        return baseMap.get(TableBlock.Type.NONE).handlePerspective(transformType, poseStack);
     }
 
-    public static class Geometry implements IUnbakedGeometry<Geometry> {
+    public static class Geometry implements IModelGeometry<Geometry> {
         private final Map<TableBlock.Type, BlockModel> baseMap;
 
         public Geometry(Map<TableBlock.Type, BlockModel> baseMap) {
@@ -72,17 +83,18 @@ public class TableModel extends DynamicBlockModel {
         }
 
         @Override
-        public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelId) {
-            ModelState simpleState = new SimpleModelState(modelState.getRotation(), modelState.isUvLocked());
-            boolean useBlockLight = context.useBlockLight();
-            Map<TableBlock.Type, BakedModel> newBaseMap = new HashMap<>();
-            baseMap.forEach((k, v) -> newBaseMap.put(k, v.bake(baker, spriteGetter, simpleState, modelId.withSuffix("_" + k.getSerializedName()))));
-            return new TableModel(context.useAmbientOcclusion(), context.isGui3d(), useBlockLight, spriteGetter.apply(context.getMaterial("particle")), newBaseMap);
+        public IBakedModel bake(IModelConfiguration context, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelState, ItemOverrideList overrides, ResourceLocation modelId) {
+            boolean useBlockLight = context.isSideLit();
+            Map<TableBlock.Type, IBakedModel> newBaseMap = new HashMap<>();
+            baseMap.forEach((k, v) -> newBaseMap.put(k, v.bake(bakery, spriteGetter, modelState, new ResourceLocation(modelId.getNamespace(), modelId.getPath() + "_" + k.getSerializedName()))));
+            return new TableModel(context.useSmoothLighting(), context.isShadedInGui(), useBlockLight, spriteGetter.apply(context.resolveTexture("particle")), newBaseMap);
         }
 
         @Override
-        public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-            baseMap.forEach((k, v) -> v.resolveParents(modelGetter));
+        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+            Set<RenderMaterial> textures = new HashSet<RenderMaterial>();
+            baseMap.forEach((k, v) -> textures.addAll(v.getMaterials(modelGetter, missingTextureErrors)));
+            return textures;
         }
     }
 

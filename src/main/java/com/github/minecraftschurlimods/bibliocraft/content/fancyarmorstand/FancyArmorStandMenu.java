@@ -2,40 +2,40 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancyarmorstand;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenu;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Equipable;
-import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ItemStack;
+import javax.annotation.Nullable;
 
 public class FancyArmorStandMenu extends BCMenu<FancyArmorStandBlockEntity> {
-    public FancyArmorStandMenu(int id, Inventory inventory, FancyArmorStandBlockEntity blockEntity) {
+    public FancyArmorStandMenu(int id, PlayerInventory inventory, FancyArmorStandBlockEntity blockEntity) {
         super(BCMenus.FANCY_ARMOR_STAND.get(), id, inventory, blockEntity);
     }
 
-    public FancyArmorStandMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
+    public FancyArmorStandMenu(int id, PlayerInventory inventory, PacketBuffer buf) {
         super(BCMenus.FANCY_ARMOR_STAND.get(), id, inventory, buf);
     }
 
     @Override
-    protected void addSlots(Inventory inventory) {
-        addSlot(new EquipableSlot(blockEntity, 0, 80, 8, EquipmentSlot.HEAD));
-        addSlot(new EquipableSlot(blockEntity, 1, 80, 26, EquipmentSlot.CHEST));
-        addSlot(new EquipableSlot(blockEntity, 2, 80, 44, EquipmentSlot.LEGS));
-        addSlot(new EquipableSlot(blockEntity, 3, 80, 62, EquipmentSlot.FEET));
+    protected void addSlots(PlayerInventory inventory) {
+        addSlot(new EquipableSlot(blockEntity, 0, 80, 8, EquipmentSlotType.HEAD));
+        addSlot(new EquipableSlot(blockEntity, 1, 80, 26, EquipmentSlotType.CHEST));
+        addSlot(new EquipableSlot(blockEntity, 2, 80, 44, EquipmentSlotType.LEGS));
+        addSlot(new EquipableSlot(blockEntity, 3, 80, 62, EquipmentSlotType.FEET));
         addInventorySlots(inventory, 8, 84);
-        addSlot(new EquipableSlot(inventory, 39, 126, 8, EquipmentSlot.HEAD));
-        addSlot(new EquipableSlot(inventory, 38, 126, 26, EquipmentSlot.CHEST));
-        addSlot(new EquipableSlot(inventory, 37, 126, 44, EquipmentSlot.LEGS));
-        addSlot(new EquipableSlot(inventory, 36, 126, 62, EquipmentSlot.FEET));
+        addSlot(new EquipableSlot(inventory, 39, 126, 8, EquipmentSlotType.HEAD));
+        addSlot(new EquipableSlot(inventory, 38, 126, 26, EquipmentSlotType.CHEST));
+        addSlot(new EquipableSlot(inventory, 37, 126, 44, EquipmentSlotType.LEGS));
+        addSlot(new EquipableSlot(inventory, 36, 126, 62, EquipmentSlotType.FEET));
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
         Slot slot = slots.get(index);
         int slotCount = blockEntity.getContainerSize();
         ItemStack stack = slot.getItem();
@@ -102,26 +102,30 @@ public class FancyArmorStandMenu extends BCMenu<FancyArmorStandBlockEntity> {
     }
 
     /**
-     * Variant of {@link Slot} that only accepts items that go in a given {@link EquipmentSlot}.
+     * Variant of {@link Slot} that only accepts items that go in a given {@link EquipmentSlotType}.
      */
     private static class EquipableSlot extends Slot {
-        private final EquipmentSlot slotType;
+        private final EquipmentSlotType slotType;
 
         /**
-         * @param container The {@link Container} this slot is in.
+         * @param container The {@link IInventory} this slot is in.
          * @param index     The slot index.
          * @param x         The x position.
          * @param y         The y position.
-         * @param slotType  The {@link EquipmentSlot} to limit slot contents with.
+         * @param slotType  The {@link EquipmentSlotType} to limit slot contents with.
          */
-        public EquipableSlot(Container container, int index, int x, int y, EquipmentSlot slotType) {
+        public EquipableSlot(IInventory container, int index, int x, int y, EquipmentSlotType slotType) {
             super(container, index, x, y);
             this.slotType = slotType;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() instanceof Equipable equipable && equipable.getEquipmentSlot() == slotType;
+            EquipmentSlotType slot = stack.getEquipmentSlot();
+            if (slot == null && stack.getItem() instanceof ArmorItem) {
+                slot = ((ArmorItem) stack.getItem()).getSlot();
+            }
+            return slot == slotType;
         }
 
         @Override

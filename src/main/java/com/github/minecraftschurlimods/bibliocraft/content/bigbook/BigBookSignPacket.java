@@ -1,23 +1,33 @@
 package com.github.minecraftschurlimods.bibliocraft.content.bigbook;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Hand;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record BigBookSignPacket(WrittenBigBookContent content, InteractionHand hand) {
+public final class BigBookSignPacket  {
+    private final WrittenBigBookContent content;
+    private final Hand hand;
 
-    public void encode(FriendlyByteBuf buf) {
-        content.write(buf);
-        buf.writeBoolean(hand == InteractionHand.MAIN_HAND);
+    public BigBookSignPacket(WrittenBigBookContent content, Hand hand) {
+        this.content = content;
+        this.hand = hand;
     }
 
-    public static BigBookSignPacket decode(FriendlyByteBuf buf) {
+    public WrittenBigBookContent content() { return this.content; }
+    public Hand hand() { return this.hand; }
+
+    public void encode(PacketBuffer buf) {
+        content.write(buf);
+        buf.writeBoolean(hand == Hand.MAIN_HAND);
+    }
+
+    public static BigBookSignPacket decode(PacketBuffer buf) {
         WrittenBigBookContent content = WrittenBigBookContent.read(buf);
-        InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        Hand hand = buf.readBoolean() ? Hand.MAIN_HAND : Hand.OFF_HAND;
         return new BigBookSignPacket(content, hand);
     }
 
@@ -31,4 +41,23 @@ public record BigBookSignPacket(WrittenBigBookContent content, InteractionHand h
         });
         ctx.get().setPacketHandled(true);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BigBookSignPacket other = (BigBookSignPacket) o;
+        return java.util.Objects.equals(this.content, other.content) && java.util.Objects.equals(this.hand, other.hand);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(this.content, this.hand);
+    }
+
+    @Override
+    public String toString() {
+        return "BigBookSignPacket[" + "content=" + this.content + ", " + "hand=" + this.hand + "]";
+    }
+
 }

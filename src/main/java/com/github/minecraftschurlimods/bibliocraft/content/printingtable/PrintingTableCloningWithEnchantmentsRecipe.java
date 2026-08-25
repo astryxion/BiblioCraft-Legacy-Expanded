@@ -4,21 +4,21 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.google.gson.JsonObject;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.item.ItemStack;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.World;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
 import com.github.minecraftschurlimods.bibliocraft.content.printingtable.EnchantmentLevelsNumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.loot.IRandomRange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,32 +29,39 @@ import java.util.Optional;
 public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableCloningRecipe {
     private static final String STORED_ENCHANTMENTS_KEY = "StoredEnchantments";
 
-    private final Optional<NumberProvider> experienceCost;
+    private final Optional<IRandomRange> experienceCost;
 
-    public PrintingTableCloningWithEnchantmentsRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int duration, Optional<NumberProvider> experienceCost) {
-        super(id, List.of(STORED_ENCHANTMENTS_KEY), ingredients, result, duration);
+    public PrintingTableCloningWithEnchantmentsRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int duration, Optional<IRandomRange> experienceCost) {
+        super(id, java.util.Collections.singletonList(STORED_ENCHANTMENTS_KEY), ingredients, result, duration);
         this.experienceCost = experienceCost;
     }
 
     @Override
-    public boolean matches(PrintingTableRecipeInput input, Level level) {
+    public boolean matches(PrintingTableRecipeInput input, World level) {
         if (!super.matches(input, level)) return false;
         ItemStack stack = input.right();
         Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(stack);
         if (enchantments.isEmpty()) return false;
-        var registry = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
         return enchantments.keySet().stream()
-                .noneMatch(e -> registry.getResourceKey(e).flatMap(registry::getHolder).map(h -> h.is(BCTags.Enchantments.PRINTING_TABLE_CLONING_BLACKLIST)).orElse(false));
+                .noneMatch(e -> BCTags.Enchantments.PRINTING_TABLE_CLONING_BLACKLIST.contains(e));
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public IRecipeSerializer<?> getSerializer() {
         return BCRecipes.PRINTING_TABLE_CLONING_WITH_ENCHANTMENTS.get();
     }
 
     @Override
-    public int getExperienceLevelCost(ItemStack stack, ServerLevel level) {
-        return experienceCost.map(provider -> provider.getInt(new LootContext.Builder(new LootParams(level, Map.of(LootContextParams.TOOL, stack), Map.of(), 0)).create(null))).orElse(0);
+    public int getExperienceLevelCost(ItemStack stack, ServerWorld level) {
+        return experienceCost.map(provider -> {
+            LootContext context = new LootContext.Builder(level)
+                    .withParameter(LootParameters.TOOL, stack)
+                    .create(LootParameterSets.FISHING);
+            if (provider instanceof EnchantmentLevelsNumberProvider) {
+                return ((EnchantmentLevelsNumberProvider) provider).getInt(context);
+            }
+            return provider.getInt(context.getRandom());
+        }).orElse(0);
     }
 
     @Override
@@ -67,21 +74,21 @@ public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableClo
         ((Serializer) getSerializer()).toJson(json, this);
     }
 
-    public static class Serializer implements RecipeSerializer<PrintingTableCloningWithEnchantmentsRecipe> {
+    public static class Serializer extends net.minecraftforge.registries.ForgeRegistryEntry<net.minecraft.item.crafting.IRecipeSerializer<?>> implements IRecipeSerializer<PrintingTableCloningWithEnchantmentsRecipe> {
         @Override
         public PrintingTableCloningWithEnchantmentsRecipe fromJson(ResourceLocation id, JsonObject json) {
             List<Ingredient> ingredients = new ArrayList<>();
-            for (var el : json.getAsJsonArray("ingredients")) ingredients.add(Ingredient.fromJson(el.getAsJsonObject(), false));
+            for (com.google.gson.JsonElement el : json.getAsJsonArray("ingredients")) ingredients.add(Ingredient.fromJson(el.getAsJsonObject()));
             ItemStack result = net.minecraftforge.common.crafting.CraftingHelper.getItemStack(json.getAsJsonObject("result"), true);
             int duration = json.getAsJsonPrimitive("duration").getAsInt();
-            Optional<NumberProvider> experienceCost = json.has("experience_cost")
-                    ? Optional.of(CodecUtil.decodeJson(EnchantmentLevelsNumberProvider.NUMBER_PROVIDER_CODEC, json.get("experience_cost")))
+            Optional<IRandomRange> experienceCost = json.has("experience_cost")
+                    ? Optional.of(EnchantmentLevelsNumberProvider.parse(json.get("experience_cost")))
                     : Optional.empty();
             return new PrintingTableCloningWithEnchantmentsRecipe(id, ingredients, result, duration, experienceCost);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buffer, PrintingTableCloningWithEnchantmentsRecipe recipe) {
+        public void toNetwork(PacketBuffer buffer, PrintingTableCloningWithEnchantmentsRecipe recipe) {
             buffer.writeVarInt(recipe.ingredients.size());
             for (Ingredient ing : recipe.ingredients) ing.toNetwork(buffer);
             buffer.writeItem(recipe.result);
@@ -91,13 +98,13 @@ public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableClo
         }
 
         @Override
-        public PrintingTableCloningWithEnchantmentsRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
+        public PrintingTableCloningWithEnchantmentsRecipe fromNetwork(ResourceLocation id, PacketBuffer buffer) {
             int m = buffer.readVarInt();
             List<Ingredient> ingredients = new ArrayList<>(m);
             for (int i = 0; i < m; i++) ingredients.add(Ingredient.fromNetwork(buffer));
             ItemStack result = buffer.readItem();
             int duration = buffer.readVarInt();
-            Optional<NumberProvider> experienceCost = buffer.readBoolean() ? Optional.of(CodecUtil.decodeFromBuffer(buffer, EnchantmentLevelsNumberProvider.NUMBER_PROVIDER_CODEC)) : Optional.empty();
+            Optional<IRandomRange> experienceCost = buffer.readBoolean() ? Optional.of(CodecUtil.decodeFromBuffer(buffer, EnchantmentLevelsNumberProvider.NUMBER_PROVIDER_CODEC)) : Optional.empty();
             return new PrintingTableCloningWithEnchantmentsRecipe(id, ingredients, result, duration, experienceCost);
         }
 
@@ -107,7 +114,7 @@ public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableClo
             for (Ingredient ing : r.ingredients) ings.add(ing.toJson());
             json.add("ingredients", ings);
             JsonObject resultObj = new JsonObject();
-            resultObj.addProperty("item", BuiltInRegistries.ITEM.getKey(r.result.getItem()).toString());
+            resultObj.addProperty("item", Registry.ITEM.getKey(r.result.getItem()).toString());
             if (r.result.getCount() != 1) resultObj.addProperty("count", r.result.getCount());
             if (r.result.hasTag()) resultObj.addProperty("nbt", r.result.getTag().toString());
             json.add("result", resultObj);
@@ -118,7 +125,7 @@ public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableClo
 
     public static class Builder extends PrintingTableRecipe.Builder {
         private final List<Ingredient> ingredients = new ArrayList<>();
-        private NumberProvider experienceCost = null;
+        private IRandomRange experienceCost = null;
 
         public Builder(ItemStack result, int duration) {
             super(result, duration);
@@ -129,7 +136,7 @@ public class PrintingTableCloningWithEnchantmentsRecipe extends PrintingTableClo
             return this;
         }
 
-        public Builder experienceCost(NumberProvider experienceCost) {
+        public Builder experienceCost(IRandomRange experienceCost) {
             this.experienceCost = experienceCost;
             return this;
         }

@@ -3,12 +3,12 @@ package com.github.minecraftschurlimods.bibliocraft.content.displaycase;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlocks;
 import com.github.minecraftschurlimods.bibliocraft.util.block.ColoredWoodTypeBlockItem;
-import net.minecraft.core.Direction;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.Direction;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import javax.annotation.Nullable;
 
 public class DisplayCaseItem extends ColoredWoodTypeBlockItem {
     public DisplayCaseItem(BibliocraftWoodType woodType, DyeColor color) {
@@ -17,7 +17,7 @@ public class DisplayCaseItem extends ColoredWoodTypeBlockItem {
 
     @Override
     @Nullable
-    protected BlockState getPlacementState(BlockPlaceContext context) {
+    protected BlockState getPlacementState(BlockItemUseContext context) {
         Block block = context.getClickedFace() == Direction.UP ? BCBlocks.DISPLAY_CASE.get(woodType, color) : BCBlocks.WALL_DISPLAY_CASE.get(woodType, color);
         BlockState state = block.defaultBlockState().setValue(AbstractDisplayCaseBlock.FACING, context.getHorizontalDirection().getOpposite());
         return canPlace(context, state) ? state : null;

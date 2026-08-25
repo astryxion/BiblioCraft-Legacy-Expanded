@@ -2,33 +2,47 @@ package com.github.minecraftschurlimods.bibliocraft.datagen.data;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlocks;
 import com.github.minecraftschurlimods.bibliocraft.util.DatagenUtil;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.loot.BlockLootSubProvider;
-import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.loot.BlockLootTables;
+import net.minecraft.data.LootTableProvider;
+import net.minecraft.item.DyeColor;
+import net.minecraft.block.Block;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootParameterSet;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootTableManager;
+import net.minecraft.loot.ValidationTracker;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class BCLootTableProvider extends LootTableProvider {
-    public BCLootTableProvider(PackOutput output) {
-        super(output, Set.of(), List.of(new SubProviderEntry(BCBlockLootProvider::new, LootContextParamSets.BLOCK)));
+    public BCLootTableProvider(DataGenerator output) {
+        super(output);
     }
 
-    private static final class BCBlockLootProvider extends BlockLootSubProvider {
+    @Override
+    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> getTables() {
+        return ImmutableList.of(Pair.of(BCBlockLootProvider::new, LootParameterSets.BLOCK));
+    }
+
+    @Override
+    protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationtracker) {
+        map.forEach((id, table) -> LootTableManager.validate(validationtracker, id, table));
+    }
+
+    private static final class BCBlockLootProvider extends BlockLootTables {
         private final List<Block> blocks = new ArrayList<>();
 
-        private BCBlockLootProvider() {
-            super(Set.of(), FeatureFlags.DEFAULT_FLAGS);
-        }
-
         @Override
-        protected void generate() {
+        protected void addTables() {
             // @formatter:off
             add(BCBlocks.CLEAR_FANCY_GOLD_LAMP.get(),    DatagenUtil.createDefaultTable(BCBlocks.CLEAR_FANCY_GOLD_LAMP.get()));
             add(BCBlocks.CLEAR_FANCY_IRON_LAMP.get(),    DatagenUtil.createDefaultTable(BCBlocks.CLEAR_FANCY_IRON_LAMP.get()));

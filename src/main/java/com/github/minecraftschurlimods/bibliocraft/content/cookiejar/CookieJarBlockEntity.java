@@ -2,47 +2,22 @@ package com.github.minecraftschurlimods.bibliocraft.content.cookiejar;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenuBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BarrelBlock;
-import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BarrelBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.util.math.BlockPos;
 
 public class CookieJarBlockEntity extends BCMenuBlockEntity {
-    private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
-        @Override
-        protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            CookieJarBlockEntity.this.updateBlockState(state, true);
-        }
-
-        @Override
-        protected void onClose(Level level, BlockPos pos, BlockState state) {
-            CookieJarBlockEntity.this.updateBlockState(state, false);
-        }
-
-        @Override
-        protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int count, int openCount) {
-        }
-
-        @Override
-        protected boolean isOwnContainer(Player player) {
-            if (player.containerMenu instanceof CookieJarMenu) {
-                Container container = ((CookieJarMenu) player.containerMenu).getBlockEntity();
-                return container == CookieJarBlockEntity.this;
-            } else return false;
-        }
-    };
+    private int openCount;
 
     public CookieJarBlockEntity(BlockPos pos, BlockState state) {
         super(BCBlockEntities.COOKIE_JAR.get(), 8, defaultName("cookie_jar"), pos, state);
     }
 
     @Override
-    protected AbstractContainerMenu createMenu(int id, Inventory inventory) {
+    protected Container createMenu(int id, PlayerInventory inventory) {
         return new CookieJarMenu(id, inventory, this);
     }
 
@@ -51,16 +26,24 @@ public class CookieJarBlockEntity extends BCMenuBlockEntity {
     }
 
     @Override
-    public void startOpen(Player pPlayer) {
+    public void startOpen(PlayerEntity pPlayer) {
         if (!this.remove && !pPlayer.isSpectator()) {
-            this.openersCounter.incrementOpeners(pPlayer, level(), this.getBlockPos(), this.getBlockState());
+            if (this.openCount < 0) this.openCount = 0;
+            this.openCount++;
+            if (this.openCount == 1) {
+                this.updateBlockState(this.getBlockState(), true);
+            }
         }
     }
 
     @Override
-    public void stopOpen(Player pPlayer) {
+    public void stopOpen(PlayerEntity pPlayer) {
         if (!this.remove && !pPlayer.isSpectator()) {
-            this.openersCounter.decrementOpeners(pPlayer, level(), this.getBlockPos(), this.getBlockState());
+            this.openCount--;
+            if (this.openCount <= 0) {
+                this.openCount = 0;
+                this.updateBlockState(this.getBlockState(), false);
+            }
         }
     }
 }

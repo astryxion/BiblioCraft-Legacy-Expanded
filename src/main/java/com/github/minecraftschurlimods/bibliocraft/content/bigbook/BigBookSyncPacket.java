@@ -1,21 +1,31 @@
 package com.github.minecraftschurlimods.bibliocraft.content.bigbook;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.InteractionHand;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Hand;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record BigBookSyncPacket(BigBookContent content, InteractionHand hand) {
+public final class BigBookSyncPacket  {
+    private final BigBookContent content;
+    private final Hand hand;
 
-    public void encode(FriendlyByteBuf buf) {
-        content.write(buf);
-        buf.writeBoolean(hand == InteractionHand.MAIN_HAND);
+    public BigBookSyncPacket(BigBookContent content, Hand hand) {
+        this.content = content;
+        this.hand = hand;
     }
 
-    public static BigBookSyncPacket decode(FriendlyByteBuf buf) {
+    public BigBookContent content() { return this.content; }
+    public Hand hand() { return this.hand; }
+
+    public void encode(PacketBuffer buf) {
+        content.write(buf);
+        buf.writeBoolean(hand == Hand.MAIN_HAND);
+    }
+
+    public static BigBookSyncPacket decode(PacketBuffer buf) {
         BigBookContent content = BigBookContent.read(buf);
-        InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        Hand hand = buf.readBoolean() ? Hand.MAIN_HAND : Hand.OFF_HAND;
         return new BigBookSyncPacket(content, hand);
     }
 
@@ -27,4 +37,23 @@ public record BigBookSyncPacket(BigBookContent content, InteractionHand hand) {
         });
         ctx.get().setPacketHandled(true);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BigBookSyncPacket other = (BigBookSyncPacket) o;
+        return java.util.Objects.equals(this.content, other.content) && java.util.Objects.equals(this.hand, other.hand);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(this.content, this.hand);
+    }
+
+    @Override
+    public String toString() {
+        return "BigBookSyncPacket[" + "content=" + this.content + ", " + "hand=" + this.hand + "]";
+    }
+
 }

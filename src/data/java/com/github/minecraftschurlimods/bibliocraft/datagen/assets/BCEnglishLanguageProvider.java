@@ -10,33 +10,33 @@ import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.DatagenUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.FormattedLine;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
-import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.tags.ITag;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.Item;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.block.Block;
 import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.fml.RegistryObject;
 
 @SuppressWarnings("SameParameterValue")
 public class BCEnglishLanguageProvider extends LanguageProvider {
-    public BCEnglishLanguageProvider(PackOutput output) {
+    public BCEnglishLanguageProvider(DataGenerator output) {
         super(output, BibliocraftApi.MOD_ID, "en_us");
     }
 
-    /** 1.20.1: LanguageProvider has no add(TagKey, String); use tag translation key. Erasure-safe names. */
-    private void addBlockTag(TagKey<Block> tag, String name) {
-        add(tagKeyToTranslationKey("block", tag.location()), name);
+    /** 1.20.1: LanguageProvider has no add(ITag.INamedTag, String); use tag translation key. Erasure-safe names. */
+    private void addBlockTag(ITag.INamedTag<Block> tag, String name) {
+        add(tagKeyToTranslationKey("block", tag.getName()), name);
     }
 
-    private void addItemTag(TagKey<Item> tag, String name) {
-        add(tagKeyToTranslationKey("item", tag.location()), name);
+    private void addItemTag(ITag.INamedTag<Item> tag, String name) {
+        add(tagKeyToTranslationKey("item", tag.getName()), name);
     }
 
-    private void addEnchantmentTag(TagKey<Enchantment> tag, String name) {
-        add(tagKeyToTranslationKey("enchantment", tag.location()), name);
+    private void addEnchantmentTag(ITag.INamedTag<Enchantment> tag, String name) {
+        add(tagKeyToTranslationKey("enchantment", tag.getName()), name);
     }
 
     private static String tagKeyToTranslationKey(String type, ResourceLocation loc) {
@@ -230,7 +230,7 @@ public class BCEnglishLanguageProvider extends LanguageProvider {
         add(Translations.STOCKROOM_CATALOG_LOCATE_KEY, "Locate");
         add(Translations.STOCKROOM_CATALOG_REMOVE_KEY, "Remove");
         add(Translations.STOCKROOM_CATALOG_SEARCH_KEY, "Search");
-        add(Translations.STOCKROOM_CATALOG_SHOW_CONTAINERS_KEY, "Show Containers");
+        add(Translations.STOCKROOM_CATALOG_SHOW_CONTAINERS_KEY, "Show InventoryHelper");
         add(Translations.STOCKROOM_CATALOG_SHOW_ITEMS_KEY, "Show Items");
         add(Translations.TYPEWRITER_TITLE_KEY, "Typewriter");
         add(Translations.LOCK_AND_KEY_NO_CUSTOM_NAME_KEY, "You must rename this lock and key before you can apply it to a block!");

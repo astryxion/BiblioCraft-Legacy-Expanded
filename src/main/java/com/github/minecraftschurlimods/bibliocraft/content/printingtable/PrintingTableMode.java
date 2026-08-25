@@ -4,17 +4,17 @@ import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.StringRepresentableEnum;
 import com.mojang.serialization.Codec;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketBuffer;
 
 public enum PrintingTableMode implements StringRepresentableEnum {
     BIND, CLONE, MERGE;
     public static final Codec<PrintingTableMode> CODEC = CodecUtil.enumCodec(PrintingTableMode::values);
 
-    public static void write(FriendlyByteBuf buf, PrintingTableMode mode) {
+    public static void write(PacketBuffer buf, PrintingTableMode mode) {
         buf.writeByte(mode.ordinal());
     }
 
-    public static PrintingTableMode read(FriendlyByteBuf buf) {
+    public static PrintingTableMode read(PacketBuffer buf) {
         return values()[buf.readByte()];
     }
 

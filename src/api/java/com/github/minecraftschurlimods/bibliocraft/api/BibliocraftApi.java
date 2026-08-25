@@ -52,7 +52,8 @@ public final class BibliocraftApi {
         }
 
         private static <T> T fromServiceLoader(Class<T> clazz) {
-            Optional<T> impl = ServiceLoader.load(clazz, Thread.currentThread().getContextClassLoader()).findFirst();
+            java.util.Iterator<T> it = ServiceLoader.load(clazz, Thread.currentThread().getContextClassLoader()).iterator();
+            Optional<T> impl = it.hasNext() ? Optional.of(it.next()) : Optional.empty();
             String msg = "Unable to find implementation for " + clazz.getSimpleName() + "!";
             if (!FMLEnvironment.production) {
                 return impl.orElseThrow(() -> {

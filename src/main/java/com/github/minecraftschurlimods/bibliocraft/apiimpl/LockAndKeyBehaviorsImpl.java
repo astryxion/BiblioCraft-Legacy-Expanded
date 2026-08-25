@@ -3,19 +3,19 @@ package com.github.minecraftschurlimods.bibliocraft.apiimpl;
 import com.github.minecraftschurlimods.bibliocraft.api.lockandkey.LockAndKeyBehavior;
 import com.github.minecraftschurlimods.bibliocraft.api.lockandkey.LockAndKeyBehaviors;
 import com.github.minecraftschurlimods.bibliocraft.api.lockandkey.RegisterLockAndKeyBehaviorEvent;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class LockAndKeyBehaviorsImpl implements LockAndKeyBehaviors {
-    private final Map<Class<? extends BlockEntity>, LockAndKeyBehavior<? extends BlockEntity>> values = new HashMap<>();
+    private final Map<Class<? extends TileEntity>, LockAndKeyBehavior<? extends TileEntity>> values = new HashMap<>();
     private boolean loaded = false;
 
-    @ApiStatus.Internal
+    
     public void register() {
         FMLJavaModLoadingContext.get().getModEventBus().post(new RegisterLockAndKeyBehaviorEvent(values));
         loaded = true;
@@ -24,7 +24,7 @@ public final class LockAndKeyBehaviorsImpl implements LockAndKeyBehaviors {
     @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public <T extends BlockEntity> LockAndKeyBehavior<T> get(T blockEntity) {
+    public <T extends TileEntity> LockAndKeyBehavior<T> get(T blockEntity) {
         if (!loaded)
             throw new IllegalStateException("Tried to access LockAndKeyBehaviors#get() before registration was done!");
         return (LockAndKeyBehavior<T>) values.keySet()

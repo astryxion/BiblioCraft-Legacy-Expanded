@@ -1,9 +1,9 @@
 package com.github.minecraftschurlimods.bibliocraft.util.holder;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.DyeColor;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.fml.RegistryObject;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +18,7 @@ import java.util.function.Function;
  * @param <T> The second type of the {@link RegistryObject} to use. For example, for wrapping a {@code RegistryObject<DoorBlock>}, this would be {@code DoorBlock}.
  */
 @SuppressWarnings("unused")
-public class ColoredDeferredHolder<R, T extends R> implements GroupingDeferredHolder<R, T> {
+public class ColoredDeferredHolder<R extends net.minecraftforge.registries.IForgeRegistryEntry<R>, T extends R> implements GroupingDeferredHolder<R, T> {
     private final Map<DyeColor, RegistryObject<T>> map = new LinkedHashMap<>();
 
     /**
@@ -72,11 +72,11 @@ public class ColoredDeferredHolder<R, T extends R> implements GroupingDeferredHo
 
     @Override
     public Collection<T> values() {
-        return map.values().stream().map(RegistryObject::get).toList();
+        return map.values().stream().map(RegistryObject::get).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public Collection<ResourceLocation> ids() {
-        return map.values().stream().map(RegistryObject::getId).toList();
+        return map.values().stream().map(RegistryObject::getId).collect(java.util.stream.Collectors.toList());
     }
 }

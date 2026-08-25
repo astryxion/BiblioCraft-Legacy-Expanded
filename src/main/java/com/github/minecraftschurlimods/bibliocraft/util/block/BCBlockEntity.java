@@ -1,43 +1,43 @@
 package com.github.minecraftschurlimods.bibliocraft.util.block;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.Container;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.IPacket;
+import net.minecraft.client.network.play.IClientPlayNetHandler;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.world.LockCode;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Abstract superclass for all block entities in this mod.
  */
-public abstract class BCBlockEntity extends BlockEntity implements Container {
+public abstract class BCBlockEntity extends TileEntity implements IInventory {
     private static final String ITEMS_TAG = "items";
     protected final BCItemHandler items;
     private LockCode lockKey = LockCode.NO_LOCK;
 
     /**
-     * @param type          The {@link BlockEntityType} to use.
+     * @param type          The {@link TileEntityType} to use.
      * @param containerSize The size of the container.
      * @param pos           The position of this BE.
      * @param state         The state of this BE.
      */
-    public BCBlockEntity(BlockEntityType<?> type, int containerSize, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+    public BCBlockEntity(TileEntityType<?> type, int containerSize, BlockPos pos, BlockState state) {
+        super(type);
         items = new BCItemHandler(containerSize, this);
     }
 
@@ -48,7 +48,7 @@ public abstract class BCBlockEntity extends BlockEntity implements Container {
     public void setLockKey(LockCode lockKey) {
         this.lockKey = lockKey;
         setChanged();
-        level().sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        level().sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     @Override
@@ -92,9 +92,9 @@ public abstract class BCBlockEntity extends BlockEntity implements Container {
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         BlockPos pos = getBlockPos();
-        return level().getBlockEntity(pos) == this && player.distanceToSqr(Vec3.atCenterOf(pos)) <= 64;
+        return level().getBlockEntity(pos) == this && player.distanceToSqr(new Vector3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)) <= 64;
     }
 
     @Override
@@ -105,8 +105,8 @@ public abstract class BCBlockEntity extends BlockEntity implements Container {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         lockKey = LockCode.fromTag(tag);
         if (tag.contains(ITEMS_TAG)) {
             items.deserializeNBT(tag.getCompound(ITEMS_TAG));
@@ -115,22 +115,23 @@ public abstract class BCBlockEntity extends BlockEntity implements Container {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        super.save(tag);
         lockKey.addToTag(tag);
         tag.put(ITEMS_TAG, items.serializeNBT());
+        return tag;
     }
 
     @Override
     @Nullable
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(this.getBlockPos(), 1, this.getUpdateTag());
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
-        saveAdditional(tag);
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT tag = super.getUpdateTag();
+        save(tag);
         return tag;
     }
 
@@ -141,13 +142,13 @@ public abstract class BCBlockEntity extends BlockEntity implements Container {
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return LazyOptional.of(() -> (T) getItemCapability(side));
         }
         return super.getCapability(cap, side);
     }
 
-    public Level level() {
+    public World level() {
         return level;
     }
 }

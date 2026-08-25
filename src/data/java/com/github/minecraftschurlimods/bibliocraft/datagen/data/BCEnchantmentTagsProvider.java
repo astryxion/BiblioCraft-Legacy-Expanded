@@ -2,21 +2,28 @@ package com.github.minecraftschurlimods.bibliocraft.datagen.data;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.util.registry.Registry;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
-import java.util.concurrent.CompletableFuture;
-
-public class BCEnchantmentTagsProvider extends net.minecraft.data.tags.TagsProvider<Enchantment> {
-    public BCEnchantmentTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, ExistingFileHelper existingFileHelper) {
-        super(output, Registries.ENCHANTMENT, lookupProvider);
+public class BCEnchantmentTagsProvider extends net.minecraft.data.TagsProvider<Enchantment> {
+    public BCEnchantmentTagsProvider(DataGenerator output, ExistingFileHelper existingFileHelper) {
+        super(output, Registry.ENCHANTMENT, BibliocraftApi.MOD_ID, existingFileHelper, "enchantment");
     }
 
     @Override
-    protected void addTags(HolderLookup.Provider provider) {
+    protected java.nio.file.Path getPath(net.minecraft.util.ResourceLocation id) {
+        return this.generator.getOutputFolder().resolve("data/" + id.getNamespace() + "/tags/" + this.folder + "/" + id.getPath() + ".json");
+    }
+
+    @Override
+    public String getName() {
+        return "Enchantment Tags: " + BibliocraftApi.MOD_ID;
+    }
+
+    @Override
+    protected void addTags() {
         tag(BCTags.Enchantments.PRINTING_TABLE_CLONING_BLACKLIST);
     }
 }

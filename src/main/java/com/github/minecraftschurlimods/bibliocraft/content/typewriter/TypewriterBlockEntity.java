@@ -5,21 +5,21 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCBlockEntity;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.block.BlockState;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import java.util.EnumMap;
 
-public class TypewriterBlockEntity extends BCBlockEntity implements WorldlyContainer {
+public class TypewriterBlockEntity extends BCBlockEntity implements ISidedInventory {
     public static final int INPUT = 0;
     public static final int OUTPUT = 1;
     private static final int[] INPUTS = new int[]{INPUT};
@@ -37,22 +37,23 @@ public class TypewriterBlockEntity extends BCBlockEntity implements WorldlyConta
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         page = CodecUtil.decodeNbt(TypewriterPage.CODEC, tag.getCompound(PAGE_KEY));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        super.save(tag);
         tag.put(PAGE_KEY, CodecUtil.encodeNbt(TypewriterPage.CODEC, page));
+            return tag;
     }
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         if (slot != INPUT) return false;
-        if (stack.is(BCTags.Items.TYPEWRITER_PAPER)) return true;
-        return stack.is(Items.PAPER);
+        if (BCTags.Items.contains(BCTags.Items.TYPEWRITER_PAPER, stack.getItem())) return true;
+        return stack.getItem() == Items.PAPER;
     }
 
     @Override
@@ -97,7 +98,7 @@ public class TypewriterBlockEntity extends BCBlockEntity implements WorldlyConta
 
     public boolean insertPaper(ItemStack stack) {
         ItemStack input = getItem(INPUT);
-        if (!input.isEmpty() && !ItemStack.isSameItemSameTags(input, stack)) return false;
+        if (!input.isEmpty() && !(ItemStack.isSame(input, stack) && ItemStack.tagMatches(input, stack))) return false;
         if (input.isEmpty()) {
             ItemStack one = stack.copy();
             one.setCount(1);

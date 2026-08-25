@@ -13,9 +13,33 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_components",
-              "include": [
-                "minecraft:dyed_color"
+              "function": "minecraft:copy_nbt",
+              "ops": [
+                {
+                  "op": "replace",
+                  "source": "color",
+                  "target": "BlockEntityTag.color"
+                },
+                {
+                  "op": "replace",
+                  "source": "items",
+                  "target": "BlockEntityTag.items"
+                },
+                {
+                  "op": "replace",
+                  "source": "Lock",
+                  "target": "BlockEntityTag.Lock"
+                },
+                {
+                  "op": "replace",
+                  "source": "color.rgb",
+                  "target": "rgb"
+                },
+                {
+                  "op": "replace",
+                  "source": "color.show_in_tooltip",
+                  "target": "show_in_tooltip"
+                }
               ],
               "source": "block_entity"
             }

@@ -3,14 +3,14 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancylight;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.StringRepresentableEnum;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingBlock;
-import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.util.Direction;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.EnumProperty;
 
 public abstract class AbstractFancyLightBlock extends BCFacingBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -22,13 +22,13 @@ public abstract class AbstractFancyLightBlock extends BCFacingBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(LIT, TYPE);
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
         Direction direction = context.getClickedFace();
         return BCUtil.nonNull(super.getStateForPlacement(context)).setValue(TYPE, direction == Direction.UP ? Type.STANDING : direction == Direction.DOWN ? Type.HANGING : Type.WALL);
     }

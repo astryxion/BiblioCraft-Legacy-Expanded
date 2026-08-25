@@ -21,11 +21,11 @@ import com.github.minecraftschurlimods.bibliocraft.util.block.ColoredWoodTypeBlo
 import com.github.minecraftschurlimods.bibliocraft.util.holder.ColoredDeferredHolder;
 import com.github.minecraftschurlimods.bibliocraft.util.holder.ColoredWoodTypeDeferredHolder;
 import com.github.minecraftschurlimods.bibliocraft.util.holder.WoodTypeDeferredHolder;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DoubleHighBlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.TallBlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.block.Block;
+import net.minecraftforge.fml.RegistryObject;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,11 +35,11 @@ public interface BCItems {
 
     // @formatter:off
     WoodTypeDeferredHolder<Item, BlockItem>           BOOKCASE          = woodenBlock("bookcase",          BCBlocks.BOOKCASE);
-    WoodTypeDeferredHolder<Item, DoubleHighBlockItem> FANCY_ARMOR_STAND = woodenBlock("fancy_armor_stand", wood -> new DoubleHighBlockItem(BCBlocks.FANCY_ARMOR_STAND.get(wood), PROPERTIES));
+    WoodTypeDeferredHolder<Item, TallBlockItem> FANCY_ARMOR_STAND = woodenBlock("fancy_armor_stand", wood -> new TallBlockItem(BCBlocks.FANCY_ARMOR_STAND.get(wood), PROPERTIES));
     WoodTypeDeferredHolder<Item, FancyClockItem>      FANCY_CLOCK       = woodenBlock("fancy_clock",       FancyClockItem::new);
     WoodTypeDeferredHolder<Item, FancySignItem>       FANCY_SIGN        = woodenBlock("fancy_sign",        FancySignItem::new);
     WoodTypeDeferredHolder<Item, BlockItem>           FANCY_CRAFTER     = woodenBlock("fancy_crafter",     BCBlocks.FANCY_CRAFTER);
-    WoodTypeDeferredHolder<Item, DoubleHighBlockItem> GRANDFATHER_CLOCK = woodenBlock("grandfather_clock", wood -> new DoubleHighBlockItem(BCBlocks.GRANDFATHER_CLOCK.get(wood), PROPERTIES));
+    WoodTypeDeferredHolder<Item, TallBlockItem> GRANDFATHER_CLOCK = woodenBlock("grandfather_clock", wood -> new TallBlockItem(BCBlocks.GRANDFATHER_CLOCK.get(wood), PROPERTIES));
     WoodTypeDeferredHolder<Item, BlockItem>           LABEL             = woodenBlock("label",             BCBlocks.LABEL);
     WoodTypeDeferredHolder<Item, BlockItem>           POTION_SHELF      = woodenBlock("potion_shelf",      BCBlocks.POTION_SHELF);
     WoodTypeDeferredHolder<Item, BlockItem>           SHELF             = woodenBlock("shelf",             BCBlocks.SHELF);
@@ -69,7 +69,7 @@ public interface BCItems {
     RegistryObject<BlockItem>            DESK_BELL              = registerSimpleBlockItem(BCBlocks.DESK_BELL);
     RegistryObject<BlockItem>            DINNER_PLATE           = registerSimpleBlockItem(BCBlocks.DINNER_PLATE);
     RegistryObject<DiscRackItem>         DISC_RACK              = registerItem("disc_rack", () -> new DiscRackItem(PROPERTIES));
-    RegistryObject<DoubleHighBlockItem>  IRON_FANCY_ARMOR_STAND = BCRegistries.ITEMS.register("iron_fancy_armor_stand", () -> new DoubleHighBlockItem(BCBlocks.IRON_FANCY_ARMOR_STAND.get(), PROPERTIES));
+    RegistryObject<TallBlockItem>  IRON_FANCY_ARMOR_STAND = BCRegistries.ITEMS.register("iron_fancy_armor_stand", () -> new TallBlockItem(BCBlocks.IRON_FANCY_ARMOR_STAND.get(), PROPERTIES));
     RegistryObject<BlockItem>            GOLD_CHAIN             = registerSimpleBlockItem(BCBlocks.GOLD_CHAIN);
     RegistryObject<BlockItem>            GOLD_LANTERN           = registerSimpleBlockItem(BCBlocks.GOLD_LANTERN);
     RegistryObject<BlockItem>            GOLD_SOUL_LANTERN      = registerSimpleBlockItem(BCBlocks.GOLD_SOUL_LANTERN);

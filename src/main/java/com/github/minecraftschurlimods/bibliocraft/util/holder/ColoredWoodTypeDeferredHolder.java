@@ -2,11 +2,11 @@ package com.github.minecraftschurlimods.bibliocraft.util.holder;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.DyeColor;
+import net.minecraft.block.WoodType;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.fml.RegistryObject;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +21,7 @@ import java.util.function.BiFunction;
  * @param <T> The second type of the {@link RegistryObject} to use. For example, for wrapping a {@code RegistryObject<DoorBlock>}, this would be {@code DoorBlock}.
  */
 @SuppressWarnings("unused")
-public class ColoredWoodTypeDeferredHolder<R, T extends R> implements GroupingDeferredHolder<R, T> {
+public class ColoredWoodTypeDeferredHolder<R extends net.minecraftforge.registries.IForgeRegistryEntry<R>, T extends R> implements GroupingDeferredHolder<R, T> {
     private final Map<BibliocraftWoodType, ColoredDeferredHolder<R, T>> map = new LinkedHashMap<>();
 
     /**
@@ -88,16 +88,16 @@ public class ColoredWoodTypeDeferredHolder<R, T extends R> implements GroupingDe
 
     @Override
     public Collection<RegistryObject<T>> holders() {
-        return elements().stream().flatMap(holder -> holder.holders().stream()).toList();
+        return elements().stream().flatMap(holder -> holder.holders().stream()).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public Collection<T> values() {
-        return elements().stream().flatMap(holder -> holder.values().stream()).toList();
+        return elements().stream().flatMap(holder -> holder.values().stream()).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public Collection<ResourceLocation> ids() {
-        return elements().stream().flatMap(holder -> holder.ids().stream()).toList();
+        return elements().stream().flatMap(holder -> holder.ids().stream()).collect(java.util.stream.Collectors.toList());
     }
 }

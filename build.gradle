@@ -2,20 +2,18 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '5.1.+'
 }
 
 version = mod_version
 group = mod_group_id
+archivesBaseName = mod_id
 
-base {
-    archivesName = mod_id
-}
-
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+// Forge 1.16.5 ships Java 8 to end users.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
 minecraft {
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
@@ -32,48 +30,13 @@ minecraft {
     // Simply re-run your setup task after changing the mappings to update your workspace.
     mappings channel: mapping_channel, version: mapping_version
 
-    // When true, this property will have all Eclipse/IntelliJ IDEA run configurations run the "prepareX" task for the given run configuration before launching the game.
-    // In most cases, it is not necessary to enable.
-    // enableEclipsePrepareRuns = true
-    // enableIdeaPrepareRuns = true
-
-    // This property allows configuring Gradle's ProcessResources task(s) to run on IDE output locations before launching the game.
-    // It is REQUIRED to be set to true for this template to function.
-    // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-    copyIdeResources = true
-
-    // When true, this property will add the folder name of all declared run configurations to generated IDE run configurations.
-    // The folder name can be set on a run configuration using the "folderName" property.
-    // By default, the folder name of a run configuration is the name of the Gradle project containing it.
-    // generateRunFolders = true
-
-    // This property enables access transformers for use in development.
-    // They will be applied to the Minecraft artifact.
-    // The access transformer file can be anywhere in the project.
-    // However, it must be at "META-INF/accesstransformer.cfg" in the final mod jar to be loaded by Forge.
-    // This default location is a best practice to automatically put the file in the right place in the final jar.
-    // See https://docs.minecraftforge.net/en/latest/advanced/accesstransformers/ for more information.
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
     runs {
-        // applies to all the run configs below
-        configureEach {
+        client {
             workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            property 'forge.logging.console.level', 'debug'
-
+            property 'forge.logging.markers', ''
+            property 'forge.logging.console.level', 'info'
             mods {
                 "${mod_id}" {
                     source sourceSets.main
@@ -81,29 +44,29 @@ minecraft {
             }
         }
 
-        client {
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', ''
+            property 'forge.logging.console.level', 'info'
             args '--nogui'
-        }
-
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        // By default, the server will crash when no gametests are provided.
-        // The gametest system is also enabled by default for other run configs under the /test command.
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
         }
 
         data {
-            // example of overriding the workingDirectory set in configureEach above
             workingDirectory project.file('run-data')
-
+            property 'forge.logging.markers', ''
+            property 'forge.logging.console.level', 'info'
             // Output to src/main/generated so recipes and loot tables are in the same folder that gets packaged into the JAR.
             args '--mod', mod_id, '--all', '--output', file('src/main/generated/'), '--existing', file('src/main/resources/'), '--existing', file('src/main/generated/')
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
@@ -115,17 +78,21 @@ sourceSets.main.java.srcDirs += ['src/api/java', 'src/data/java']
 sourceSets.main.resources { srcDir 'src/main/generated'; srcDir 'src/generated/resources' }
 
 // Copy generated data into main resources so recipes and loot tables are packaged and loaded in-game.
-// Minecraft 1.20.1 only loads recipes from data/<namespace>/recipes/ (plural). Our datagen outputs to "recipe" (singular).
+// Minecraft 1.16.5 loads recipes from data/<namespace>/recipes/ (plural). Datagen may output to "recipe" (singular).
 // So: copy everything except the "recipe" folder, then copy that folder's contents INTO "recipes" (so the game finds them).
 def copyGeneratedData = tasks.register('copyGeneratedData', Copy) {
     from('src/main/generated/data') {
         exclude '**/recipe/**'  // skip wrong path; we add the same files under "recipes" below
+        exclude '**/loot_table/**'  // 1.21 singular; copy into loot_tables below
     }
     from('src/main/generated/data/bibliocraft/recipe') {
-        into 'bibliocraft/recipes'  // recipe files go here so 1.20.1 loads them
+        into 'bibliocraft/recipes'  // recipe files go here so 1.16.5 loads them
     }
     from('src/main/generated/data/minecraft/recipe') {
         into 'minecraft/recipes'
+    }
+    from('src/main/generated/data/bibliocraft/loot_table') {
+        into 'bibliocraft/loot_tables'
     }
     into('src/main/resources/data')
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -137,6 +104,7 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
     maven { url = "https://maven.blamejared.com/" }
+    maven { url = "https://www.cursemaven.com" }
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
@@ -150,31 +118,25 @@ dependencies {
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
-    // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
+    // then special handling is done to allow a setup of a vanilla dependency without an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // JEI API for compile time (optional integration); use plain dependency so API classes resolve
-    compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
+    // JEI: compile against the API; optional at runtime (not required to load this mod).
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    // Jade 1.16.4-2.8.3 (CurseForge file ${jade_file_id}); optional HUD for runClient / packaged env.
+    runtimeOnly fg.deobf("curse.maven:jade-324717:${jade_file_id}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-// When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    // 1.20.1 loads from data/.../recipes/ (plural); exclude 1.21-style data/.../recipe/ so JAR only has recipes/
-    exclude '**/data/bibliocraft/recipe/**', '**/data/minecraft/recipe/**'
-    var replaceProperties = [
+    // 1.16.5 loads from data/.../recipes/ (plural); exclude singular data/.../recipe/ so JAR only has recipes/
+    exclude '**/data/bibliocraft/recipe/**', '**/data/minecraft/recipe/**', '**/data/bibliocraft/loot_table/**'
+    def replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
@@ -206,15 +168,10 @@ tasks.named('jar', Jar).configure {
     finalizedBy 'reobfJar'
 }
 
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:
-// tasks.named('publish').configure {
-//     dependsOn 'reobfJar'
-// }
-
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
+        mavenJava(MavenPublication) {
             artifact jar
         }
     }
@@ -227,4 +184,5 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.compilerArgs += ['-Xmaxerrs', '100000']
 }

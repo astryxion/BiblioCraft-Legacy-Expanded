@@ -6,7 +6,10 @@
     "minecraft:glass_bottle",
     "minecraft:experience_bottle",
     "minecraft:honey_bottle",
-    "minecraft:ominous_bottle",
+    {
+      "id": "minecraft:ominous_bottle",
+      "required": false
+    },
     "minecraft:dragon_breath",
     {
       "id": "apothic_enchanting:infused_breath",

@@ -11,35 +11,36 @@ import com.github.minecraftschurlimods.bibliocraft.datagen.data.BCEnchantmentTag
 import com.github.minecraftschurlimods.bibliocraft.datagen.data.BCItemTagsProvider;
 import com.github.minecraftschurlimods.bibliocraft.datagen.data.BCLootTableProvider;
 import com.github.minecraftschurlimods.bibliocraft.datagen.data.BCRecipeProvider;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = BibliocraftApi.MOD_ID)
 public final class BCDatagen {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
-        PackOutput output = generator.getPackOutput();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
-        BCEnglishLanguageProvider language = generator.addProvider(event.includeClient(), new BCEnglishLanguageProvider(output));
-        generator.addProvider(event.includeClient(), new BCBlockStateProvider(output, existingFileHelper));
-        generator.addProvider(event.includeClient(), new BCItemModelProvider(output, existingFileHelper));
-        generator.addProvider(event.includeClient(), new BCSoundDefinitionsProvider(output, existingFileHelper));
+        BCEnglishLanguageProvider language = new BCEnglishLanguageProvider(generator);
+        if (event.includeClient()) {
+            generator.addProvider(language);
+            generator.addProvider(new BCBlockStateProvider(generator, existingFileHelper));
+            generator.addProvider(new BCItemModelProvider(generator, existingFileHelper));
+            generator.addProvider(new BCSoundDefinitionsProvider(generator, existingFileHelper));
+        }
 
-        generator.addProvider(event.includeServer(), new BCLootTableProvider(output));
-        generator.addProvider(event.includeServer(), new BCRecipeProvider(output, lookupProvider));
-        BCBlockTagsProvider blockTags = generator.addProvider(event.includeServer(), new BCBlockTagsProvider(output, lookupProvider, existingFileHelper));
-        BCItemTagsProvider itemTags = generator.addProvider(event.includeServer(), new BCItemTagsProvider(output, lookupProvider, blockTags.contentsGetter(), existingFileHelper));
-        generator.addProvider(event.includeServer(), new BCEnchantmentTagsProvider(output, lookupProvider, existingFileHelper));
+        BCBlockTagsProvider blockTags = new BCBlockTagsProvider(generator, existingFileHelper);
+        BCItemTagsProvider itemTags = new BCItemTagsProvider(generator, blockTags, existingFileHelper);
+        if (event.includeServer()) {
+            generator.addProvider(new BCLootTableProvider(generator));
+            generator.addProvider(new BCRecipeProvider(generator));
+            generator.addProvider(blockTags);
+            generator.addProvider(itemTags);
+            generator.addProvider(new BCEnchantmentTagsProvider(generator, existingFileHelper));
+        }
 
         BibliocraftDatagenHelper helper = BibliocraftApi.getDatagenHelper();
         helper.addWoodTypesToGenerateByModid("minecraft");

@@ -15,91 +15,85 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.data.recipes.SpecialRecipeBuilder;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.RecipeProvider;
+import net.minecraft.data.ShapedRecipeBuilder;
+import net.minecraft.data.ShapelessRecipeBuilder;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.loot.ConstantRange;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public final class BCRecipeProvider extends RecipeProvider {
-    public BCRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+    public BCRecipeProvider(DataGenerator output) {
         super(output);
     }
 
     @Override
-    protected void buildRecipes(Consumer<FinishedRecipe> output) {
+    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> output) {
         for (DyeColor color : DyeColor.values()) {
             String name = color.getSerializedName();
             ItemStack swordPedestal = new ItemStack(BCItems.SWORD_PEDESTAL.get());
             SwordPedestalBlock.DyedColor.putOnStack(swordPedestal, new SwordPedestalBlock.DyedColor(color.getTextColor(), true));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, swordPedestal.getItem())
+            ShapedRecipeBuilder.shaped(swordPedestal.getItem())
                     .pattern(" S ")
                     .pattern("SWS")
                     .define('S', Items.SMOOTH_STONE_SLAB)
-                    .define('W', BuiltInRegistries.ITEM.get(BCUtil.mcLoc(name + "_wool")))
+                    .define('W', net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(BCUtil.mcLoc(name + "_wool")))
                     .group("bibliocraft:sword_pedestal")
                     .unlockedBy("has_smooth_stone_slab", has(Items.SMOOTH_STONE_SLAB))
                     .save(output, BCUtil.bcLoc("color/" + name + "/sword_pedestal"));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.FANCY_GOLD_LAMP.get(color))
+            ShapedRecipeBuilder.shaped(BCItems.FANCY_GOLD_LAMP.get(color))
                     .pattern("CGC")
                     .pattern(" I ")
                     .pattern("NIN")
-                    .define('C', TagKey.create(Registries.ITEM, BCUtil.cLoc("dyed/" + name)))
+                    .define('C', net.minecraft.tags.ItemTags.createOptional(BCUtil.cLoc("dyed/" + name)))
                     .define('G', Items.GLOWSTONE)
                     .define('I', Tags.Items.INGOTS_GOLD)
                     .define('N', Tags.Items.NUGGETS_GOLD)
                     .group("bibliocraft:fancy_lamp")
                     .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                     .save(output, BCUtil.bcLoc("color/" + name + "/fancy_gold_lamp"));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.FANCY_IRON_LAMP.get(color))
+            ShapedRecipeBuilder.shaped(BCItems.FANCY_IRON_LAMP.get(color))
                     .pattern("CGC")
                     .pattern(" I ")
                     .pattern("NIN")
-                    .define('C', TagKey.create(Registries.ITEM, BCUtil.cLoc("dyed/" + name)))
+                    .define('C', net.minecraft.tags.ItemTags.createOptional(BCUtil.cLoc("dyed/" + name)))
                     .define('G', Items.GLOWSTONE)
                     .define('I', Tags.Items.INGOTS_IRON)
                     .define('N', Tags.Items.NUGGETS_IRON)
                     .group("bibliocraft:fancy_lamp")
                     .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                     .save(output, BCUtil.bcLoc("color/" + name + "/fancy_iron_lamp"));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.FANCY_GOLD_LANTERN.get(color))
+            ShapedRecipeBuilder.shaped(BCItems.FANCY_GOLD_LANTERN.get(color))
                     .pattern("GIG")
-                    .pattern("ICI")
-                    .pattern("GIG")
+                    .pattern("ILI")
+                    .pattern("GDG")
                     .define('G', Ingredient.of(Items.GLASS_PANE))
                     .define('I', Tags.Items.INGOTS_GOLD)
-                    .define('C', Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(name + "_candle"))))
+                    .define('L', Items.GLOWSTONE)
+                    .define('D', net.minecraft.item.DyeItem.byColor(color))
                     .group("bibliocraft:fancy_lantern")
                     .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                     .save(output, BCUtil.bcLoc("color/" + name + "/fancy_gold_lantern"));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.FANCY_IRON_LANTERN.get(color))
+            ShapedRecipeBuilder.shaped(BCItems.FANCY_IRON_LANTERN.get(color))
                     .pattern("GIG")
-                    .pattern("ICI")
-                    .pattern("GIG")
+                    .pattern("ILI")
+                    .pattern("GDG")
                     .define('G', Ingredient.of(Items.GLASS_PANE))
                     .define('I', Tags.Items.INGOTS_IRON)
-                    .define('C', Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(name + "_candle"))))
+                    .define('L', Items.GLOWSTONE)
+                    .define('D', net.minecraft.item.DyeItem.byColor(color))
                     .group("bibliocraft:fancy_lantern")
                     .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                     .save(output, BCUtil.bcLoc("color/" + name + "/fancy_iron_lantern"));
-            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.TYPEWRITER.get(color))
+            ShapedRecipeBuilder.shaped(BCItems.TYPEWRITER.get(color))
                     .pattern("IPI")
                     .pattern("BDB")
                     .pattern("CCC")
@@ -107,12 +101,12 @@ public final class BCRecipeProvider extends RecipeProvider {
                     .define('P', Items.PAPER)
                     .define('B', Tags.Items.STORAGE_BLOCKS_IRON)
                     .define('D', Tags.Items.DYES_BLACK)
-                    .define('C', Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(name + "_terracotta"))))
+                    .define('C', Ingredient.of(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(BCUtil.mcLoc(name + "_terracotta"))))
                     .group("bibliocraft:typewriter")
-                    .unlockedBy("has_terracotta", has(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(name + "_terracotta"))))
+                    .unlockedBy("has_terracotta", has(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(BCUtil.mcLoc(name + "_terracotta"))))
                     .save(output, BCUtil.bcLoc("color/" + name + "/typewriter"));
         }
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.CLEAR_FANCY_GOLD_LAMP.get())
+        ShapedRecipeBuilder.shaped(BCItems.CLEAR_FANCY_GOLD_LAMP.get())
                 .pattern("CGC")
                 .pattern(" I ")
                 .pattern("NIN")
@@ -123,7 +117,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .group("bibliocraft:fancy_lamp")
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.CLEAR_FANCY_IRON_LAMP.get())
+        ShapedRecipeBuilder.shaped(BCItems.CLEAR_FANCY_IRON_LAMP.get())
                 .pattern("CGC")
                 .pattern(" I ")
                 .pattern("NIN")
@@ -134,27 +128,27 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .group("bibliocraft:fancy_lamp")
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.CLEAR_FANCY_GOLD_LANTERN.get())
+        ShapedRecipeBuilder.shaped(BCItems.CLEAR_FANCY_GOLD_LANTERN.get())
                 .pattern("GIG")
-                .pattern("ICI")
+                .pattern("ILI")
                 .pattern("GIG")
                 .define('G', Ingredient.of(Items.GLASS_PANE))
                 .define('I', Tags.Items.INGOTS_GOLD)
-                .define('C', Ingredient.of(Items.CANDLE))
+                .define('L', Items.GLOWSTONE)
                 .group("bibliocraft:fancy_lantern")
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.CLEAR_FANCY_IRON_LANTERN.get())
+        ShapedRecipeBuilder.shaped(BCItems.CLEAR_FANCY_IRON_LANTERN.get())
                 .pattern("GIG")
-                .pattern("ICI")
+                .pattern("ILI")
                 .pattern("GIG")
                 .define('G', Ingredient.of(Items.GLASS_PANE))
                 .define('I', Tags.Items.INGOTS_IRON)
-                .define('C', Ingredient.of(Items.CANDLE))
+                .define('L', Items.GLOWSTONE)
                 .group("bibliocraft:fancy_lantern")
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.CLEAR_TYPEWRITER.get())
+        ShapedRecipeBuilder.shaped(BCItems.CLEAR_TYPEWRITER.get())
                 .pattern("IPI")
                 .pattern("BDB")
                 .pattern("CCC")
@@ -166,27 +160,29 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .group("bibliocraft:typewriter")
                 .unlockedBy("has_terracotta", has(Items.TERRACOTTA))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.SOUL_FANCY_GOLD_LANTERN.get())
+        ShapedRecipeBuilder.shaped(BCItems.SOUL_FANCY_GOLD_LANTERN.get())
                 .pattern("GIG")
-                .pattern("ICI")
-                .pattern("GIG")
+                .pattern("ILI")
+                .pattern("GDG")
                 .define('G', Ingredient.of(Items.GLASS_PANE))
                 .define('I', Tags.Items.INGOTS_GOLD)
-                .define('C', Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.modLoc("buzzier_bees", "soul_candle"))))
+                .define('L', Items.GLOWSTONE)
+                .define('D', Items.SOUL_SAND)
                 .group("bibliocraft:fancy_lantern")
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
-                .save(r -> net.minecraftforge.common.crafting.ConditionalRecipe.builder().addCondition(new ModLoadedCondition("buzzier_bees")).addRecipe(r).build(output, r.getId()), BCUtil.bcLoc("soul_fancy_gold_lantern"));
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.SOUL_FANCY_IRON_LANTERN.get())
+                .save(output, BCUtil.bcLoc("soul_fancy_gold_lantern"));
+        ShapedRecipeBuilder.shaped(BCItems.SOUL_FANCY_IRON_LANTERN.get())
                 .pattern("GIG")
-                .pattern("ICI")
-                .pattern("GIG")
+                .pattern("ILI")
+                .pattern("GDG")
                 .define('G', Ingredient.of(Items.GLASS_PANE))
                 .define('I', Tags.Items.INGOTS_IRON)
-                .define('C', Ingredient.of(BuiltInRegistries.ITEM.get(BCUtil.modLoc("buzzier_bees", "soul_candle"))))
+                .define('L', Items.GLOWSTONE)
+                .define('D', Items.SOUL_SAND)
                 .group("bibliocraft:fancy_lantern")
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .save(r -> net.minecraftforge.common.crafting.ConditionalRecipe.builder().addCondition(new ModLoadedCondition("buzzier_bees")).addRecipe(r).build(output, r.getId()), BCUtil.bcLoc("soul_fancy_iron_lantern"));
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.CLIPBOARD.get())
+                .save(output, BCUtil.bcLoc("soul_fancy_iron_lantern"));
+        ShapedRecipeBuilder.shaped(BCItems.CLIPBOARD.get())
                 .pattern("I F")
                 .pattern("PPP")
                 .pattern(" L ")
@@ -196,7 +192,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('L', ItemTags.WOODEN_PRESSURE_PLATES)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.COOKIE_JAR.get())
+        ShapedRecipeBuilder.shaped(BCItems.COOKIE_JAR.get())
                 .pattern(" I ")
                 .pattern("GCG")
                 .pattern("GRG")
@@ -206,7 +202,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .unlockedBy("has_redstone", has(Tags.Items.DUSTS_REDSTONE))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.DESK_BELL.get())
+        ShapedRecipeBuilder.shaped(BCItems.DESK_BELL.get())
                 .pattern(" B ")
                 .pattern(" I ")
                 .pattern("IRI")
@@ -215,19 +211,19 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .unlockedBy("has_redstone", has(Tags.Items.DUSTS_REDSTONE))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.DINNER_PLATE.get())
+        ShapedRecipeBuilder.shaped(BCItems.DINNER_PLATE.get())
                 .pattern("SSS")
                 .define('S', Items.SMOOTH_QUARTZ_SLAB)
                 .unlockedBy("has_smooth_quartz", has(Items.SMOOTH_QUARTZ_SLAB))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.DISC_RACK.get())
+        ShapedRecipeBuilder.shaped(BCItems.DISC_RACK.get())
                 .pattern("RRR")
                 .pattern("SSS")
                 .define('R', Tags.Items.RODS_WOODEN)
                 .define('S', ItemTags.WOODEN_SLABS)
                 .unlockedBy("has_wooden_slab", has(ItemTags.WOODEN_SLABS))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.IRON_FANCY_ARMOR_STAND.get())
+        ShapedRecipeBuilder.shaped(BCItems.IRON_FANCY_ARMOR_STAND.get())
                 .pattern(" I ")
                 .pattern(" I ")
                 .pattern("SSS")
@@ -235,7 +231,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('S', Items.SMOOTH_STONE_SLAB)
                 .unlockedBy("has_smooth_stone_slab", has(Items.SMOOTH_STONE_SLAB))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.GOLD_CHAIN.get())
+        ShapedRecipeBuilder.shaped(BCItems.GOLD_CHAIN.get())
                 .pattern("N")
                 .pattern("I")
                 .pattern("N")
@@ -245,7 +241,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_gold_nugget", has(Tags.Items.NUGGETS_GOLD))
                 .unlockedBy("has_gold_chain", has(BCItems.GOLD_CHAIN.get()))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.GOLD_LANTERN.get())
+        ShapedRecipeBuilder.shaped(BCItems.GOLD_LANTERN.get())
                 .pattern("NNN")
                 .pattern("NTN")
                 .pattern("NNN")
@@ -253,7 +249,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('N', Tags.Items.NUGGETS_GOLD)
                 .unlockedBy("has_gold_nugget", has(Tags.Items.NUGGETS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.GOLD_SOUL_LANTERN.get())
+        ShapedRecipeBuilder.shaped(BCItems.GOLD_SOUL_LANTERN.get())
                 .pattern("NNN")
                 .pattern("NTN")
                 .pattern("NNN")
@@ -261,27 +257,27 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('N', Tags.Items.NUGGETS_GOLD)
                 .unlockedBy("has_gold_nugget", has(Tags.Items.NUGGETS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.PRINTING_TABLE.get())
+        ShapedRecipeBuilder.shaped(BCItems.PRINTING_TABLE.get())
                 .pattern("CCC")
                 .pattern("PPP")
                 .pattern("BRB")
-                .define('C', Tags.Items.INGOTS_COPPER)
+                .define('C', Tags.Items.INGOTS_GOLD)
                 .define('P', ItemTags.PLANKS)
                 .define('B', Tags.Items.STORAGE_BLOCKS_IRON)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
-                .unlockedBy("has_copper_ingot", has(Tags.Items.INGOTS_COPPER))
+                .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, BCItems.IRON_PRINTING_TABLE.get())
+        ShapedRecipeBuilder.shaped(BCItems.IRON_PRINTING_TABLE.get())
                 .pattern("CCC")
                 .pattern("III")
                 .pattern("BRB")
-                .define('C', Tags.Items.INGOTS_COPPER)
+                .define('C', Tags.Items.INGOTS_GOLD)
                 .define('I', Tags.Items.INGOTS_IRON)
                 .define('B', Tags.Items.STORAGE_BLOCKS_IRON)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
-                .unlockedBy("has_copper_ingot", has(Tags.Items.INGOTS_COPPER))
+                .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.BIG_BOOK.get())
+        ShapedRecipeBuilder.shaped(BCItems.BIG_BOOK.get())
                 .pattern("PPP")
                 .pattern("PBP")
                 .pattern("PPP")
@@ -289,7 +285,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('B', Items.WRITABLE_BOOK)
                 .unlockedBy("has_writable_book", has(Items.WRITABLE_BOOK))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.LOCK_AND_KEY.get())
+        ShapedRecipeBuilder.shaped(BCItems.LOCK_AND_KEY.get())
                 .pattern("NI")
                 .pattern("NI")
                 .pattern(" I")
@@ -297,7 +293,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('I', Tags.Items.INGOTS_GOLD)
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.PLUMB_LINE.get())
+        ShapedRecipeBuilder.shaped(BCItems.PLUMB_LINE.get())
                 .pattern("SSS")
                 .pattern("S S")
                 .pattern("I S")
@@ -305,7 +301,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('I', Tags.Items.INGOTS_GOLD)
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.STOCKROOM_CATALOG.get())
+        ShapedRecipeBuilder.shaped(BCItems.STOCKROOM_CATALOG.get())
                 .pattern("PDP")
                 .pattern("PBP")
                 .pattern("PPP")
@@ -314,7 +310,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('B', Items.BOOK)
                 .unlockedBy("has_book", has(Items.BOOK))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.TAPE_MEASURE.get())
+        ShapedRecipeBuilder.shaped(BCItems.TAPE_MEASURE.get())
                 .pattern(" I ")
                 .pattern("IRI")
                 .pattern(" I ")
@@ -322,7 +318,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('R', BCItems.TAPE_REEL.get())
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                 .save(output);
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BCItems.TAPE_REEL.get())
+        ShapedRecipeBuilder.shaped(BCItems.TAPE_REEL.get())
                 .pattern("SSS")
                 .pattern("SDS")
                 .pattern("SSS")
@@ -330,18 +326,30 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .define('D', Tags.Items.DYES_YELLOW)
                 .unlockedBy("has_yellow_dye", has(Tags.Items.DYES_YELLOW))
                 .save(output);
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, BCItems.REDSTONE_BOOK.get())
+        ShapelessRecipeBuilder.shapeless(BCItems.REDSTONE_BOOK.get())
                 .requires(Items.BOOK)
                 .requires(Items.REDSTONE_TORCH)
                 .unlockedBy("has_book", has(Items.BOOK))
                 .save(output);
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, BCItems.SLOTTED_BOOK.get())
+        ShapelessRecipeBuilder.shapeless(BCItems.SLOTTED_BOOK.get())
                 .requires(Items.BOOK)
                 .requires(BCTags.Items.LABELS)
                 .unlockedBy("has_book", has(Items.BOOK))
                 .save(output);
-        SpecialRecipeBuilder.special(BCRecipes.BIG_BOOK_CLONING.get()).save(output, "big_book_cloning");
-        SpecialRecipeBuilder.special(BCRecipes.TYPEWRITER_PAGE_CLONING.get()).save(output, "typewriter_page_cloning");
+        output.accept(new IFinishedRecipe() {
+            @Override public void serializeRecipeData(com.google.gson.JsonObject json) {}
+            @Override public net.minecraft.util.ResourceLocation getId() { return BCUtil.bcLoc("big_book_cloning"); }
+            @Override public net.minecraft.item.crafting.IRecipeSerializer<?> getType() { return BCRecipes.BIG_BOOK_CLONING.get(); }
+            @Override public com.google.gson.JsonObject serializeAdvancement() { return null; }
+            @Override public net.minecraft.util.ResourceLocation getAdvancementId() { return null; }
+        });
+        output.accept(new IFinishedRecipe() {
+            @Override public void serializeRecipeData(com.google.gson.JsonObject json) {}
+            @Override public net.minecraft.util.ResourceLocation getId() { return BCUtil.bcLoc("typewriter_page_cloning"); }
+            @Override public net.minecraft.item.crafting.IRecipeSerializer<?> getType() { return BCRecipes.TYPEWRITER_PAGE_CLONING.get(); }
+            @Override public com.google.gson.JsonObject serializeAdvancement() { return null; }
+            @Override public net.minecraft.util.ResourceLocation getAdvancementId() { return null; }
+        });
         new PrintingTableCloningRecipe.Builder(new ItemStack(BCItems.CLIPBOARD.get()), 100)
                 .addNbtKey(ClipboardContent.NBT_KEY)
                 .addIngredient(Ingredient.of(BCItems.CLIPBOARD.get()))
@@ -374,7 +382,7 @@ public final class BCRecipeProvider extends RecipeProvider {
                 .save(output, BCUtil.bcLoc("written_big_book_cloning_in_printing_table"));
         new PrintingTableCloningWithEnchantmentsRecipe.Builder(new ItemStack(Items.ENCHANTED_BOOK), 600)
                 .addIngredient(Ingredient.of(Items.BOOK))
-                .experienceCost(new EnchantmentLevelsNumberProvider(ConstantValue.exactly(1), ConstantValue.exactly(2)))
+                .experienceCost(new EnchantmentLevelsNumberProvider(ConstantRange.exactly(1), ConstantRange.exactly(2)))
                 .unlockedBy("has_enchanted_book", has(Items.ENCHANTED_BOOK))
                 .save(output, BCUtil.bcLoc("enchanted_book_cloning_in_printing_table"));
         new PrintingTableMergingRecipe.Builder(Ingredient.of(BCItems.CLIPBOARD.get()), new ItemStack(BCItems.CLIPBOARD.get()), 200)

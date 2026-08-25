@@ -2,9 +2,9 @@ package com.github.minecraftschurlimods.bibliocraft.util.network;
 
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockSyncPacket;
 import com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog.StockroomCatalogListPacket;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 
 /**
  * Dispatches to client-only packet handling via reflection so common (server + client) packet classes
@@ -23,10 +23,10 @@ public final class PacketClientDispatcher {
         invoke("clockSync", ClockSyncPacket.class, msg);
     }
 
-    public static void openBookInLectern(ItemStack stack, Player player, BlockPos pos) {
+    public static void openBookInLectern(ItemStack stack, PlayerEntity player, BlockPos pos) {
         try {
             Class<?> c = Class.forName(HANDLERS);
-            c.getMethod("openBookInLectern", ItemStack.class, Player.class, BlockPos.class).invoke(null, stack, player, pos);
+            c.getMethod("openBookInLectern", ItemStack.class, PlayerEntity.class, BlockPos.class).invoke(null, stack, player, pos);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

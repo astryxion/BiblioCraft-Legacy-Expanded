@@ -3,20 +3,23 @@
   "category": "misc",
   "group": "bibliocraft:fancy_lantern",
   "key": {
-    "C": {
-      "item": "minecraft:pink_candle"
-    },
     "G": {
-      "tag": "forge:glass_panes"
+      "item": "minecraft:glass_pane"
     },
     "I": {
       "tag": "forge:ingots/iron"
+    },
+    "L": {
+      "item": "minecraft:glowstone"
+    },
+    "D": {
+      "item": "minecraft:pink_dye"
     }
   },
   "pattern": [
     "GIG",
-    "ICI",
-    "GIG"
+    "ILI",
+    "GDG"
   ],
   "result": {
     "count": 1,

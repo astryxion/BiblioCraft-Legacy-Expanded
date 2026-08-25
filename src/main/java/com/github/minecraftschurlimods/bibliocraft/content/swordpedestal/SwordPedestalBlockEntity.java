@@ -4,24 +4,24 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.item.ItemStack;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.List;
 
-public class SwordPedestalBlockEntity extends BCBlockEntity {
+public class SwordPedestalBlockEntity extends BCBlockEntity implements net.minecraft.tileentity.ITickableTileEntity {
     private static final int TICK_INTERVAL = 20;
     private static final int RANGE = 2;
     private static final String COLOR_KEY = "color";
@@ -31,19 +31,26 @@ public class SwordPedestalBlockEntity extends BCBlockEntity {
         super(BCBlockEntities.SWORD_PEDESTAL.get(), 1, pos, state);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, SwordPedestalBlockEntity blockEntity) {
+    @Override
+    public void tick() {
+        if (level != null) {
+            tick(level, getBlockPos(), getBlockState(), this);
+        }
+    }
+
+    public static void tick(World level, BlockPos pos, BlockState state, SwordPedestalBlockEntity blockEntity) {
         if (level.isClientSide()) return;
         if (level.getGameTime() % TICK_INTERVAL != 0) return;
         ItemStack stack = blockEntity.getItem(0).copy();
         if (!stack.isDamaged()) return;
         List<Enchantment> list = EnchantmentHelper.getEnchantments(stack).keySet().stream()
             .filter(e -> e == Enchantments.MENDING)
-            .toList();
+            .collect(java.util.stream.Collectors.toList());
         if (list.isEmpty()) return;
-        Vec3 vec = pos.getCenter();
-        for (ExperienceOrb orb : level.getEntitiesOfClass(ExperienceOrb.class, new AABB(vec.add(-RANGE, -RANGE, -RANGE), vec.add(RANGE, RANGE, RANGE)))) {
-            int i = blockEntity.repairItem((ServerLevel) level, stack, orb.getValue());
-            orb.discard();
+        Vector3d vec = Vector3d.atCenterOf(pos);
+        for (ExperienceOrbEntity orb : level.getEntitiesOfClass(ExperienceOrbEntity.class, new AxisAlignedBB(vec.add(-RANGE, -RANGE, -RANGE), vec.add(RANGE, RANGE, RANGE)))) {
+            int i = blockEntity.repairItem((ServerWorld) level, stack, orb.getValue());
+            orb.remove();
             if (!stack.isDamaged()) break;
         }
         blockEntity.setItem(0, stack);
@@ -60,8 +67,10 @@ public class SwordPedestalBlockEntity extends BCBlockEntity {
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        if (stack.is(BCTags.Items.SWORD_PEDESTAL_SWORDS)) return true;
-        return stack.is(ItemTags.SWORDS);
+        if (BCTags.Items.contains(BCTags.Items.SWORD_PEDESTAL_SWORDS, stack.getItem())) return true;
+        if (stack.getItem() instanceof net.minecraft.item.SwordItem) return true;
+        net.minecraft.tags.ITag<net.minecraft.item.Item> swords = ItemTags.getAllTags().getTag(new net.minecraft.util.ResourceLocation("minecraft", "swords"));
+        return swords != null && swords.contains(stack.getItem());
     }
 
     @Override
@@ -70,22 +79,23 @@ public class SwordPedestalBlockEntity extends BCBlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         if (tag.contains(COLOR_KEY)) {
             setColor(CodecUtil.decodeNbt(SwordPedestalBlock.DyedColor.CODEC, tag.get(COLOR_KEY)));
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        super.save(tag);
         tag.put(COLOR_KEY, CodecUtil.encodeNbt(SwordPedestalBlock.DyedColor.CODEC, getColor()));
+            return tag;
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT tag = super.getUpdateTag();
         if (!color.equals(SwordPedestalBlock.DEFAULT_COLOR)) {
             tag.put(COLOR_KEY, CodecUtil.encodeNbt(SwordPedestalBlock.DyedColor.CODEC, getColor()));
         }
@@ -93,8 +103,8 @@ public class SwordPedestalBlockEntity extends BCBlockEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+        super.handleUpdateTag(state, tag);
         if (tag.contains(COLOR_KEY)) {
             setColor(CodecUtil.decodeNbt(SwordPedestalBlock.DyedColor.CODEC, tag.get(COLOR_KEY)));
         }
@@ -104,7 +114,7 @@ public class SwordPedestalBlockEntity extends BCBlockEntity {
         SwordPedestalBlock.DyedColor.putOnStack(stack, getColor());
     }
 
-    private int repairItem(ServerLevel level, ItemStack stack, int value) {
+    private int repairItem(ServerWorld level, ItemStack stack, int value) {
         // Mending: 2 durability per 1 XP
         int i = Math.min(value * 2, stack.getDamageValue());
         int j = Math.min(i, stack.getDamageValue());

@@ -2,9 +2,9 @@ package com.github.minecraftschurlimods.bibliocraft.util.holder;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.fml.RegistryObject;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import java.util.function.Function;
  * @param <T> The second type of the {@link DeferredHolder} to use. For example, for wrapping a {@code DeferredHolder<Block, DoorBlock>}, this would be {@code DoorBlock}.
  */
 @SuppressWarnings("unused")
-public class WoodTypeDeferredHolder<R, T extends R> implements GroupingDeferredHolder<R, T> {
+public class WoodTypeDeferredHolder<R extends net.minecraftforge.registries.IForgeRegistryEntry<R>, T extends R> implements GroupingDeferredHolder<R, T> {
     private final Map<BibliocraftWoodType, RegistryObject<T>> map = new LinkedHashMap<>();
 
     /**
@@ -77,11 +77,11 @@ public class WoodTypeDeferredHolder<R, T extends R> implements GroupingDeferredH
 
     @Override
     public Collection<T> values() {
-        return map.values().stream().map(RegistryObject::get).toList();
+        return map.values().stream().map(RegistryObject::get).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public Collection<ResourceLocation> ids() {
-        return map.values().stream().map(RegistryObject::getId).toList();
+        return map.values().stream().map(RegistryObject::getId).collect(java.util.stream.Collectors.toList());
     }
 }

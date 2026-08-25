@@ -2,21 +2,21 @@ package com.github.minecraftschurlimods.bibliocraft.content.shelf;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenu;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Slot;
 
 public class ShelfMenu extends BCMenu<ShelfBlockEntity> {
-    public ShelfMenu(int id, Inventory inventory, ShelfBlockEntity blockEntity) {
+    public ShelfMenu(int id, PlayerInventory inventory, ShelfBlockEntity blockEntity) {
         super(BCMenus.SHELF.get(), id, inventory, blockEntity);
     }
 
-    public ShelfMenu(int id, Inventory inventory, FriendlyByteBuf data) {
+    public ShelfMenu(int id, PlayerInventory inventory, PacketBuffer data) {
         super(BCMenus.SHELF.get(), id, inventory, data);
     }
 
     @Override
-    protected void addSlots(Inventory inventory) {
+    protected void addSlots(PlayerInventory inventory) {
         addSlot(new Slot(blockEntity, 0, 53, 15));
         addSlot(new Slot(blockEntity, 1, 107, 15));
         addSlot(new Slot(blockEntity, 2, 53, 53));

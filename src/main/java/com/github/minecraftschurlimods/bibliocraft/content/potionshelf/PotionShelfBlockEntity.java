@@ -3,12 +3,13 @@ package com.github.minecraftschurlimods.bibliocraft.content.potionshelf;
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenuBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.block.BlockState;
 
 public class PotionShelfBlockEntity extends BCMenuBlockEntity {
     public PotionShelfBlockEntity(BlockPos pos, BlockState state) {
@@ -16,17 +17,17 @@ public class PotionShelfBlockEntity extends BCMenuBlockEntity {
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inventory) {
+    public Container createMenu(int id, PlayerInventory inventory) {
         return new PotionShelfMenu(id, inventory, this);
     }
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        if (stack.is(BCTags.Items.POTION_SHELF_POTIONS)) return true;
+        if (BCTags.Items.contains(BCTags.Items.POTION_SHELF_POTIONS, stack.getItem())) return true;
         // 1.20.1: fallback for vanilla potion items so GUI placement works even if tag fails to load
-        return stack.is(Items.POTION) || stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION)
-                || stack.is(Items.GLASS_BOTTLE) || stack.is(Items.EXPERIENCE_BOTTLE) || stack.is(Items.HONEY_BOTTLE)
-                || stack.is(Items.DRAGON_BREATH);
+        return stack.getItem() == Items.POTION || stack.getItem() == Items.SPLASH_POTION || stack.getItem() == Items.LINGERING_POTION
+                || stack.getItem() == Items.GLASS_BOTTLE || stack.getItem() == Items.EXPERIENCE_BOTTLE || stack.getItem() == Items.HONEY_BOTTLE
+                || stack.getItem() == Items.DRAGON_BREATH;
     }
 
     @Override

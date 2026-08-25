@@ -14,7 +14,6 @@ public final class BCConfig {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         builder
                 .comment("Contains cosmetic options.")
-                .translation("config." + BibliocraftApi.MOD_ID + ".cosmetic")
                 .push("cosmetic");
         ENABLE_PRIDE = builder
                 .comment("Whether to enable pride-themed cosmetics during pride month or not.")
@@ -29,11 +28,9 @@ public final class BCConfig {
         builder.pop();
         builder
                 .comment("Contains compatibility options.")
-                .translation("config." + BibliocraftApi.MOD_ID + ".compatibility")
                 .push("compatibility");
         builder
                 .comment("Contains compatibility options for the JEI mod.")
-                .translation("config." + BibliocraftApi.MOD_ID + ".compatibility.jei")
                 .push("jei");
         JEI_SHOW_WOOD_TYPES = builder
                 .comment("Whether to show blocks for all wood types in JEI, or just the default oak.")

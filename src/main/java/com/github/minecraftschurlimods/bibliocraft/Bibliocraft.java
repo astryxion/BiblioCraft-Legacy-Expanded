@@ -2,6 +2,7 @@ package com.github.minecraftschurlimods.bibliocraft;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.apiimpl.BibliocraftWoodTypeRegistryImpl;
+import com.github.minecraftschurlimods.bibliocraft.apiimpl.LockAndKeyBehaviorsImpl;
 import com.github.minecraftschurlimods.bibliocraft.init.BCRegistries;
 import net.minecraftforge.fml.ModLoadingContext;
 import com.github.minecraftschurlimods.bibliocraft.BCConfig;
@@ -13,9 +14,10 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public final class Bibliocraft {
     public Bibliocraft() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BCConfig.CLIENT_SPEC);
-        var bus = FMLJavaModLoadingContext.get().getModEventBus();
+        net.minecraftforge.eventbus.api.IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         BCEventHandler.init(bus);
         ((BibliocraftWoodTypeRegistryImpl) BibliocraftApi.getWoodTypeRegistry()).register();
+        ((LockAndKeyBehaviorsImpl) BibliocraftApi.getLockAndKeyBehaviors()).register();
         BCRegistries.init(bus);
     }
 }

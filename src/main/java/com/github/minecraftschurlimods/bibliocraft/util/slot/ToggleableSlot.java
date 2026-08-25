@@ -1,15 +1,15 @@
 package com.github.minecraftschurlimods.bibliocraft.util.slot;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
 /**
  * Represents a slot that can be disabled or enabled. If disabled, items will not be placed inside the slot.
  *
  * @param <T> The type of the owning block entity.
  */
-public class ToggleableSlot<T extends Container & HasToggleableSlots> extends Slot {
+public class ToggleableSlot<T extends IInventory & HasToggleableSlots> extends Slot {
     public final T container;
 
     public ToggleableSlot(T container, int slot, int x, int y) {
@@ -19,6 +19,6 @@ public class ToggleableSlot<T extends Container & HasToggleableSlots> extends Sl
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        return super.mayPlace(stack) && !container.isSlotDisabled(getContainerSlot());
+        return super.mayPlace(stack) && container.canPlaceItem(getSlotIndex(), stack) && !container.isSlotDisabled(getSlotIndex());
     }
 }

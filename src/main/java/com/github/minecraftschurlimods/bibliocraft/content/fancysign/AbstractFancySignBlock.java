@@ -1,28 +1,29 @@
 package com.github.minecraftschurlimods.bibliocraft.content.fancysign;
 
+import net.minecraft.world.IBlockReader;
+
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingEntityBlock;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LevelEvent;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.ToolActions;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.BooleanProperty;
+
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraftforge.common.ToolType;
+import javax.annotation.Nullable;
 
 public abstract class AbstractFancySignBlock extends BCFacingEntityBlock {
     public static final BooleanProperty UPSIDE_DOWN = BooleanProperty.create("upside_down");
@@ -34,41 +35,47 @@ public abstract class AbstractFancySignBlock extends BCFacingEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(UPSIDE_DOWN, WAXED);
     }
 
     @Override
     @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new FancySignBlockEntity(pos, state);
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return new FancySignBlockEntity(BlockPos.ZERO, state);
+    }
+
+    @Override
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hitResult) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.is(BCTags.Items.FANCY_SIGN_WAX) && !state.getValue(WAXED)) {
+        if (BCTags.Items.contains(BCTags.Items.FANCY_SIGN_WAX, stack.getItem()) && !state.getValue(WAXED)) {
             handleWaxing(true, stack, state, level, pos, player, hand);
-            return InteractionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
-        if (stack.canPerformAction(ToolActions.AXE_WAX_OFF) && state.getValue(WAXED)) {
+        if (stack.getToolTypes().contains(ToolType.AXE) && state.getValue(WAXED)) {
             handleWaxing(false, stack, state, level, pos, player, hand);
-            return InteractionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
         if (stack.hasCustomHoverName()) {
             String text = stack.getHoverName().getString();
             if ("Dinnerbone".equals(text) || "Grumm".equals(text)) {
                 level.setBlockAndUpdate(pos, state.setValue(UPSIDE_DOWN, !state.getValue(UPSIDE_DOWN)));
-                return InteractionResult.SUCCESS;
+                return ActionResultType.SUCCESS;
             }
         }
         return super.use(state, level, pos, player, hand, hitResult);
     }
 
-    private static void handleWaxing(boolean wax, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+    private static void handleWaxing(boolean wax, ItemStack stack, BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand) {
         BlockState newState = state.setValue(WAXED, wax);
-        if (player instanceof ServerPlayer serverPlayer) {
+        if (player instanceof ServerPlayerEntity) {
+            ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
             CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, stack);
         }
         if (stack.isDamageableItem()) {
@@ -77,7 +84,6 @@ public abstract class AbstractFancySignBlock extends BCFacingEntityBlock {
             stack.shrink(1);
         }
         level.setBlockAndUpdate(pos, newState);
-        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
-        level.levelEvent(player, wax ? LevelEvent.PARTICLES_AND_SOUND_WAX_ON : LevelEvent.PARTICLES_WAX_OFF, pos, 0);
+        level.levelEvent(player, wax ? 3003 : 3004, pos, 0);
     }
 }

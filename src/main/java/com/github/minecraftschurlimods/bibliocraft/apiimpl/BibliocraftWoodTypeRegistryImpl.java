@@ -3,10 +3,10 @@ package com.github.minecraftschurlimods.bibliocraft.apiimpl;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodTypeRegistry;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.RegisterBibliocraftWoodTypesEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,12 +17,12 @@ public final class BibliocraftWoodTypeRegistryImpl implements BibliocraftWoodTyp
     private final Map<ResourceLocation, BibliocraftWoodType> values;
     private boolean loaded = false;
 
-    @ApiStatus.Internal
+    
     public BibliocraftWoodTypeRegistryImpl() {
         values = new LinkedHashMap<>();
     }
 
-    @ApiStatus.Internal
+    
     public void register() {
         Map<ResourceLocation, BibliocraftWoodType> registrar = new LinkedHashMap<>();
         FMLJavaModLoadingContext.get().getModEventBus().post(new RegisterBibliocraftWoodTypesEvent(registrar));

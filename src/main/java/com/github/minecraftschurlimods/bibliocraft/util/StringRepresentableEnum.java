@@ -1,13 +1,13 @@
 package com.github.minecraftschurlimods.bibliocraft.util;
 
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.IStringSerializable;
 
 import java.util.Locale;
 
 /**
- * Helper interface that automatically implements {@link StringRepresentable#getSerializedName()} using {@link Enum#name()}.
+ * Helper interface that automatically implements {@link IStringSerializable#getSerializedName()} using {@link Enum#name()}.
  */
-public interface StringRepresentableEnum extends StringRepresentable {
+public interface StringRepresentableEnum extends IStringSerializable {
     String name();
 
     @Override

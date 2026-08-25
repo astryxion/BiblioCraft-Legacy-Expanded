@@ -1,5 +1,6 @@
 package com.github.minecraftschurlimods.bibliocraft.client;
 
+import com.github.minecraftschurlimods.bibliocraft.client.EmptyEntityRenderer;
 import com.github.minecraftschurlimods.bibliocraft.client.ber.ClipboardBER;
 import com.github.minecraftschurlimods.bibliocraft.client.ber.ClockBER;
 import com.github.minecraftschurlimods.bibliocraft.client.ber.CookieJarBER;
@@ -32,15 +33,19 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import net.minecraft.client.renderer.entity.ArmorStandRenderer;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.DyeColor;
+import net.minecraft.client.gui.ScreenManager;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
@@ -49,79 +54,90 @@ public final class BCClientEventHandler {
     // @formatter:off
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        RenderingRegistry.registerEntityRenderingHandler(BCEntities.FANCY_ARMOR_STAND.get(), ArmorStandRenderer::new);
+        RenderingRegistry.registerEntityRenderingHandler(BCEntities.SEAT.get(), EmptyEntityRenderer::new);
         event.enqueueWork(() -> {
-            MenuScreens.register(BCMenus.BOOKCASE.get(),          BCMenuScreens.Bookcase::new);
-            MenuScreens.register(BCMenus.COOKIE_JAR.get(),        BCMenuScreens.CookieJar::new);
-            MenuScreens.register(BCMenus.DISC_RACK.get(),         BCMenuScreens.DiscRack::new);
-            MenuScreens.register(BCMenus.FANCY_ARMOR_STAND.get(), BCMenuScreens.FancyArmorStand::new);
-            MenuScreens.register(BCMenus.LABEL.get(),             BCMenuScreens.Label::new);
-            MenuScreens.register(BCMenus.POTION_SHELF.get(),      BCMenuScreens.PotionShelf::new);
-            MenuScreens.register(BCMenus.PRINTING_TABLE.get(),    PrintingTableScreen::new);
-            MenuScreens.register(BCMenus.SHELF.get(),             BCMenuScreens.Shelf::new);
-            MenuScreens.register(BCMenus.TOOL_RACK.get(),         BCMenuScreens.ToolRack::new);
-            MenuScreens.register(BCMenus.FANCY_CRAFTER.get(),     FancyCrafterScreen::new);
-            MenuScreens.register(BCMenus.SLOTTED_BOOK.get(),      SlottedBookScreen::new);
+            ScreenManager.register(BCMenus.BOOKCASE.get(),          BCMenuScreens.Bookcase::new);
+            ScreenManager.register(BCMenus.COOKIE_JAR.get(),        BCMenuScreens.CookieJar::new);
+            ScreenManager.register(BCMenus.DISC_RACK.get(),         BCMenuScreens.DiscRack::new);
+            ScreenManager.register(BCMenus.FANCY_ARMOR_STAND.get(), BCMenuScreens.FancyArmorStand::new);
+            ScreenManager.register(BCMenus.LABEL.get(),             BCMenuScreens.Label::new);
+            ScreenManager.register(BCMenus.POTION_SHELF.get(),      BCMenuScreens.PotionShelf::new);
+            ScreenManager.register(BCMenus.PRINTING_TABLE.get(),    PrintingTableScreen::new);
+            ScreenManager.register(BCMenus.SHELF.get(),             BCMenuScreens.Shelf::new);
+            ScreenManager.register(BCMenus.TOOL_RACK.get(),         BCMenuScreens.ToolRack::new);
+            ScreenManager.register(BCMenus.FANCY_CRAFTER.get(),     FancyCrafterScreen::new);
+            ScreenManager.register(BCMenus.SLOTTED_BOOK.get(),      SlottedBookScreen::new);
+            // 1.20.1 model render_type is ignored in 1.16.5; set the same layers here.
+            BCBlocks.FANCY_CRAFTER.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.FANCY_CLOCK.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.WALL_FANCY_CLOCK.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.GRANDFATHER_CLOCK.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.DISPLAY_CASE.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.WALL_DISPLAY_CASE.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.FANCY_GOLD_LANTERN.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            BCBlocks.FANCY_IRON_LANTERN.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.cutout()));
+            RenderTypeLookup.setRenderLayer(BCBlocks.CLEAR_FANCY_GOLD_LANTERN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.SOUL_FANCY_GOLD_LANTERN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.CLEAR_FANCY_IRON_LANTERN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.SOUL_FANCY_IRON_LANTERN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.COOKIE_JAR.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.GOLD_CHAIN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.GOLD_LANTERN.get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(BCBlocks.GOLD_SOUL_LANTERN.get(), RenderType.cutout());
+            BCBlocks.FANCY_GOLD_LAMP.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.translucent()));
+            BCBlocks.FANCY_IRON_LAMP.values().forEach(block -> RenderTypeLookup.setRenderLayer(block, RenderType.translucent()));
+            RenderTypeLookup.setRenderLayer(BCBlocks.CLEAR_FANCY_GOLD_LAMP.get(), RenderType.translucent());
+            RenderTypeLookup.setRenderLayer(BCBlocks.CLEAR_FANCY_IRON_LAMP.get(), RenderType.translucent());
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.CLOCK.get(),       ClockBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.CLIPBOARD.get(),   ClipboardBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.COOKIE_JAR.get(),  CookieJarBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.DINNER_PLATE.get(), DinnerPlateBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.DISPLAY_CASE.get(), DisplayCaseBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.DISC_RACK.get(),   DiscRackBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.FANCY_ARMOR_STAND.get(), FancyArmorStandBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.FANCY_CRAFTER.get(), FancyCrafterBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.FANCY_SIGN.get(),  FancySignBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.LABEL.get(),       LabelBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.POTION_SHELF.get(), PotionShelfBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.SHELF.get(),       ShelfBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.SWORD_PEDESTAL.get(), SwordPedestalBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.TABLE.get(),       TableBER::new);
+            ClientRegistry.bindTileEntityRenderer(BCBlockEntities.TOOL_RACK.get(),   ToolRackBER::new);
         });
     }
     // @formatter:on
 
     @SubscribeEvent
-    public static void registerAdditional(ModelEvent.RegisterAdditional event) {
+    public static void registerAdditional(ModelRegistryEvent event) {
         for (TableBlock.Type type : TableBlock.Type.values()) {
             for (DyeColor color : DyeColor.values()) {
                 ResourceLocation loc = BCUtil.bcLoc("block/color/" + color.getSerializedName() + "/table_cloth_" + type.getSerializedName());
-                event.register(new ModelResourceLocation(loc.getNamespace(), loc.getPath(), "inventory"));
+                ModelLoader.addSpecialModel(loc);
             }
         }
+        net.minecraftforge.client.model.ModelLoaderRegistry.registerLoader(BCUtil.bcLoc("bookcase"), BookcaseModel.LOADER);
+        net.minecraftforge.client.model.ModelLoaderRegistry.registerLoader(BCUtil.bcLoc("table"), TableModel.LOADER);
     }
 
     @SubscribeEvent
-    public static void bakingCompleted(ModelEvent.BakingCompleted event) {
+    public static void bakingCompleted(ModelBakeEvent event) {
         TableBER.rebuildClothModelCache();
     }
 
     @SubscribeEvent
-    public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-        // Forge 1.20.1 register(String, ...) treats first arg as path and prepends mod namespace
-        event.register(BCUtil.bcLoc("bookcase").getPath(), BookcaseModel.LOADER);
-        event.register(BCUtil.bcLoc("table").getPath(), TableModel.LOADER);
+    public static void registerColorHandlersBlock(ColorHandlerEvent.Block event) {
+        event.getBlockColors().register((state, level, pos, tintIndex) -> {
+            if (tintIndex == 0 && level != null && pos != null && level.getBlockEntity(pos) instanceof SwordPedestalBlockEntity) {
+                SwordPedestalBlockEntity spbe = (SwordPedestalBlockEntity) level.getBlockEntity(pos);
+                return spbe.getColor().rgb();
+            }
+            return -1;
+        }, BCBlocks.SWORD_PEDESTAL.get());
     }
 
     @SubscribeEvent
-    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(ClockBER.LOCATION, ClockBER::createLayerDefinition);
-    }
-
-    // @formatter:off
-    @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(BCEntities.FANCY_ARMOR_STAND.get(), ArmorStandRenderer::new);
-        event.registerEntityRenderer(BCEntities.SEAT.get(),              EmptyEntityRenderer::new);
-        event.registerBlockEntityRenderer(BCBlockEntities.CLOCK.get(),       ClockBER::new);
-        event.registerBlockEntityRenderer(BCBlockEntities.CLIPBOARD.get(),         $ -> new ClipboardBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.COOKIE_JAR.get(),        $ -> new CookieJarBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.DINNER_PLATE.get(),      $ -> new DinnerPlateBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.DISPLAY_CASE.get(),      $ -> new DisplayCaseBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.DISC_RACK.get(),         $ -> new DiscRackBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.FANCY_ARMOR_STAND.get(), $ -> new FancyArmorStandBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.FANCY_CRAFTER.get(),     $ -> new FancyCrafterBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.FANCY_SIGN.get(),        $ -> new FancySignBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.LABEL.get(),             $ -> new LabelBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.POTION_SHELF.get(),      $ -> new PotionShelfBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.SHELF.get(),             $ -> new ShelfBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.SWORD_PEDESTAL.get(),    $ -> new SwordPedestalBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.TABLE.get(),             $ -> new TableBER());
-        event.registerBlockEntityRenderer(BCBlockEntities.TOOL_RACK.get(),         $ -> new ToolRackBER());
-    }
-    // @formatter:on
-
-    @SubscribeEvent
-    public static void registerColorHandlersBlock(RegisterColorHandlersEvent.Block event) {
-        event.register((state, level, pos, tintIndex) -> tintIndex == 0 && level != null && pos != null && level.getBlockEntity(pos) instanceof SwordPedestalBlockEntity spbe ? spbe.getColor().rgb() : -1, BCBlocks.SWORD_PEDESTAL.get());
-    }
-
-    @SubscribeEvent
-    public static void registerColorHandlersItem(RegisterColorHandlersEvent.Item event) {
-        event.register((stack, tintIndex) -> tintIndex == 0 ? SwordPedestalBlock.getColorFromStack(stack) : -1, BCItems.SWORD_PEDESTAL.get());
+    public static void registerColorHandlersItem(ColorHandlerEvent.Item event) {
+        event.getItemColors().register((stack, tintIndex) -> tintIndex == 0 ? SwordPedestalBlock.getColorFromStack(stack) : -1, BCItems.SWORD_PEDESTAL.get());
     }
 }

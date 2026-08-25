@@ -3,31 +3,39 @@ package com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record StockroomCatalogContent(List<GlobalPos> positions) {
+public final class StockroomCatalogContent  {
+    private final List<GlobalPos> positions;
+
+    public StockroomCatalogContent(List<GlobalPos> positions) {
+        this.positions = positions;
+    }
+
+    public List<GlobalPos> positions() { return this.positions; }
+
     public static final String NBT_KEY = "StockroomCatalogContent";
     public static final Codec<StockroomCatalogContent> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             GlobalPos.CODEC.listOf().fieldOf("positions").forGetter(StockroomCatalogContent::positions)
     ).apply(inst, StockroomCatalogContent::new));
-    public static final StockroomCatalogContent DEFAULT = new StockroomCatalogContent(List.of());
+    public static final StockroomCatalogContent DEFAULT = new StockroomCatalogContent(java.util.Collections.emptyList());
 
-    public void write(FriendlyByteBuf buf) {
+    public void write(PacketBuffer buf) {
         CodecUtil.encodeToBuffer(buf, CODEC, this);
     }
 
-    public static StockroomCatalogContent read(FriendlyByteBuf buf) {
+    public static StockroomCatalogContent read(PacketBuffer buf) {
         return CodecUtil.decodeFromBuffer(buf, CODEC);
     }
 
     public static StockroomCatalogContent getFromStack(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundNBT tag = stack.getOrCreateTag();
         if (!tag.contains(NBT_KEY)) return DEFAULT;
         return CodecUtil.decodeNbt(CODEC, tag.get(NBT_KEY));
     }
@@ -47,4 +55,23 @@ public record StockroomCatalogContent(List<GlobalPos> positions) {
         list.remove(pos);
         return new StockroomCatalogContent(list);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StockroomCatalogContent other = (StockroomCatalogContent) o;
+        return java.util.Objects.equals(this.positions, other.positions);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(this.positions);
+    }
+
+    @Override
+    public String toString() {
+        return "StockroomCatalogContent[" + "positions=" + this.positions + "]";
+    }
+
 }

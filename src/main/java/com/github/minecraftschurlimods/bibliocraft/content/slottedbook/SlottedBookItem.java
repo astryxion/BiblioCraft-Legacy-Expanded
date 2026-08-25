@@ -1,13 +1,13 @@
 package com.github.minecraftschurlimods.bibliocraft.content.slottedbook;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResult;
+import net.minecraft.inventory.container.SimpleNamedContainerProvider;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 public class SlottedBookItem extends Item {
     public SlottedBookItem(Properties properties) {
@@ -20,11 +20,12 @@ public class SlottedBookItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
-        if (level.isClientSide()) return InteractionResultHolder.success(player.getItemInHand(usedHand));
-        if (player instanceof ServerPlayer sp) {
-            net.minecraftforge.network.NetworkHooks.openScreen(sp, new SimpleMenuProvider((id, inv, p) -> new SlottedBookMenu(id, inv, usedHand), getDescription()), buf -> buf.writeEnum(usedHand));
+    public ActionResult<ItemStack> use(World level, PlayerEntity player, Hand usedHand) {
+        if (level.isClientSide()) return ActionResult.success(player.getItemInHand(usedHand));
+        if (player instanceof ServerPlayerEntity) {
+            ServerPlayerEntity sp = (ServerPlayerEntity) player;
+            net.minecraftforge.fml.network.NetworkHooks.openGui(sp, new SimpleNamedContainerProvider((id, inv, p) -> new SlottedBookMenu(id, inv, usedHand), getDescription()), buf -> buf.writeEnum(usedHand));
         }
-        return InteractionResultHolder.consume(player.getItemInHand(usedHand));
+        return ActionResult.consume(player.getItemInHand(usedHand));
     }
 }

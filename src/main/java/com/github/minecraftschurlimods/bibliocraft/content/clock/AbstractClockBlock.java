@@ -1,23 +1,25 @@
 package com.github.minecraftschurlimods.bibliocraft.content.clock;
 
+import net.minecraft.world.IBlockReader;
+
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingEntityBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.ITickableTileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.util.math.BlockRayTraceResult;
+import javax.annotation.Nullable;
 
 public abstract class AbstractClockBlock extends BCFacingEntityBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -28,30 +30,30 @@ public abstract class AbstractClockBlock extends BCFacingEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(POWERED);
     }
 
     @Override
     @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ClockBlockEntity(pos, state);
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return (l, p, s, b) -> ClockBlockEntity.tick(l, p, s, (ClockBlockEntity) b);
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return new ClockBlockEntity(BlockPos.ZERO, state);
     }
 
+
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (player.isSecondaryUseActive()) return InteractionResult.PASS;
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        if (player.isSecondaryUseActive()) return ActionResultType.PASS;
         if (level.isClientSide()) {
             ClientUtil.openClockScreen(pos);
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     @Override
@@ -60,7 +62,7 @@ public abstract class AbstractClockBlock extends BCFacingEntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState state, World level, BlockPos pos) {
         return state.getValue(POWERED) ? 15 : 0;
     }
 }

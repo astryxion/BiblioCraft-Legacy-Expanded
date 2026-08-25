@@ -2,9 +2,9 @@ package com.github.minecraftschurlimods.bibliocraft.util.block;
 
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
 import com.github.minecraftschurlimods.bibliocraft.util.holder.ColoredWoodTypeDeferredHolder;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.DyeColor;
+import net.minecraft.block.Block;
 
 public class ColoredWoodTypeBlockItem extends BlockItem {
     protected final BibliocraftWoodType woodType;

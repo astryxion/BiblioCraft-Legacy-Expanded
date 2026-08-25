@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.bibliocraft.util.block;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.item.ItemStack;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraftforge.items.ItemStackHandler;
 
 /**
@@ -21,13 +21,13 @@ public class BCItemHandler extends ItemStackHandler {
         super.onContentsChanged(slot);
         BlockState state = blockEntity.getBlockState();
         blockEntity.setChanged();
-        blockEntity.level().sendBlockUpdated(blockEntity.getBlockPos(), state, state, Block.UPDATE_ALL);
+        blockEntity.getLevel().sendBlockUpdated(blockEntity.getBlockPos(), state, state, 3);
     }
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
         if (!blockEntity.canPlaceItem(slot, stack)) return false;
         ItemStack stackInSlot = getStackInSlot(slot);
-        return (stackInSlot.isEmpty() || ItemStack.isSameItemSameTags(stackInSlot, stack)) && stackInSlot.getCount() + stack.getCount() <= blockEntity.getMaxStackSize();
+        return (stackInSlot.isEmpty() || (ItemStack.isSame(stackInSlot, stack) && ItemStack.tagMatches(stackInSlot, stack))) && stackInSlot.getCount() + stack.getCount() <= blockEntity.getMaxStackSize();
     }
 }

@@ -2,26 +2,28 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancycrafter;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenu;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import com.github.minecraftschurlimods.bibliocraft.util.slot.HasToggleableSlots;
+import com.github.minecraftschurlimods.bibliocraft.util.slot.ToggleableSlot;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
-public class FancyCrafterMenu extends BCMenu<FancyCrafterBlockEntity> {
-    public FancyCrafterMenu(int id, Inventory inventory, FancyCrafterBlockEntity blockEntity) {
+public class FancyCrafterMenu extends BCMenu<FancyCrafterBlockEntity> implements HasToggleableSlots {
+    public FancyCrafterMenu(int id, PlayerInventory inventory, FancyCrafterBlockEntity blockEntity) {
         super(BCMenus.FANCY_CRAFTER.get(), id, inventory, blockEntity);
     }
 
-    public FancyCrafterMenu(int id, Inventory inventory, FriendlyByteBuf data) {
+    public FancyCrafterMenu(int id, PlayerInventory inventory, PacketBuffer data) {
         super(BCMenus.FANCY_CRAFTER.get(), id, inventory, data);
     }
 
     @Override
-    protected void addSlots(Inventory inventory) {
+    protected void addSlots(PlayerInventory inventory) {
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
-                addSlot(new BCMenu.BCSlot(blockEntity, x + y * 3, 30 + x * 18, 17 + y * 18));
+                addSlot(new ToggleableSlot<>(blockEntity, x + y * 3, 30 + x * 18, 17 + y * 18));
             }
         }
         addSlot(new FancyCrafterResultSlot(blockEntity, 9, 124, 35));
@@ -32,7 +34,7 @@ public class FancyCrafterMenu extends BCMenu<FancyCrafterBlockEntity> {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
         int slotCount = blockEntity.getContainerSize();
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return ItemStack.EMPTY;
@@ -78,6 +80,23 @@ public class FancyCrafterMenu extends BCMenu<FancyCrafterBlockEntity> {
         return originalStack;
     }
 
+    @Override
+    public void setSlotDisabled(int slot, boolean disabled) {
+        if (slot >= FancyCrafterBlockEntity.CRAFTING_SLOTS || slot < 0) return;
+        blockEntity.setSlotDisabled(slot, disabled);
+        broadcastChanges();
+    }
+
+    @Override
+    public boolean isSlotDisabled(int slot) {
+        return blockEntity.isSlotDisabled(slot);
+    }
+
+    @Override
+    public boolean canDisableSlot(int slot) {
+        return blockEntity.canDisableSlot(slot);
+    }
+
     private static final class FancyCrafterResultSlot extends Slot {
         private final FancyCrafterBlockEntity blockEntity;
 
@@ -92,13 +111,19 @@ public class FancyCrafterMenu extends BCMenu<FancyCrafterBlockEntity> {
         }
 
         @Override
-        public boolean mayPickup(Player player) {
+        public boolean mayPickup(PlayerEntity player) {
             return !getItem().isEmpty();
         }
 
         @Override
-        public void onTake(Player player, ItemStack stack) {
+        public ItemStack remove(int amount) {
+            return super.remove(getItem().getCount());
+        }
+
+        @Override
+        public ItemStack onTake(PlayerEntity player, ItemStack stack) {
             blockEntity.consumeIngredientsForResult();
+            return super.onTake(player, stack);
         }
     }
 }

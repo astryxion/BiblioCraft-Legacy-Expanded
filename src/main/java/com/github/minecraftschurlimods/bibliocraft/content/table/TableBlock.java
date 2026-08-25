@@ -4,64 +4,65 @@ import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ShapeUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.StringRepresentableEnum;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingEntityBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.WoolCarpetBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.util.Rotation;
+import net.minecraft.block.CarpetBlock;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.EnumProperty;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import javax.annotation.Nullable;
 
 public class TableBlock extends BCFacingEntityBlock {
     public static final EnumProperty<Type> TYPE = EnumProperty.create("type", Type.class);
     private static final VoxelShape NONE_SHAPE = ShapeUtil.combine(
-            Shapes.box(0.0625, 0.875, 0, 0.9375, 1, 1),
-            Shapes.box(0, 0.875, 0.0625, 0.0625, 1, 0.9375),
-            Shapes.box(0.9375, 0.875, 0.0625, 1, 1, 0.9375),
-            Shapes.box(0.4375, 0.0625, 0.4375, 0.5625, 0.875, 0.5625),
-            Shapes.box(0.0625, 0, 0.4375, 0.3125, 0.09375, 0.5625),
-            Shapes.box(0.1875, 0.09375, 0.4375, 0.4375, 0.1875, 0.5625),
-            Shapes.box(0.6875, 0, 0.4375, 0.9375, 0.09375, 0.5625),
-            Shapes.box(0.5625, 0.09375, 0.4375, 0.8125, 0.1875, 0.5625),
-            Shapes.box(0.4375, 0, 0.0625, 0.5625, 0.09375, 0.3125),
-            Shapes.box(0.4375, 0.09375, 0.1875, 0.5625, 0.1875, 0.4375),
-            Shapes.box(0.4375, 0, 0.6875, 0.5625, 0.09375, 0.9375),
-            Shapes.box(0.4375, 0.09375, 0.5625, 0.5625, 0.1875, 0.8125));
+            VoxelShapes.box(0.0625, 0.875, 0, 0.9375, 1, 1),
+            VoxelShapes.box(0, 0.875, 0.0625, 0.0625, 1, 0.9375),
+            VoxelShapes.box(0.9375, 0.875, 0.0625, 1, 1, 0.9375),
+            VoxelShapes.box(0.4375, 0.0625, 0.4375, 0.5625, 0.875, 0.5625),
+            VoxelShapes.box(0.0625, 0, 0.4375, 0.3125, 0.09375, 0.5625),
+            VoxelShapes.box(0.1875, 0.09375, 0.4375, 0.4375, 0.1875, 0.5625),
+            VoxelShapes.box(0.6875, 0, 0.4375, 0.9375, 0.09375, 0.5625),
+            VoxelShapes.box(0.5625, 0.09375, 0.4375, 0.8125, 0.1875, 0.5625),
+            VoxelShapes.box(0.4375, 0, 0.0625, 0.5625, 0.09375, 0.3125),
+            VoxelShapes.box(0.4375, 0.09375, 0.1875, 0.5625, 0.1875, 0.4375),
+            VoxelShapes.box(0.4375, 0, 0.6875, 0.5625, 0.09375, 0.9375),
+            VoxelShapes.box(0.4375, 0.09375, 0.5625, 0.5625, 0.1875, 0.8125));
     private static final VoxelShape ONE_SHAPE_NORTH = ShapeUtil.combine(
-            Shapes.box(0, 0.875, 0, 1, 1, 0.9375),
-            Shapes.box(0.0625, 0.875, 0.9375, 0.9375, 1, 1),
-            Shapes.box(0.1875, 0.1875, 0.6875, 0.3125, 0.875, 0.8125),
-            Shapes.box(0.21875, 0.125, 0.71875, 0.28125, 0.1875, 0.78125),
-            Shapes.box(0.1875, 0, 0.6875, 0.3125, 0.125, 0.8125),
-            Shapes.box(0.6875, 0.1875, 0.6875, 0.8125, 0.875, 0.8125),
-            Shapes.box(0.71875, 0.125, 0.71875, 0.78125, 0.1875, 0.78125),
-            Shapes.box(0.6875, 0, 0.6875, 0.8125, 0.125, 0.8125));
+            VoxelShapes.box(0, 0.875, 0, 1, 1, 0.9375),
+            VoxelShapes.box(0.0625, 0.875, 0.9375, 0.9375, 1, 1),
+            VoxelShapes.box(0.1875, 0.1875, 0.6875, 0.3125, 0.875, 0.8125),
+            VoxelShapes.box(0.21875, 0.125, 0.71875, 0.28125, 0.1875, 0.78125),
+            VoxelShapes.box(0.1875, 0, 0.6875, 0.3125, 0.125, 0.8125),
+            VoxelShapes.box(0.6875, 0.1875, 0.6875, 0.8125, 0.875, 0.8125),
+            VoxelShapes.box(0.71875, 0.125, 0.71875, 0.78125, 0.1875, 0.78125),
+            VoxelShapes.box(0.6875, 0, 0.6875, 0.8125, 0.125, 0.8125));
     private static final VoxelShape ONE_SHAPE_EAST = ShapeUtil.rotate(ONE_SHAPE_NORTH, Rotation.CLOCKWISE_90);
     private static final VoxelShape ONE_SHAPE_SOUTH = ShapeUtil.rotate(ONE_SHAPE_NORTH, Rotation.CLOCKWISE_180);
     private static final VoxelShape ONE_SHAPE_WEST = ShapeUtil.rotate(ONE_SHAPE_NORTH, Rotation.COUNTERCLOCKWISE_90);
-    private static final VoxelShape STRAIGHT_SHAPE = Shapes.box(0, 0.875, 0, 1, 1, 1);
+    private static final VoxelShape STRAIGHT_SHAPE = VoxelShapes.box(0, 0.875, 0, 1, 1, 1);
     private static final VoxelShape CURVE_SHAPE_NORTH = ShapeUtil.combine(
-            Shapes.box(0, 0.875, 0, 1, 1, 0.9375),
-            Shapes.box(0, 0.875, 0.9375, 0.9375, 1, 1),
-            Shapes.box(0.6875, 0.1875, 0.6875, 0.8125, 0.875, 0.8125),
-            Shapes.box(0.71875, 0.125, 0.71875, 0.78125, 0.1875, 0.78125),
-            Shapes.box(0.6875, 0, 0.6875, 0.8125, 0.125, 0.8125));
+            VoxelShapes.box(0, 0.875, 0, 1, 1, 0.9375),
+            VoxelShapes.box(0, 0.875, 0.9375, 0.9375, 1, 1),
+            VoxelShapes.box(0.6875, 0.1875, 0.6875, 0.8125, 0.875, 0.8125),
+            VoxelShapes.box(0.71875, 0.125, 0.71875, 0.78125, 0.1875, 0.78125),
+            VoxelShapes.box(0.6875, 0, 0.6875, 0.8125, 0.125, 0.8125));
     private static final VoxelShape CURVE_SHAPE_EAST = ShapeUtil.rotate(CURVE_SHAPE_NORTH, Rotation.CLOCKWISE_90);
     private static final VoxelShape CURVE_SHAPE_SOUTH = ShapeUtil.rotate(CURVE_SHAPE_NORTH, Rotation.CLOCKWISE_180);
     private static final VoxelShape CURVE_SHAPE_WEST = ShapeUtil.rotate(CURVE_SHAPE_NORTH, Rotation.COUNTERCLOCKWISE_90);
@@ -72,73 +73,83 @@ public class TableBlock extends BCFacingEntityBlock {
     }
 
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TableBlockEntity(pos, state);
+    @Nullable
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return new TableBlockEntity(BlockPos.ZERO, state);
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(TYPE);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(TYPE)) {
-            case NONE -> NONE_SHAPE;
-            case ONE -> switch (state.getValue(FACING)) {
-                case SOUTH -> ONE_SHAPE_SOUTH;
-                case WEST -> ONE_SHAPE_WEST;
-                case EAST -> ONE_SHAPE_EAST;
-                default -> ONE_SHAPE_NORTH;
-            };
-            case STRAIGHT, THREE, ALL -> STRAIGHT_SHAPE;
-            case CURVE -> switch (state.getValue(FACING)) {
-                case SOUTH -> CURVE_SHAPE_SOUTH;
-                case WEST -> CURVE_SHAPE_WEST;
-                case EAST -> CURVE_SHAPE_EAST;
-                default -> CURVE_SHAPE_NORTH;
-            };
-        };
+    public VoxelShape getShape(BlockState state, IBlockReader level, BlockPos pos, ISelectionContext context) {
+        switch (state.getValue(TYPE)) {
+case NONE: return NONE_SHAPE;
+case ONE:
+switch (state.getValue(FACING)) {
+case SOUTH: return ONE_SHAPE_SOUTH; case WEST: return ONE_SHAPE_WEST; case EAST: return ONE_SHAPE_EAST;default: return ONE_SHAPE_NORTH;}
+case STRAIGHT: case THREE: case ALL: return STRAIGHT_SHAPE;
+case CURVE:
+switch (state.getValue(FACING)) {
+case SOUTH: return CURVE_SHAPE_SOUTH; case WEST: return CURVE_SHAPE_WEST; case EAST: return CURVE_SHAPE_EAST;default: return CURVE_SHAPE_NORTH;}
+default: return NONE_SHAPE;
+}
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Level level = context.getLevel();
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        World level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         return getNewState(level, pos, BCUtil.nonNull(super.getStateForPlacement(context)));
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        return getNewState(level, pos, defaultBlockState());
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, IWorld level, BlockPos pos, BlockPos neighborPos) {
+        BlockState updated = getNewState(level, pos, defaultBlockState());
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof TableBlockEntity) {
+            blockEntity.requestModelDataUpdate();
+        }
+        return updated;
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof TableBlockEntity table))
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        if (hand != Hand.MAIN_HAND) return ActionResultType.PASS;
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof TableBlockEntity))
             return super.use(state, level, pos, player, hand, hit);
+        TableBlockEntity table = (TableBlockEntity) blockEntity;
         Direction direction = hit.getDirection();
         if (direction == Direction.DOWN) return super.use(state, level, pos, player, hand, hit);
-        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        boolean useCarpet = direction != Direction.UP && ((stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof WoolCarpetBlock) || (stack.isEmpty() && !table.getItem(1).isEmpty()));
+        ItemStack stack = player.getItemInHand(Hand.MAIN_HAND);
+        boolean isCarpetItem = stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() instanceof CarpetBlock;
+        boolean useCarpet = direction != Direction.UP && (isCarpetItem || (stack.isEmpty() && !table.getItem(1).isEmpty()));
         ItemStack originalStack = table.getItem(useCarpet ? 1 : 0);
-        if (ItemStack.isSameItem(stack, originalStack)) return InteractionResult.FAIL;
-        table.setItem(useCarpet ? 1 : 0, stack.copyWithCount(1));
+        if (ItemStack.isSame(stack, originalStack)) return ActionResultType.FAIL;
+        ItemStack placed = stack.copy();
+        placed.setCount(1);
+        table.setItem(useCarpet ? 1 : 0, placed);
         stack.shrink(1);
         if (!originalStack.isEmpty()) {
             if (stack.isEmpty()) {
-                player.setItemInHand(InteractionHand.MAIN_HAND, originalStack);
+                player.setItemInHand(Hand.MAIN_HAND, originalStack);
             } else {
-                player.getInventory().add(originalStack);
+                player.inventory.add(originalStack);
             }
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
-    private BlockState getNewState(LevelAccessor level, BlockPos pos, BlockState state) {
+    private BlockState getNewState(IWorld level, BlockPos pos, BlockState state) {
         boolean north = level.getBlockState(pos.north()).getBlock() instanceof TableBlock;
         boolean east = level.getBlockState(pos.east()).getBlock() instanceof TableBlock;
         boolean south = level.getBlockState(pos.south()).getBlock() instanceof TableBlock;
@@ -161,10 +172,8 @@ public class TableBlock extends BCFacingEntityBlock {
         return state;
     }
 
-    @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        super.onBlockStateChange(level, pos, oldState, newState);
-        BlockEntity blockEntity = level.getBlockEntity(pos);
+    public void onBlockStateChange(IWorldReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        TileEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof TableBlockEntity) {
             blockEntity.requestModelDataUpdate();
         }

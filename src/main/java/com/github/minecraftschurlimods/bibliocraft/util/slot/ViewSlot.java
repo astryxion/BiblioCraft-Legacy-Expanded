@@ -1,12 +1,12 @@
 package com.github.minecraftschurlimods.bibliocraft.util.slot;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
 public class ViewSlot extends Slot {
-    public ViewSlot(Container container, int slot, int x, int y) {
+    public ViewSlot(IInventory container, int slot, int x, int y) {
         super(container, slot, x, y);
     }
 
@@ -16,7 +16,7 @@ public class ViewSlot extends Slot {
     }
 
     @Override
-    public boolean mayPickup(Player player) {
+    public boolean mayPickup(PlayerEntity player) {
         return false;
     }
 }

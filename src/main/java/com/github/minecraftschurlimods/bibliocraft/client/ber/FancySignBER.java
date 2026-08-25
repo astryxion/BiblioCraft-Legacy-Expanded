@@ -8,17 +8,23 @@ import com.github.minecraftschurlimods.bibliocraft.content.fancysign.FancySignBl
 import com.github.minecraftschurlimods.bibliocraft.content.fancysign.WallFancySignBlock;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.FormattedLine;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.world.level.block.Block;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.block.Block;
 
 import java.util.List;
 
-public class FancySignBER implements BlockEntityRenderer<FancySignBlockEntity> {
+public class FancySignBER extends TileEntityRenderer<FancySignBlockEntity> {
+    public FancySignBER(TileEntityRendererDispatcher dispatcher) {
+        super(dispatcher);
+    }
+
+
     @Override
-    public void render(FancySignBlockEntity blockEntity, float partialTick, PoseStack stack, MultiBufferSource buffer, int light, int overlay) {
+    public void render(FancySignBlockEntity blockEntity, float partialTick, MatrixStack stack, IRenderTypeBuffer buffer, int light, int overlay) {
         boolean upsideDown = blockEntity.getBlockState().getValue(AbstractFancySignBlock.UPSIDE_DOWN);
         Block block = blockEntity.getBlockState().getBlock();
         stack.pushPose();
@@ -26,9 +32,9 @@ public class FancySignBER implements BlockEntityRenderer<FancySignBlockEntity> {
 
         if (block instanceof FancySignBlock) {
             stack.pushPose();
-            stack.mulPose(Axis.XP.rotationDegrees(180));
+            stack.mulPose(Vector3f.XP.rotationDegrees(180));
             if (upsideDown) {
-                stack.mulPose(Axis.ZP.rotationDegrees(180));
+                stack.mulPose(Vector3f.ZP.rotationDegrees(180));
             }
             stack.translate(-0.4375, -0.25, -0.03125);
             stack.translate(0, 0, -1 / 1024d);
@@ -37,7 +43,7 @@ public class FancySignBER implements BlockEntityRenderer<FancySignBlockEntity> {
 
             stack.pushPose();
             if (!upsideDown) {
-                stack.mulPose(Axis.ZP.rotationDegrees(180));
+                stack.mulPose(Vector3f.ZP.rotationDegrees(180));
             }
             stack.translate(-0.4375, -0.25, -0.03125);
             stack.translate(0, 0, -1 / 1024d);
@@ -45,9 +51,9 @@ public class FancySignBER implements BlockEntityRenderer<FancySignBlockEntity> {
             stack.popPose();
         } else if (block instanceof WallFancySignBlock) {
             stack.pushPose();
-            stack.mulPose(Axis.XP.rotationDegrees(180));
+            stack.mulPose(Vector3f.XP.rotationDegrees(180));
             if (upsideDown) {
-                stack.mulPose(Axis.ZP.rotationDegrees(180));
+                stack.mulPose(Vector3f.ZP.rotationDegrees(180));
             }
             stack.translate(-0.4375, -0.25, 0.40625);
             stack.translate(0, 0, -1 / 1024d);
@@ -58,7 +64,7 @@ public class FancySignBER implements BlockEntityRenderer<FancySignBlockEntity> {
         stack.popPose();
     }
 
-    private static void renderLines(List<FormattedLine> lines, PoseStack stack, MultiBufferSource bufferSource) {
+    private static void renderLines(List<FormattedLine> lines, MatrixStack stack, IRenderTypeBuffer bufferSource) {
         stack.pushPose();
         float scale = 1 / 160f;
         stack.scale(scale, scale, 0);

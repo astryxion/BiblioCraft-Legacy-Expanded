@@ -3,35 +3,31 @@ package com.github.minecraftschurlimods.bibliocraft.content.typewriter;
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
-import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.ItemStack;
+import net.minecraft.inventory.CraftingInventory;
 
-public class TypewriterPageCloningRecipe extends CustomRecipe {
-    public TypewriterPageCloningRecipe(ResourceLocation id, CraftingBookCategory category) {
-        super(id, category);
-    }
+import net.minecraft.item.crafting.SpecialRecipe;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.World;
 
+public class TypewriterPageCloningRecipe extends SpecialRecipe {
     public TypewriterPageCloningRecipe(ResourceLocation id) {
-        this(id, CraftingBookCategory.MISC);
+        super(id);
     }
 
     @Override
-    public boolean matches(CraftingContainer container, Level level) {
+    public boolean matches(CraftingInventory container, World level) {
         int paper = 0;
         ItemStack stack = ItemStack.EMPTY;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack written = container.getItem(i);
             if (written.isEmpty()) continue;
-            if (written.is(BCItems.TYPEWRITER_PAGE.get())) {
+            if (written.getItem() == BCItems.TYPEWRITER_PAGE.get()) {
                 if (!stack.isEmpty()) return false;
                 stack = written;
-            } else if (written.is(BCTags.Items.TYPEWRITER_PAPER)) {
+            } else if (BCTags.Items.contains(BCTags.Items.TYPEWRITER_PAPER, written.getItem())) {
                 paper++;
             } else return false;
         }
@@ -39,16 +35,16 @@ public class TypewriterPageCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer container, net.minecraft.core.RegistryAccess registries) {
+    public ItemStack assemble(CraftingInventory container) {
         int paper = 0;
         ItemStack stack = ItemStack.EMPTY;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack written = container.getItem(i);
             if (written.isEmpty()) continue;
-            if (written.is(BCItems.TYPEWRITER_PAGE.get())) {
+            if (written.getItem() == BCItems.TYPEWRITER_PAGE.get()) {
                 if (!stack.isEmpty()) return ItemStack.EMPTY;
                 stack = written;
-            } else if (written.is(BCTags.Items.TYPEWRITER_PAPER)) {
+            } else if (BCTags.Items.contains(BCTags.Items.TYPEWRITER_PAPER, written.getItem())) {
                 paper++;
             } else return ItemStack.EMPTY;
         }
@@ -61,13 +57,13 @@ public class TypewriterPageCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
+    public NonNullList<ItemStack> getRemainingItems(CraftingInventory container) {
         NonNullList<ItemStack> list = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
         for (int i = 0; i < list.size(); i++) {
             ItemStack stack = container.getItem(i);
-            if (!stack.getCraftingRemainingItem().isEmpty()) {
-                list.set(i, stack.getCraftingRemainingItem());
-            } else if (stack.is(BCItems.TYPEWRITER_PAGE.get())) {
+            if (stack.hasContainerItem()) {
+                list.set(i, stack.getContainerItem());
+            } else if (stack.getItem() == BCItems.TYPEWRITER_PAGE.get()) {
                 ItemStack one = stack.copy();
                 one.setCount(1);
                 list.set(i, one);
@@ -82,7 +78,7 @@ public class TypewriterPageCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public IRecipeSerializer<?> getSerializer() {
         return BCRecipes.TYPEWRITER_PAGE_CLONING.get();
     }
 }

@@ -3,29 +3,29 @@ package com.github.minecraftschurlimods.bibliocraft.util;
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.Nameable;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.util.INameable;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.EntityPredicates;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.HopperTileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ public final class BCUtil {
      * @return A {@link ResourceLocation} with the "minecraft" namespace and the given path.
      */
     public static ResourceLocation mcLoc(String path) {
-        return ResourceLocation.withDefaultNamespace(path);
+        return new ResourceLocation(path);
     }
 
     /**
@@ -59,7 +59,7 @@ public final class BCUtil {
      * @return A {@link ResourceLocation} with the "c" namespace and the given path.
      */
     public static ResourceLocation cLoc(String path) {
-        return ResourceLocation.fromNamespaceAndPath("c", path);
+        return new ResourceLocation("c", path);
     }
 
     /**
@@ -67,7 +67,7 @@ public final class BCUtil {
      * @return A {@link ResourceLocation} with the "bibliocraft" namespace and the given path.
      */
     public static ResourceLocation bcLoc(String path) {
-        return ResourceLocation.fromNamespaceAndPath(BibliocraftApi.MOD_ID, path);
+        return new ResourceLocation(BibliocraftApi.MOD_ID, path);
     }
 
     /**
@@ -76,7 +76,7 @@ public final class BCUtil {
      * @return A {@link ResourceLocation} with the given namespace and path.
      */
     public static ResourceLocation modLoc(String namespace, String path) {
-        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return new ResourceLocation(namespace, path);
     }
 
     /**
@@ -96,22 +96,22 @@ public final class BCUtil {
     }
 
     /**
-     * @return A {@link Stream} of all {@link ChatFormatting}s that represent a color.
+     * @return A {@link Stream} of all {@link TextFormatting}s that represent a color.
      */
-    public static Stream<ChatFormatting> getChatFormattingColors() {
-        return Arrays.stream(ChatFormatting.values()).filter(ChatFormatting::isColor);
+    public static Stream<TextFormatting> getChatFormattingColors() {
+        return Arrays.stream(TextFormatting.values()).filter(TextFormatting::isColor);
     }
 
     /**
-     * Returns the duration of a day in the given {@link Level}.
+     * Returns the duration of a day in the given {@link World}.
      *
-     * @param level The {@link Level} to get the day duration for.
-     * @return The duration of a day in the given {@link Level}.
+     * @param level The {@link World} to get the day duration for.
+     * @return The duration of a day in the given {@link World}.
      */
-    public static int getDayDuration(Level level) {
+    public static int getDayDuration(World level) {
         // 1.20.1: no getDayTimePerTick(); use 1.0 (one tick advances time by one)
         float factor = 1.0f;
-        return factor < 0 ? Level.TICKS_PER_DAY : (int) (Level.TICKS_PER_DAY * factor);
+        return factor < 0 ? 24000 : (int) (24000 * factor);
     }
 
     /**
@@ -159,22 +159,23 @@ public final class BCUtil {
     /**
      * Returns a display name for the given position. If there is a nameable block entity at the position, the block entity's name is returned, otherwise the block's name is returned.
      *
-     * @param level The {@link Level} to get the display name for.
+     * @param level The {@link World} to get the display name for.
      * @param pos   The {@link BlockPos} to get the display name for.
      * @return The display name to use for the given position.
      */
-    public static Component getNameAtPos(Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof Nameable nameable ? nameable.getDisplayName() : level.getBlockState(pos).getBlock().getName();
+    public static ITextComponent getNameAtPos(World level, BlockPos pos) {
+        net.minecraft.tileentity.TileEntity be = level.getBlockEntity(pos);
+        return be instanceof INameable ? ((INameable) be).getDisplayName() : level.getBlockState(pos).getBlock().getName();
     }
 
     /**
-     * Returns a display name for the given {@link BlockEntity}. If it is nameable, the block entity's name is returned, otherwise the block's name is returned.
+     * Returns a display name for the given {@link TileEntity}. If it is nameable, the block entity's name is returned, otherwise the block's name is returned.
      *
-     * @param blockEntity The {@link BlockEntity} to get the display name for.
-     * @return The display name to use for the given {@link BlockEntity}.
+     * @param blockEntity The {@link TileEntity} to get the display name for.
+     * @return The display name to use for the given {@link TileEntity}.
      */
-    public static Component getNameForBE(BlockEntity blockEntity) {
-        return blockEntity instanceof Nameable nameable ? nameable.getDisplayName() : blockEntity.getBlockState().getBlock().getName();
+    public static ITextComponent getNameForBE(TileEntity blockEntity) {
+        return blockEntity instanceof INameable ? ((INameable) blockEntity).getDisplayName() : blockEntity.getBlockState().getBlock().getName();
     }
 
     /**
@@ -198,7 +199,7 @@ public final class BCUtil {
      */
     @SafeVarargs
     public static <T> Collection<T> merge(Collection<T> collection, T... others) {
-        return merge(collection, Arrays.stream(others).toList());
+        return merge(collection, Arrays.stream(others).collect(java.util.stream.Collectors.toList()));
     }
 
     /**
@@ -250,9 +251,11 @@ public final class BCUtil {
      * @param level  The level of the block entity.
      * @param pos    The position of the block entity.
      */
-    public static void openBEMenu(Player player, Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof MenuProvider mp && player instanceof ServerPlayer sp) {
-            net.minecraftforge.network.NetworkHooks.openScreen(sp, mp, buf -> buf.writeBlockPos(pos));
+    public static void openBEMenu(PlayerEntity player, World level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof INamedContainerProvider && player instanceof ServerPlayerEntity) {
+            INamedContainerProvider mp = (INamedContainerProvider) level.getBlockEntity(pos);
+            ServerPlayerEntity sp = (ServerPlayerEntity) player;
+            net.minecraftforge.fml.network.NetworkHooks.openGui(sp, mp, buf -> buf.writeBlockPos(pos));
         }
     }
 
@@ -268,18 +271,18 @@ public final class BCUtil {
     }
 
     /**
-     * @param vec A {@link Vec3i}.
-     * @return The given {@link Vec3i}, represented as a {@link Vec3}.
+     * @param vec A {@link Vector3i}.
+     * @return The given {@link Vector3i}, represented as a {@link Vector3d}.
      */
-    public static Vec3 toVec3(Vec3i vec) {
-        return new Vec3(vec.getX(), vec.getY(), vec.getZ());
+    public static Vector3d toVec3(Vector3i vec) {
+        return new Vector3d(vec.getX(), vec.getY(), vec.getZ());
     }
 
     /**
-     * Attempts to insert the given {@link ItemStack} into a container at the given {@link BlockPos} in the given {@link Level} from the given {@link Direction}, if possible.
-     * First, the vanilla way using {@link Container} is checked. If that doesn't work, the Forge way using {@link IItemHandler} is checked.
+     * Attempts to insert the given {@link ItemStack} into a container at the given {@link BlockPos} in the given {@link World} from the given {@link Direction}, if possible.
+     * First, the vanilla way using {@link IInventory} is checked. If that doesn't work, the Forge way using {@link IItemHandler} is checked.
      *
-     * @param level     The {@link Level} the insertion takes place in.
+     * @param level     The {@link World} the insertion takes place in.
      * @param pos       The {@link BlockPos} the insertion takes place at.
      * @param direction The {@link Direction} from which the insertion happens.
      * @param stack     The {@link ItemStack} to be inserted.
@@ -287,20 +290,20 @@ public final class BCUtil {
      * @param <T>       The generic type of the source.
      * @return The {@link ItemStack} left after the insertion has been attempted and, if applicable, succeeded.
      */
-    public static <T extends BlockEntity & Container> ItemStack tryInsert(Level level, BlockPos pos, Direction direction, ItemStack stack, @Nullable T source) {
-        Container container = HopperBlockEntity.getContainerAt(level, pos.relative(direction));
-        if (container != null) return HopperBlockEntity.addItem(source, container, stack, direction.getOpposite());
-        BlockEntity be = level.getBlockEntity(pos);
+    public static <T extends TileEntity & IInventory> ItemStack tryInsert(World level, BlockPos pos, Direction direction, ItemStack stack, @Nullable T source) {
+        IInventory container = HopperTileEntity.getContainerAt(level, pos.relative(direction));
+        if (container != null) return HopperTileEntity.addItem(source, container, stack, direction.getOpposite());
+        TileEntity be = level.getBlockEntity(pos);
         IItemHandler cap = null;
         if (be != null) {
-            cap = be.getCapability(ForgeCapabilities.ITEM_HANDLER, direction).orElse(null);
+            cap = be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction).orElse(null);
         }
         if (cap == null) {
-            List<Entity> list = level.getEntities((Entity) null, new AABB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), EntitySelector.ENTITY_STILL_ALIVE);
+            List<Entity> list = level.getEntities((Entity) null, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1), EntityPredicates.ENTITY_STILL_ALIVE);
             if (!list.isEmpty()) {
                 Collections.shuffle(list);
                 for (Entity entity : list) {
-                    cap = entity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction).orElse(null);
+                    cap = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction).orElse(null);
                     if (cap != null) break;
                 }
             }

@@ -3,26 +3,32 @@ package com.github.minecraftschurlimods.bibliocraft.client.ber;
 import com.github.minecraftschurlimods.bibliocraft.content.discrack.DiscRackBlockEntity;
 import com.github.minecraftschurlimods.bibliocraft.content.discrack.WallDiscRackBlock;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.util.Direction;
+import net.minecraft.state.properties.BlockStateProperties;
 
-public class DiscRackBER implements BlockEntityRenderer<DiscRackBlockEntity> {
+public class DiscRackBER extends TileEntityRenderer<DiscRackBlockEntity> {
+    public DiscRackBER(TileEntityRendererDispatcher dispatcher) {
+        super(dispatcher);
+    }
+
+
     @Override
-    public void render(DiscRackBlockEntity blockEntity, float partialTick, PoseStack stack, MultiBufferSource buffer, int light, int overlay) {
+    public void render(DiscRackBlockEntity blockEntity, float partialTick, MatrixStack stack, IRenderTypeBuffer buffer, int light, int overlay) {
         for (int i = 0; i < blockEntity.getContainerSize(); i++) {
             stack.pushPose();
             if (blockEntity.getBlockState().getBlock() instanceof WallDiscRackBlock) {
                 stack.translate(0.5, 0.5, 0.5);
                 Direction facing = blockEntity.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-                stack.mulPose(Axis.YP.rotationDegrees(facing.getAxis() == Direction.Axis.X ? 90 : 0));
+                stack.mulPose(Vector3f.YP.rotationDegrees(facing.getAxis() == Direction.Axis.X ? 90 : 0));
                 if (facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
-                    stack.mulPose(Axis.YP.rotationDegrees(180));
+                    stack.mulPose(Vector3f.YP.rotationDegrees(180));
                 }
-                stack.mulPose(Axis.XP.rotationDegrees(90));
+                stack.mulPose(Vector3f.XP.rotationDegrees(90));
             } else {
                 ClientUtil.setupCenteredBER(stack, blockEntity);
             }

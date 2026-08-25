@@ -1,18 +1,19 @@
 package com.github.minecraftschurlimods.bibliocraft.util.block;
 
+import net.minecraft.util.text.TranslationTextComponent;
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.Nameable;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.util.INameable;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.tileentity.LockableTileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.BlockState;
 
 import javax.annotation.Nullable;
 
@@ -20,19 +21,19 @@ import javax.annotation.Nullable;
  * Abstract superclass for block entities with an associated menu.
  */
 @SuppressWarnings("unused")
-public abstract class BCMenuBlockEntity extends BCBlockEntity implements MenuProvider, Nameable {
+public abstract class BCMenuBlockEntity extends BCBlockEntity implements INamedContainerProvider, INameable {
     private static final String NAME_KEY = "CustomName";
-    private final Component defaultName;
-    private Component name;
+    private final ITextComponent defaultName;
+    private ITextComponent name;
 
     /**
-     * @param type          The {@link BlockEntityType} to use.
+     * @param type          The {@link TileEntityType} to use.
      * @param containerSize The size of the container.
      * @param defaultName   The title of the title, shown in GUIs.
      * @param pos           The position of this BE.
      * @param state         The state of this BE.
      */
-    public BCMenuBlockEntity(BlockEntityType<?> type, int containerSize, Component defaultName, BlockPos pos, BlockState state) {
+    public BCMenuBlockEntity(TileEntityType<?> type, int containerSize, ITextComponent defaultName, BlockPos pos, BlockState state) {
         super(type, containerSize, pos, state);
         this.defaultName = defaultName;
     }
@@ -44,16 +45,16 @@ public abstract class BCMenuBlockEntity extends BCBlockEntity implements MenuPro
      * @param inventory The player inventory to use.
      * @return A menu instance for this block entity.
      */
-    protected abstract AbstractContainerMenu createMenu(int id, Inventory inventory);
+    protected abstract Container createMenu(int id, PlayerInventory inventory);
 
     @Override
-    public Component getName() {
+    public ITextComponent getName() {
         return name != null ? name : defaultName;
     }
 
     @Override
     @Nullable
-    public Component getCustomName() {
+    public ITextComponent getCustomName() {
         return name;
     }
 
@@ -62,12 +63,12 @@ public abstract class BCMenuBlockEntity extends BCBlockEntity implements MenuPro
      *
      * @param name The name to set.
      */
-    public void setCustomName(Component name) {
+    public void setCustomName(ITextComponent name) {
         this.name = name;
     }
 
     @Override
-    public Component getDisplayName() {
+    public ITextComponent getDisplayName() {
         return getName();
     }
 
@@ -75,29 +76,30 @@ public abstract class BCMenuBlockEntity extends BCBlockEntity implements MenuPro
      * @param name The name to use.
      * @return A title component of the format {@code "container.bibliocraft.<name>"}.
      */
-    public static Component defaultName(String name) {
-        return Component.translatable("container." + BibliocraftApi.MOD_ID + "." + name);
+    public static ITextComponent defaultName(String name) {
+        return new TranslationTextComponent("container." + BibliocraftApi.MOD_ID + "." + name);
     }
 
     @Override
     @Nullable
-    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return BaseContainerBlockEntity.canUnlock(player, getLockKey(), getDisplayName()) ? this.createMenu(id, inventory) : null;
+    public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+        return LockableTileEntity.canUnlock(player, getLockKey(), getDisplayName()) ? this.createMenu(id, inventory) : null;
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        if (tag.contains(NAME_KEY, Tag.TAG_STRING)) {
-            this.name = Component.Serializer.fromJson(tag.getString(NAME_KEY));
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
+        if (tag.contains(NAME_KEY, net.minecraftforge.common.util.Constants.NBT.TAG_STRING)) {
+            this.name = ITextComponent.Serializer.fromJson(tag.getString(NAME_KEY));
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        super.save(tag);
         if (name != null) {
-            tag.putString(NAME_KEY, Component.Serializer.toJson(name));
+            tag.putString(NAME_KEY, ITextComponent.Serializer.toJson(name));
         }
+        return tag;
     }
 }

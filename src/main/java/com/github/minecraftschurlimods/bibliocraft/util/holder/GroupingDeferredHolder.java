@@ -1,14 +1,14 @@
 package com.github.minecraftschurlimods.bibliocraft.util.holder;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.RegistryObject;
 
 import java.util.Collection;
 
 /**
  * Represents a group of {@link RegistryObject}s.
  */
-public interface GroupingDeferredHolder<R, T extends R> {
+public interface GroupingDeferredHolder<R extends net.minecraftforge.registries.IForgeRegistryEntry<R>, T extends R> {
     /**
      * @return An immutable collection of all {@link RegistryObject}s in this object.
      */

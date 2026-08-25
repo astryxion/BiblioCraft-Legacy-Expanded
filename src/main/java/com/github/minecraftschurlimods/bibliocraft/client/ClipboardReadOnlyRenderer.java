@@ -5,22 +5,20 @@ import com.github.minecraftschurlimods.bibliocraft.content.clipboard.ClipboardCo
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix4f;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
 
 import java.util.List;
 
 /**
- * Holds methods for rendering clipboard contents in a read-only manner. A lot of code in here is boiled-down code from GuiGraphics.
+ * Holds methods for rendering clipboard contents in a read-only manner. A lot of code in here is boiled-down code from MatrixStack.
  */
 @SuppressWarnings({"SameParameterValue", "unused"})
 public final class ClipboardReadOnlyRenderer {
@@ -28,7 +26,7 @@ public final class ClipboardReadOnlyRenderer {
     private static final ResourceLocation CHECK_TEXTURE = BCUtil.bcLoc("textures/gui/sprites/check.png");
     private static final ResourceLocation X_TEXTURE = BCUtil.bcLoc("textures/gui/sprites/x.png");
 
-    public static void render(PoseStack pose, MultiBufferSource bufferSource, ClipboardContent data, int width, int height) {
+    public static void render(MatrixStack pose, IRenderTypeBuffer bufferSource, ClipboardContent data, int width, int height) {
         pose.pushPose();
         RenderSystem.enableDepthTest();
         blit(pose, BACKGROUND, 0, 0, 0, 0, width, height, 256, 256);
@@ -49,14 +47,14 @@ public final class ClipboardReadOnlyRenderer {
         pose.popPose();
     }
 
-    private static void drawText(PoseStack pose, MultiBufferSource bufferSource, String text, float x, float y, int width, int height) {
-        Font font = ClientUtil.getFont();
+    private static void drawText(MatrixStack pose, IRenderTypeBuffer bufferSource, String text, float x, float y, int width, int height) {
+        FontRenderer font = ClientUtil.getFont();
         String visibleText = font.plainSubstrByWidth(text, width);
         if (visibleText.isEmpty()) return;
-        font.drawInBatch(visibleText, x, y, 0, false, pose.last().pose(), bufferSource, Font.DisplayMode.POLYGON_OFFSET, 0, LightTexture.FULL_BRIGHT, font.isBidirectional());
+        font.drawInBatch(visibleText, x, y, 0, false, pose.last().pose(), bufferSource, true, 0, LightTexture.pack(15, 15), font.isBidirectional());
     }
 
-    private static void blit(PoseStack pose, ResourceLocation atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float textureWidth, float textureHeight) {
+    private static void blit(MatrixStack pose, ResourceLocation atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float textureWidth, float textureHeight) {
         float minU = uOffset / textureWidth;
         float maxU = (uOffset + uWidth) / textureWidth;
         float minV = vOffset / textureHeight;
@@ -64,16 +62,21 @@ public final class ClipboardReadOnlyRenderer {
         innerBlit(pose, atlasLocation, x, x + uWidth, y, y + vHeight, minU, maxU, minV, maxV);
     }
 
-    private static void innerBlit(PoseStack pose, ResourceLocation atlasLocation, float x1, float x2, float y1, float y2, float minU, float maxU, float minV, float maxV) {
-        RenderSystem.setShaderTexture(0, atlasLocation);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    private static void innerBlit(MatrixStack pose, ResourceLocation atlasLocation, float x1, float x2, float y1, float y2, float minU, float maxU, float minV, float maxV) {
+        net.minecraft.client.Minecraft.getInstance().getTextureManager().bind(atlasLocation);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableLighting();
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         Matrix4f matrix4f = pose.last().pose();
-        BufferBuilder bb = Tesselator.getInstance().getBuilder();
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        BufferBuilder bb = Tessellator.getInstance().getBuilder();
+        bb.begin(7, DefaultVertexFormats.POSITION_TEX);
         bb.vertex(matrix4f, x1, y1, 0).uv(minU, minV).endVertex();
         bb.vertex(matrix4f, x1, y2, 0).uv(minU, maxV).endVertex();
         bb.vertex(matrix4f, x2, y2, 0).uv(maxU, maxV).endVertex();
         bb.vertex(matrix4f, x2, y1, 0).uv(maxU, minV).endVertex();
-        Tesselator.getInstance().end();
+        Tessellator.getInstance().end();
+        RenderSystem.enableLighting();
+        RenderSystem.disableBlend();
     }
 }

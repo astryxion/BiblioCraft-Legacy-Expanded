@@ -11,24 +11,24 @@ import com.github.minecraftschurlimods.bibliocraft.content.printingtable.Printin
 import com.github.minecraftschurlimods.bibliocraft.content.shelf.ShelfMenu;
 import com.github.minecraftschurlimods.bibliocraft.content.slottedbook.SlottedBookMenu;
 import com.github.minecraftschurlimods.bibliocraft.content.toolrack.ToolRackMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraftforge.common.extensions.IForgeContainerType;
 
 import java.util.function.Supplier;
 
 public interface BCMenus {
     // @formatter:off
-    Supplier<MenuType<BookcaseMenu>>        BOOKCASE          = BCRegistries.MENUS.register("bookcase",          () -> IForgeMenuType.create(BookcaseMenu::new));
-    Supplier<MenuType<CookieJarMenu>>       COOKIE_JAR        = BCRegistries.MENUS.register("cookie_jar",        () -> IForgeMenuType.create(CookieJarMenu::new));
-    Supplier<MenuType<DiscRackMenu>>        DISC_RACK         = BCRegistries.MENUS.register("disc_rack",         () -> IForgeMenuType.create(DiscRackMenu::new));
-    Supplier<MenuType<FancyArmorStandMenu>> FANCY_ARMOR_STAND = BCRegistries.MENUS.register("fancy_armor_stand", () -> IForgeMenuType.create(FancyArmorStandMenu::new));
-    Supplier<MenuType<FancyCrafterMenu>>    FANCY_CRAFTER     = BCRegistries.MENUS.register("fancy_crafter",     () -> IForgeMenuType.create(FancyCrafterMenu::new));
-    Supplier<MenuType<LabelMenu>>           LABEL             = BCRegistries.MENUS.register("label",             () -> IForgeMenuType.create(LabelMenu::new));
-    Supplier<MenuType<PotionShelfMenu>>     POTION_SHELF      = BCRegistries.MENUS.register("potion_shelf",      () -> IForgeMenuType.create(PotionShelfMenu::new));
-    Supplier<MenuType<PrintingTableMenu>>   PRINTING_TABLE    = BCRegistries.MENUS.register("printing_table",    () -> IForgeMenuType.create(PrintingTableMenu::new));
-    Supplier<MenuType<ShelfMenu>>           SHELF             = BCRegistries.MENUS.register("shelf",             () -> IForgeMenuType.create(ShelfMenu::new));
-    Supplier<MenuType<SlottedBookMenu>>     SLOTTED_BOOK      = BCRegistries.MENUS.register("slotted_book",      () -> IForgeMenuType.create(SlottedBookMenu::new));
-    Supplier<MenuType<ToolRackMenu>>        TOOL_RACK         = BCRegistries.MENUS.register("tool_rack",         () -> IForgeMenuType.create(ToolRackMenu::new));
+    Supplier<ContainerType<BookcaseMenu>>        BOOKCASE          = BCRegistries.MENUS.register("bookcase",          () -> IForgeContainerType.create(BookcaseMenu::new));
+    Supplier<ContainerType<CookieJarMenu>>       COOKIE_JAR        = BCRegistries.MENUS.register("cookie_jar",        () -> IForgeContainerType.create(CookieJarMenu::new));
+    Supplier<ContainerType<DiscRackMenu>>        DISC_RACK         = BCRegistries.MENUS.register("disc_rack",         () -> IForgeContainerType.create(DiscRackMenu::new));
+    Supplier<ContainerType<FancyArmorStandMenu>> FANCY_ARMOR_STAND = BCRegistries.MENUS.register("fancy_armor_stand", () -> IForgeContainerType.create(FancyArmorStandMenu::new));
+    Supplier<ContainerType<FancyCrafterMenu>>    FANCY_CRAFTER     = BCRegistries.MENUS.register("fancy_crafter",     () -> IForgeContainerType.create(FancyCrafterMenu::new));
+    Supplier<ContainerType<LabelMenu>>           LABEL             = BCRegistries.MENUS.register("label",             () -> IForgeContainerType.create(LabelMenu::new));
+    Supplier<ContainerType<PotionShelfMenu>>     POTION_SHELF      = BCRegistries.MENUS.register("potion_shelf",      () -> IForgeContainerType.create(PotionShelfMenu::new));
+    Supplier<ContainerType<PrintingTableMenu>>   PRINTING_TABLE    = BCRegistries.MENUS.register("printing_table",    () -> IForgeContainerType.create(PrintingTableMenu::new));
+    Supplier<ContainerType<ShelfMenu>>           SHELF             = BCRegistries.MENUS.register("shelf",             () -> IForgeContainerType.create(ShelfMenu::new));
+    Supplier<ContainerType<SlottedBookMenu>>     SLOTTED_BOOK      = BCRegistries.MENUS.register("slotted_book",      () -> IForgeContainerType.create(SlottedBookMenu::new));
+    Supplier<ContainerType<ToolRackMenu>>        TOOL_RACK         = BCRegistries.MENUS.register("tool_rack",         () -> IForgeContainerType.create(ToolRackMenu::new));
     // @formatter:on
 
     /**

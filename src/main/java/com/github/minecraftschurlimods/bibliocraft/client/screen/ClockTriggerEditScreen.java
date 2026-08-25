@@ -1,19 +1,19 @@
 package com.github.minecraftschurlimods.bibliocraft.client.screen;
 
+import net.minecraft.util.text.StringTextComponent;
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockTrigger;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.gui.FontRenderer;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.widget.button.CheckboxButton;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.ResourceLocation;
+import javax.annotation.Nullable;
 
 public class ClockTriggerEditScreen extends Screen {
     private static final ResourceLocation BACKGROUND = BCUtil.bcLoc("textures/gui/clock_edit.png");
@@ -30,16 +30,16 @@ public class ClockTriggerEditScreen extends Screen {
     private int topPos;
     private int contentLeftPos;
     private int contentTopPos;
-    private EditBox hours;
-    private EditBox minutes;
-    private Checkbox redstone;
-    private Checkbox sound;
+    private TextFieldWidget hours;
+    private TextFieldWidget minutes;
+    private CheckboxButton redstone;
+    private CheckboxButton sound;
 
     public ClockTriggerEditScreen(ClockScreen parent, @Nullable ClockTrigger old) {
         super(Translations.CLOCK_TITLE);
         this.parent = parent;
         this.old = old;
-        Font font = ClientUtil.getFont();
+        FontRenderer font = ClientUtil.getFont();
         timeWidth = font.width(Translations.CLOCK_TIME);
         separatorWidth = font.width(Translations.CLOCK_TIME_SEPARATOR);
         redstoneWidth = font.width(Translations.CLOCK_EMIT_REDSTONE);
@@ -52,9 +52,9 @@ public class ClockTriggerEditScreen extends Screen {
         topPos = (height - HEIGHT) / 2;
         contentLeftPos = (width - Math.min(WIDTH - 12, BCUtil.max(timeWidth + separatorWidth + 90, redstoneWidth + 19, soundWidth + 19))) / 2;
         contentTopPos = topPos + 6;
-        Font font = ClientUtil.getFont();
-        hours = addRenderableWidget(new EditBox(font, contentLeftPos + timeWidth + 2, contentTopPos, 40, 20, Translations.CLOCK_HOURS));
-        hours.setHint(Translations.CLOCK_HOURS_HINT);
+        FontRenderer font = ClientUtil.getFont();
+        hours = addButton(new TextFieldWidget(font, contentLeftPos + timeWidth + 2, contentTopPos, 40, 20, Translations.CLOCK_HOURS));
+        hours.setSuggestion(Translations.CLOCK_HOURS_HINT.getString());
         hours.setFilter(s -> {
             try {
                 int i = Integer.parseInt(s);
@@ -63,8 +63,9 @@ public class ClockTriggerEditScreen extends Screen {
                 return s.isEmpty();
             }
         });
-        minutes = addRenderableWidget(new EditBox(font, contentLeftPos + timeWidth + separatorWidth + 44, contentTopPos, 40, 20, Translations.CLOCK_MINUTES));
-        minutes.setHint(Translations.CLOCK_MINUTES_HINT);
+        hours.setResponder(s -> hours.setSuggestion(s.isEmpty() ? Translations.CLOCK_HOURS_HINT.getString() : null));
+        minutes = addButton(new TextFieldWidget(font, contentLeftPos + timeWidth + separatorWidth + 44, contentTopPos, 40, 20, Translations.CLOCK_MINUTES));
+        minutes.setSuggestion(Translations.CLOCK_MINUTES_HINT.getString());
         minutes.setFilter(s -> {
             try {
                 int i = Integer.parseInt(s);
@@ -73,9 +74,10 @@ public class ClockTriggerEditScreen extends Screen {
                 return s.isEmpty();
             }
         });
-        redstone = addRenderableWidget(new Checkbox(contentLeftPos, contentTopPos + 22, 20, 20, Component.empty(), old != null && old.redstone()));
-        sound = addRenderableWidget(new Checkbox(contentLeftPos, contentTopPos + 41, 20, 20, Component.empty(), old != null && old.sound()));
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, $ -> {
+        minutes.setResponder(s -> minutes.setSuggestion(s.isEmpty() ? Translations.CLOCK_MINUTES_HINT.getString() : null));
+        redstone = addButton(ClockScreen.checkbox17(contentLeftPos, contentTopPos + 22, old != null && old.redstone()));
+        sound = addButton(ClockScreen.checkbox17(contentLeftPos, contentTopPos + 41, old != null && old.sound()));
+        addButton(new Button(leftPos, topPos + HEIGHT + 4, WIDTH, 20, net.minecraft.client.gui.DialogTexts.GUI_DONE, $ -> {
             try {
                 if (old != null) {
                     parent.removeTrigger(old);
@@ -84,7 +86,7 @@ public class ClockTriggerEditScreen extends Screen {
             } catch (NumberFormatException ignored) {
             }
             onClose();
-        }).bounds(leftPos, topPos + HEIGHT + 4, WIDTH, 20).build());
+        }));
         if (old != null) {
             hours.setValue(String.valueOf(old.hour()));
             minutes.setValue(String.valueOf(old.minute()));
@@ -92,18 +94,19 @@ public class ClockTriggerEditScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(MatrixStack graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawString(ClientUtil.getFont(), Translations.CLOCK_TIME, contentLeftPos, contentTopPos + 6, 0x404040, false);
-        graphics.drawString(ClientUtil.getFont(), Translations.CLOCK_TIME_SEPARATOR, contentLeftPos + timeWidth + 43, contentTopPos + 6, 0x404040, false);
-        graphics.drawString(ClientUtil.getFont(), Translations.CLOCK_EMIT_REDSTONE, contentLeftPos + 19, contentTopPos + 27, 0x404040, false);
-        graphics.drawString(ClientUtil.getFont(), Translations.CLOCK_EMIT_SOUND, contentLeftPos + 19, contentTopPos + 46, 0x404040, false);
+        ClientUtil.getFont().draw(graphics, Translations.CLOCK_TIME, contentLeftPos, contentTopPos + 6, 0x404040);
+        ClientUtil.getFont().draw(graphics, Translations.CLOCK_TIME_SEPARATOR, contentLeftPos + timeWidth + 43, contentTopPos + 6, 0x404040);
+        ClientUtil.getFont().draw(graphics, Translations.CLOCK_EMIT_REDSTONE, contentLeftPos + 19, contentTopPos + 27, 0x404040);
+        ClientUtil.getFont().draw(graphics, Translations.CLOCK_EMIT_SOUND, contentLeftPos + 19, contentTopPos + 46, 0x404040);
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics) {
+    public void renderBackground(MatrixStack graphics) {
         super.renderBackground(graphics);
-        graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, WIDTH, HEIGHT);
+        this.minecraft.getTextureManager().bind(BACKGROUND);
+        this.blit(graphics, leftPos, topPos, 0, 0, WIDTH, HEIGHT);
     }
 }

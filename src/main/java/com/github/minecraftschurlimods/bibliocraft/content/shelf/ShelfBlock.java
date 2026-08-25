@@ -2,20 +2,20 @@ package com.github.minecraftschurlimods.bibliocraft.content.shelf;
 
 import com.github.minecraftschurlimods.bibliocraft.util.ShapeUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingInteractibleBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.util.Rotation;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import javax.annotation.Nullable;
 
 public class ShelfBlock extends BCFacingInteractibleBlock {
-    private static final VoxelShape NORTH_SHAPE = Shapes.box(0, 0, 0.5, 1, 1, 1);
+    private static final VoxelShape NORTH_SHAPE = VoxelShapes.box(0, 0, 0.5, 1, 1, 1);
     private static final VoxelShape EAST_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.CLOCKWISE_90);
     private static final VoxelShape SOUTH_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.CLOCKWISE_180);
     private static final VoxelShape WEST_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.COUNTERCLOCKWISE_90);
@@ -26,22 +26,27 @@ public class ShelfBlock extends BCFacingInteractibleBlock {
 
     @Override
     @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ShelfBlockEntity(pos, state);
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(FACING)) {
-            default -> NORTH_SHAPE;
-            case EAST -> EAST_SHAPE;
-            case SOUTH -> SOUTH_SHAPE;
-            case WEST -> WEST_SHAPE;
-        };
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return new ShelfBlockEntity(BlockPos.ZERO, state);
     }
 
     @Override
-    public int lookingAtSlot(BlockState state, BlockHitResult hit) {
+    public VoxelShape getShape(BlockState state, IBlockReader level, BlockPos pos, ISelectionContext context) {
+        switch (state.getValue(FACING)) {
+default: return NORTH_SHAPE;
+case EAST: return EAST_SHAPE;
+case SOUTH: return SOUTH_SHAPE;
+case WEST: return WEST_SHAPE;
+}
+    }
+
+    @Override
+    public int lookingAtSlot(BlockState state, BlockRayTraceResult hit) {
         Direction direction = state.getValue(FACING).getClockWise();
         Direction.Axis axis = direction.getAxis();
         double hitX = hit.getLocation().get(axis) - hit.getBlockPos().get(axis);

@@ -2,11 +2,12 @@
 	"credit": "Made with Blockbench",
 	"parent": "minecraft:block/block",
 	"textures": {
-		"1": "block/copper_block",
+		"1": "block/gold_block",
 		"2": "bibliocraft:block/printing_table_bottom",
 		"3": "bibliocraft:block/printing_table_side",
 		"4": "bibliocraft:block/printing_table_front",
-		"particle": "bibliocraft:block/printing_table_bottom"
+		"particle": "bibliocraft:block/printing_table_bottom",
+		"missing": "bibliocraft:block/printing_table_side"
 	},
 	"elements": [
 		{

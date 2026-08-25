@@ -3,18 +3,21 @@ package com.github.minecraftschurlimods.bibliocraft.content.bookcase;
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenuBlockEntity;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.world.World;
+import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 
 import java.util.ArrayList;
@@ -32,42 +35,46 @@ public class BookcaseBlockEntity extends BCMenuBlockEntity {
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inventory) {
+    public Container createMenu(int id, PlayerInventory inventory) {
         return new BookcaseMenu(id, inventory, this);
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+        super.handleUpdateTag(state, tag);
         requestModelDataUpdate();
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
         super.onDataPacket(net, pkt);
-        level().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        level().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         requestModelDataUpdate();
     }
 
     @Override
-    public ModelData getModelData() {
-        ModelData.Builder builder = ModelData.builder();
+    public IModelData getModelData() {
+        ModelDataMap.Builder builder = new ModelDataMap.Builder();
         for (int i = 0; i < MODEL_PROPERTIES.size(); i++) {
-            builder.with(MODEL_PROPERTIES.get(i), !items.getStackInSlot(i).isEmpty());
+            builder.withInitial(MODEL_PROPERTIES.get(i), !items.getStackInSlot(i).isEmpty());
         }
         return builder.build();
     }
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        if (stack.is(BCTags.Items.BOOKCASE_BOOKS)) return true;
-        return stack.is(Items.BOOK) || stack.is(Items.ENCHANTED_BOOK);
+        if (BCTags.Items.contains(BCTags.Items.BOOKCASE_BOOKS, stack.getItem())) return true;
+        return stack.getItem() == Items.BOOK || stack.getItem() == Items.ENCHANTED_BOOK;
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
         super.setItem(slot, stack);
         requestModelDataUpdate();
+        World level = getLevel();
+        if (level != null && !level.isClientSide()) {
+            level.updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
+        }
     }
 
     @Override

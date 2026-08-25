@@ -1,24 +1,24 @@
 package com.github.minecraftschurlimods.bibliocraft.content.fancyarmorstand;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCEntities;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.Direction;
+import net.minecraft.entity.EntityType;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 /**
  * Helper entity for rendering the contents of a {@link FancyArmorStandBlockEntity}. Defers item querying and rotations to the block entity.
  */
-public class FancyArmorStandEntity extends ArmorStand {
+public class FancyArmorStandEntity extends ArmorStandEntity {
     private FancyArmorStandBlockEntity blockEntity;
 
-    public FancyArmorStandEntity(EntityType<? extends ArmorStand> entityType, Level level) {
+    public FancyArmorStandEntity(EntityType<? extends ArmorStandEntity> entityType, World level) {
         super(entityType, level);
     }
 
-    public FancyArmorStandEntity(Level level, FancyArmorStandBlockEntity blockEntity) {
+    public FancyArmorStandEntity(World level, FancyArmorStandBlockEntity blockEntity) {
         this(BCEntities.FANCY_ARMOR_STAND.get(), level);
         this.blockEntity = blockEntity;
     }
@@ -37,11 +37,11 @@ public class FancyArmorStandEntity extends ArmorStand {
     public float getYHeadRot() {
         if (blockEntity == null) return super.getYHeadRot();
         Direction facing = blockEntity.getBlockState().getValue(FancyArmorStandBlock.FACING);
-        return facing.getAxis() == Direction.Axis.Z ? facing.getOpposite().toYRot() : facing.toYRot();
+        return facing.toYRot();
     }
 
     @Override
-    public ItemStack getItemBySlot(EquipmentSlot slot) {
-        return slot.isArmor() && blockEntity != null ? blockEntity.getItem(3 - slot.getIndex()) : super.getItemBySlot(slot);
+    public ItemStack getItemBySlot(EquipmentSlotType slot) {
+        return slot.getType() == EquipmentSlotType.Group.ARMOR && blockEntity != null ? blockEntity.getItem(3 - slot.getIndex()) : super.getItemBySlot(slot);
     }
 }

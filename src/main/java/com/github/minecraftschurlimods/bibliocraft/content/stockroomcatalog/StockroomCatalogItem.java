@@ -1,24 +1,25 @@
 package com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog;
 
+import net.minecraft.util.text.TranslationTextComponent;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.ChestType;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.ActionResult;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.properties.ChestType;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.Comparator;
@@ -36,9 +37,33 @@ public class StockroomCatalogItem extends Item {
     }
 
     @SuppressWarnings("deprecation")
-    public static List<BlockPos> calculatePositions(ItemStack stack, Level level, Player player, StockroomCatalogSorting.Container containerSorting) {
+    public static List<BlockPos> calculatePositions(ItemStack stack, World level, PlayerEntity player, StockroomCatalogSorting.Container containerSorting) {
         Comparator<BlockPos> COMPARE_DISTANCE = Comparator.comparingDouble(e -> player.position().distanceTo(BCUtil.toVec3(e)));
         Comparator<BlockPos> COMPARE_ALPHABETICAL = Comparator.comparing(e -> BCUtil.getNameAtPos(level, e).getString());
+        Comparator<BlockPos> distanceSort;
+        switch (containerSorting) {
+            case ALPHABETICAL_ASC:
+            case DISTANCE_ASC:
+                distanceSort = COMPARE_DISTANCE;
+                break;
+            case ALPHABETICAL_DESC:
+            case DISTANCE_DESC:
+            default:
+                distanceSort = BCUtil.reverseComparator(COMPARE_DISTANCE);
+                break;
+        }
+        Comparator<BlockPos> alphaSort;
+        switch (containerSorting) {
+            case ALPHABETICAL_ASC:
+                alphaSort = COMPARE_ALPHABETICAL;
+                break;
+            case ALPHABETICAL_DESC:
+                alphaSort = BCUtil.reverseComparator(COMPARE_ALPHABETICAL);
+                break;
+            default:
+                alphaSort = Comparator.comparingInt($ -> 0);
+                break;
+        }
         return StockroomCatalogContent.getFromStack(stack)
                 .positions()
                 .stream()
@@ -46,26 +71,19 @@ public class StockroomCatalogItem extends Item {
                 .map(GlobalPos::pos)
                 .filter(level::hasChunkAt)
                 .filter(e -> {
-                    BlockEntity be = level.getBlockEntity(e);
-                    return be != null && be.getCapability(ForgeCapabilities.ITEM_HANDLER, null).isPresent();
+                    TileEntity be = level.getBlockEntity(e);
+                    return be != null && be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).isPresent();
                 })
-                .sorted(switch (containerSorting) {
-                    case ALPHABETICAL_ASC, DISTANCE_ASC -> COMPARE_DISTANCE;
-                    case ALPHABETICAL_DESC, DISTANCE_DESC -> BCUtil.reverseComparator(COMPARE_DISTANCE);
-                })
-                .sorted(switch (containerSorting) {
-                    case ALPHABETICAL_ASC -> COMPARE_ALPHABETICAL;
-                    case ALPHABETICAL_DESC -> BCUtil.reverseComparator(COMPARE_ALPHABETICAL);
-                    default -> Comparator.comparingInt($ -> 0);
-                })
-                .toList();
+                .sorted(distanceSort)
+                .sorted(alphaSort)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    public static List<StockroomCatalogItemEntry> calculateItems(List<BlockPos> positions, Level level, StockroomCatalogSorting.Item itemSorting) {
+    public static List<StockroomCatalogItemEntry> calculateItems(List<BlockPos> positions, World level, StockroomCatalogSorting.Item itemSorting) {
         Map<ItemStack, StockroomCatalogItemEntry> tempItems = new LinkedHashMap<>();
         for (BlockPos pos : positions) {
-            BlockEntity be = level.getBlockEntity(pos);
-            IItemHandler cap = be != null ? be.getCapability(ForgeCapabilities.ITEM_HANDLER, null).orElse(null) : null;
+            TileEntity be = level.getBlockEntity(pos);
+            IItemHandler cap = be != null ? be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElse(null) : null;
             if (cap == null) continue;
             for (int i = 0; i < cap.getSlots(); i++) {
                 ItemStack originalStack = cap.getStackInSlot(i);
@@ -76,7 +94,7 @@ public class StockroomCatalogItem extends Item {
                 Optional<ItemStack> optional = tempItems
                         .keySet()
                         .stream()
-                        .filter(e -> ItemStack.isSameItemSameTags(e, stack))
+                        .filter(e -> (ItemStack.isSame(e, stack) && ItemStack.tagMatches(e, stack)))
                         .findFirst();
                 StockroomCatalogItemEntry entry = optional
                         .map(itemStack -> tempItems.get(itemStack).add(count))
@@ -84,29 +102,51 @@ public class StockroomCatalogItem extends Item {
                 tempItems.put(optional.orElse(stack), entry.add(pos));
             }
         }
+        Comparator<StockroomCatalogItemEntry> firstSort;
+        switch (itemSorting) {
+            case ALPHABETICAL_ASC:
+                firstSort = COMPARE_COUNT;
+                break;
+            case ALPHABETICAL_DESC:
+                firstSort = BCUtil.reverseComparator(COMPARE_COUNT);
+                break;
+            case COUNT_ASC:
+                firstSort = COMPARE_NAME;
+                break;
+            case COUNT_DESC:
+            default:
+                firstSort = BCUtil.reverseComparator(COMPARE_NAME);
+                break;
+        }
+        Comparator<StockroomCatalogItemEntry> secondSort;
+        switch (itemSorting) {
+            case ALPHABETICAL_ASC:
+                secondSort = COMPARE_NAME;
+                break;
+            case ALPHABETICAL_DESC:
+                secondSort = BCUtil.reverseComparator(COMPARE_NAME);
+                break;
+            case COUNT_ASC:
+                secondSort = COMPARE_COUNT;
+                break;
+            case COUNT_DESC:
+            default:
+                secondSort = BCUtil.reverseComparator(COMPARE_COUNT);
+                break;
+        }
         return tempItems.values()
                 .stream()
-                .sorted(switch (itemSorting) {
-                    case ALPHABETICAL_ASC -> COMPARE_COUNT;
-                    case ALPHABETICAL_DESC -> BCUtil.reverseComparator(COMPARE_COUNT);
-                    case COUNT_ASC -> COMPARE_NAME;
-                    case COUNT_DESC -> BCUtil.reverseComparator(COMPARE_NAME);
-                })
-                .sorted(switch (itemSorting) {
-                    case ALPHABETICAL_ASC -> COMPARE_NAME;
-                    case ALPHABETICAL_DESC -> BCUtil.reverseComparator(COMPARE_NAME);
-                    case COUNT_ASC -> COMPARE_COUNT;
-                    case COUNT_DESC -> BCUtil.reverseComparator(COMPARE_COUNT);
-                })
-                .toList();
+                .sorted(firstSort)
+                .sorted(secondSort)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Player player = context.getPlayer();
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity player = context.getPlayer();
         if (player != null && context.isSecondaryUseActive()) {
             BlockPos pos = context.getClickedPos();
-            Level level = context.getLevel();
+            World level = context.getLevel();
             BlockState state = level.getBlockState(pos);
             ItemStack stack = context.getItemInHand();
             StockroomCatalogContent list = StockroomCatalogContent.getFromStack(stack);
@@ -116,26 +156,26 @@ public class StockroomCatalogItem extends Item {
             GlobalPos globalPos = hasPositionAtNeighbor ? neighborPos : GlobalPos.of(level.dimension(), pos);
             if (list.positions().contains(globalPos)) {
                 StockroomCatalogContent.setOnStack(stack, list.remove(globalPos));
-                player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_REMOVE_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
-                return InteractionResult.SUCCESS;
+                player.displayClientMessage(new TranslationTextComponent(Translations.STOCKROOM_CATALOG_REMOVE_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
+                return ActionResultType.SUCCESS;
             }
-            BlockEntity be = level.getBlockEntity(pos);
-            IItemHandler cap = be != null ? be.getCapability(ForgeCapabilities.ITEM_HANDLER, context.getClickedFace()).orElse(null) : null;
+            TileEntity be = level.getBlockEntity(pos);
+            IItemHandler cap = be != null ? be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, context.getClickedFace()).orElse(null) : null;
             if (cap != null) {
                 StockroomCatalogContent.setOnStack(stack, list.add(globalPos));
-                player.displayClientMessage(Component.translatable(Translations.STOCKROOM_CATALOG_ADD_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
-                return InteractionResult.SUCCESS;
+                player.displayClientMessage(new TranslationTextComponent(Translations.STOCKROOM_CATALOG_ADD_CONTAINER_KEY, BCUtil.getNameAtPos(level, pos)), true);
+                return ActionResultType.SUCCESS;
             }
         }
         return super.useOn(context);
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public ActionResult<ItemStack> use(World level, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide()) {
             ClientUtil.openStockroomCatalogScreen(stack, player, hand);
         }
-        return InteractionResultHolder.success(stack);
+        return ActionResult.success(stack);
     }
 }

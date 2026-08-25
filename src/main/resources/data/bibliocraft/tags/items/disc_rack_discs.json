@@ -1,6 +1,6 @@
 {
   "values": [
-    "#forge:music_discs",
+    "#minecraft:music_discs",
     {
       "id": "#computercraft:disks",
       "required": false

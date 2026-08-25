@@ -2,15 +2,17 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancyarmorstand;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenuBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Equipable;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
+import javax.annotation.Nullable;
 
 public class FancyArmorStandBlockEntity extends BCMenuBlockEntity {
     private FancyArmorStandEntity entity;
@@ -20,26 +22,32 @@ public class FancyArmorStandBlockEntity extends BCMenuBlockEntity {
     }
 
     @Override
-    public void setLevel(Level level) {
-        super.setLevel(level);
+    public void setLevelAndPosition(World level, BlockPos pos) {
+        super.setLevelAndPosition(level, pos);
         entity = new FancyArmorStandEntity(level, this);
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inventory) {
+    public Container createMenu(int id, PlayerInventory inventory) {
         return new FancyArmorStandMenu(id, inventory, this);
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        entity.setRemoved(Entity.RemovalReason.KILLED);
+        entity.remove();
         entity = null;
     }
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        return stack.isEmpty() || (stack.getItem() instanceof Equipable equipable && equipable.getEquipmentSlot().isArmor() && equipable.getEquipmentSlot().getIndex() == 3 - index && super.canPlaceItem(index, stack));
+        if (stack.isEmpty()) return true;
+        EquipmentSlotType slot = stack.getEquipmentSlot();
+        if (slot == null && stack.getItem() instanceof ArmorItem) {
+            slot = ((ArmorItem) stack.getItem()).getSlot();
+        }
+        if (slot == null) return false;
+        return slot.getType() == EquipmentSlotType.Group.ARMOR && slot.getIndex() == 3 - index && super.canPlaceItem(index, stack);
     }
 
     @Override

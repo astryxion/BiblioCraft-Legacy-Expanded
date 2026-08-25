@@ -1,5 +1,6 @@
 package com.github.minecraftschurlimods.bibliocraft.util;
 
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import com.github.minecraftschurlimods.bibliocraft.BCConfig;
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.client.screen.BigBookScreen;
@@ -11,32 +12,31 @@ import com.github.minecraftschurlimods.bibliocraft.client.screen.StockroomCatalo
 import com.github.minecraftschurlimods.bibliocraft.client.screen.TypewriterPageScreen;
 import com.github.minecraftschurlimods.bibliocraft.client.screen.TypewriterScreen;
 import com.github.minecraftschurlimods.bibliocraft.content.stockroomcatalog.StockroomCatalogListPacket;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.BlockModelRenderer;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.client.RenderTypeHelper;
-import net.minecraftforge.client.model.data.ModelData;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.util.math.BlockPos;
+import java.util.Random;
+import net.minecraft.util.Hand;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraftforge.client.model.data.IModelData;
 
 import java.util.Calendar;
 
@@ -54,29 +54,29 @@ public final class ClientUtil {
     }
 
     /**
-     * Helper to get the {@link ClientLevel} instance from the {@link Minecraft} instance.
+     * Helper to get the {@link ClientWorld} instance from the {@link Minecraft} instance.
      *
-     * @return The {@link ClientLevel} instance.
+     * @return The {@link ClientWorld} instance.
      */
-    public static ClientLevel getLevel() {
+    public static ClientWorld getLevel() {
         return getMc().level;
     }
 
     /**
-     * Helper to get the {@link LocalPlayer} instance from the {@link Minecraft} instance.
+     * Helper to get the {@link ClientPlayerEntity} instance from the {@link Minecraft} instance.
      *
-     * @return The {@link LocalPlayer} instance.
+     * @return The {@link ClientPlayerEntity} instance.
      */
-    public static LocalPlayer getPlayer() {
+    public static ClientPlayerEntity getPlayer() {
         return getMc().player;
     }
 
     /**
-     * Helper to get the {@link Font} instance from the {@link Minecraft} instance.
+     * Helper to get the {@link FontRenderer} instance from the {@link Minecraft} instance.
      *
-     * @return The {@link Font} instance.
+     * @return The {@link FontRenderer} instance.
      */
-    public static Font getFont() {
+    public static FontRenderer getFont() {
         return getMc().font;
     }
 
@@ -84,10 +84,10 @@ public final class ClientUtil {
      * Opens a {@link BigBookScreen} on the client.
      *
      * @param stack  The owning {@link ItemStack} of the screen.
-     * @param player The owning {@link Player} of the screen.
-     * @param hand   The {@link InteractionHand} in which the big book is held.
+     * @param player The owning {@link PlayerEntity} of the screen.
+     * @param hand   The {@link Hand} in which the big book is held.
      */
-    public static void openBigBookScreen(ItemStack stack, Player player, InteractionHand hand) {
+    public static void openBigBookScreen(ItemStack stack, PlayerEntity player, Hand hand) {
         getMc().setScreen(new BigBookScreen(stack, player, hand));
     }
 
@@ -95,10 +95,10 @@ public final class ClientUtil {
      * Opens a {@link BigBookScreen} on the client.
      *
      * @param stack   The owning {@link ItemStack} of the screen.
-     * @param player  The owning {@link Player} of the screen.
+     * @param player  The owning {@link PlayerEntity} of the screen.
      * @param lectern The owning lectern's {@link BlockPos}.
      */
-    public static void openBigBookScreen(ItemStack stack, Player player, BlockPos lectern) {
+    public static void openBigBookScreen(ItemStack stack, PlayerEntity player, BlockPos lectern) {
         getMc().setScreen(new BigBookScreen(stack, player, lectern));
     }
 
@@ -106,9 +106,9 @@ public final class ClientUtil {
      * Opens a {@link ClipboardScreen} on the client.
      *
      * @param stack The owning {@link ItemStack} of the screen.
-     * @param hand  The {@link InteractionHand} in which the clipboard is held.
+     * @param hand  The {@link Hand} in which the clipboard is held.
      */
-    public static void openClipboardScreen(ItemStack stack, InteractionHand hand) {
+    public static void openClipboardScreen(ItemStack stack, Hand hand) {
         getMc().setScreen(new ClipboardScreen(stack, hand));
     }
 
@@ -142,10 +142,10 @@ public final class ClientUtil {
      * Opens a {@link StockroomCatalogScreen} on the client.
      *
      * @param stack  The owning {@link ItemStack} of the screen.
-     * @param player The owning {@link Player} of the screen.
-     * @param hand   The {@link InteractionHand} in which the stockroom catalog is held.
+     * @param player The owning {@link PlayerEntity} of the screen.
+     * @param hand   The {@link Hand} in which the stockroom catalog is held.
      */
-    public static void openStockroomCatalogScreen(ItemStack stack, Player player, InteractionHand hand) {
+    public static void openStockroomCatalogScreen(ItemStack stack, PlayerEntity player, Hand hand) {
         getMc().setScreen(new StockroomCatalogScreen(stack, player, hand));
     }
 
@@ -153,10 +153,10 @@ public final class ClientUtil {
      * Opens a {@link StockroomCatalogScreen} on the client.
      *
      * @param stack   The owning {@link ItemStack} of the screen.
-     * @param player  The owning {@link Player} of the screen.
+     * @param player  The owning {@link PlayerEntity} of the screen.
      * @param lectern The owning lectern's {@link BlockPos}.
      */
-    public static void openStockroomCatalogScreen(ItemStack stack, Player player, BlockPos lectern) {
+    public static void openStockroomCatalogScreen(ItemStack stack, PlayerEntity player, BlockPos lectern) {
         getMc().setScreen(new StockroomCatalogScreen(stack, player, lectern));
     }
 
@@ -164,13 +164,13 @@ public final class ClientUtil {
      * Opens the appropriate screen for a Bibliocraft book in a lectern. Call only on the client.
      *
      * @param stack  The {@link ItemStack} (book) in the lectern.
-     * @param player The {@link Player} viewing the lectern.
+     * @param player The {@link PlayerEntity} viewing the lectern.
      * @param pos    The {@link BlockPos} of the lectern.
      */
-    public static void openScreenForLectern(ItemStack stack, Player player, BlockPos pos) {
-        if (stack.is(BCItems.BIG_BOOK.get()) || stack.is(BCItems.WRITTEN_BIG_BOOK.get())) {
+    public static void openScreenForLectern(ItemStack stack, PlayerEntity player, BlockPos pos) {
+        if (stack.getItem() == BCItems.BIG_BOOK.get() || stack.getItem() == BCItems.WRITTEN_BIG_BOOK.get()) {
             openBigBookScreen(stack, player, pos);
-        } else if (stack.is(BCItems.STOCKROOM_CATALOG.get())) {
+        } else if (stack.getItem() == BCItems.STOCKROOM_CATALOG.get()) {
             openStockroomCatalogScreen(stack, player, pos);
         }
     }
@@ -194,107 +194,116 @@ public final class ClientUtil {
     }
 
     /**
-     * Translates the {@link PoseStack} into the block center and rotates it according to the block entity's rotation.
+     * Translates the {@link MatrixStack} into the block center and rotates it according to the block entity's rotation.
      *
      * @param stack       The pose stack to transform.
      * @param blockEntity The block entity to get the rotation from.
      */
-    public static void setupCenteredBER(PoseStack stack, BlockEntity blockEntity) {
+    public static void setupCenteredBER(MatrixStack stack, TileEntity blockEntity) {
         stack.translate(0.5, 0.5, 0.5);
         BlockState state = blockEntity.getBlockState();
         if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-            stack.mulPose(Axis.YP.rotationDegrees(switch (state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
-                case SOUTH -> 0;
-                case EAST -> 90;
-                default -> 180;
-                case WEST -> 270;
-            }));
+            float rot;
+            switch (state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
+                case SOUTH:
+                    rot = 0;
+                    break;
+                case EAST:
+                    rot = 90;
+                    break;
+                case WEST:
+                    rot = 270;
+                    break;
+                default:
+                    rot = 180;
+                    break;
+            }
+            stack.mulPose(Vector3f.YP.rotationDegrees(rot));
         }
     }
 
     /**
-     * Renders an {@link ItemStack} in the {@link ItemDisplayContext#FIXED} pose.
+     * Renders an {@link ItemStack} in the {@link ItemCameraTransforms.TransformType#FIXED} pose.
      *
      * @param item    The {@link ItemStack} to render.
-     * @param stack   The {@link PoseStack} to use.
-     * @param buffer  The {@link MultiBufferSource} to use.
+     * @param stack   The {@link MatrixStack} to use.
+     * @param buffer  The {@link IRenderTypeBuffer} to use.
      * @param light   The light value to use.
      * @param overlay The overlay value to use.
      */
-    public static void renderFixedItem(ItemStack item, PoseStack stack, MultiBufferSource buffer, int light, int overlay) {
-        renderItem(item, stack, buffer, light, overlay, ItemDisplayContext.FIXED);
+    public static void renderFixedItem(ItemStack item, MatrixStack stack, IRenderTypeBuffer buffer, int light, int overlay) {
+        renderItem(item, stack, buffer, light, overlay, ItemCameraTransforms.TransformType.FIXED);
     }
 
     /**
-     * Renders an {@link ItemStack} in the {@link ItemDisplayContext#GUI} pose.
+     * Renders an {@link ItemStack} in the {@link ItemCameraTransforms.TransformType#GUI} pose.
      *
      * @param item    The {@link ItemStack} to render.
-     * @param stack   The {@link PoseStack} to use.
-     * @param buffer  The {@link MultiBufferSource} to use.
+     * @param stack   The {@link MatrixStack} to use.
+     * @param buffer  The {@link IRenderTypeBuffer} to use.
      * @param light   The light value to use.
      * @param overlay The overlay value to use.
      */
-    public static void renderGuiItem(ItemStack item, PoseStack stack, MultiBufferSource buffer, int light, int overlay) {
-        renderItem(item, stack, buffer, light, overlay, ItemDisplayContext.GUI);
+    public static void renderGuiItem(ItemStack item, MatrixStack stack, IRenderTypeBuffer buffer, int light, int overlay) {
+        renderItem(item, stack, buffer, light, overlay, ItemCameraTransforms.TransformType.GUI);
     }
 
     /**
      * Renders an {@link ItemStack} for use in a BER or GUI.
      *
      * @param item    The {@link ItemStack} to render.
-     * @param stack   The {@link PoseStack} to use.
-     * @param buffer  The {@link MultiBufferSource} to use.
+     * @param stack   The {@link MatrixStack} to use.
+     * @param buffer  The {@link IRenderTypeBuffer} to use.
      * @param light   The light value to use.
      * @param overlay The overlay value to use.
-     * @param context The {@link ItemDisplayContext} to use.
+     * @param context The {@link ItemCameraTransforms.TransformType} to use.
      */
-    public static void renderItem(ItemStack item, PoseStack stack, MultiBufferSource buffer, int light, int overlay, ItemDisplayContext context) {
+    public static void renderItem(ItemStack item, MatrixStack stack, IRenderTypeBuffer buffer, int light, int overlay, ItemCameraTransforms.TransformType context) {
         Minecraft minecraft = getMc();
         ItemRenderer renderer = minecraft.getItemRenderer();
-        renderer.render(item, context, context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND, stack, buffer, light, overlay, renderer.getModel(item, minecraft.level, null, 0));
+        renderer.render(item, context, context == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND || context == ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND, stack, buffer, light, overlay, renderer.getModel(item, minecraft.level, null));
     }
 
     /**
-     * Renders the given {@link BakedModel} in the world.
+     * Renders the given {@link IBakedModel} in the world.
      *
-     * @param model     The {@link BakedModel} to render.
-     * @param stack     The {@link PoseStack} to use.
-     * @param buffer    The {@link MultiBufferSource} to use.
-     * @param level     The {@link Level} to render the model in.
+     * @param model     The {@link IBakedModel} to render.
+     * @param stack     The {@link MatrixStack} to use.
+     * @param buffer    The {@link IRenderTypeBuffer} to use.
+     * @param level     The {@link World} to render the model in.
      * @param pos       The {@link BlockPos} to render the model at.
      * @param state     The {@link BlockState} to render the model for.
-     * @param random    The {@link RandomSource} to use for random models.
-     * @param modelData The {@link ModelData} to use.
+     * @param random    The {@link Random} to use for random models.
+     * @param modelData The {@link IModelData} to use.
      */
-    public static void renderBakedModel(BakedModel model, PoseStack stack, MultiBufferSource buffer, Level level, BlockPos pos, BlockState state, RandomSource random, ModelData modelData) {
-        ModelBlockRenderer renderer = getMc().getBlockRenderer().getModelRenderer();
+    public static void renderBakedModel(IBakedModel model, MatrixStack stack, IRenderTypeBuffer buffer, World level, BlockPos pos, BlockState state, Random random, IModelData modelData) {
+        net.minecraft.client.renderer.BlockModelRenderer renderer = getMc().getBlockRenderer().getModelRenderer();
         int color = getMc().getBlockColors().getColor(state, level, pos, 0);
         float red = (float) (color >> 16 & 255) / 255f;
         float green = (float) (color >> 8 & 255) / 255f;
         float blue = (float) (color & 255) / 255f;
-        int light = LevelRenderer.getLightColor(level, pos);
-        for (RenderType type : model.getRenderTypes(state, random, modelData)) {
-            renderer.renderModel(stack.last(), buffer.getBuffer(RenderTypeHelper.getEntityRenderType(type, false)), state, model, red, green, blue, light, OverlayTexture.NO_OVERLAY, modelData, type);
-        }
+        int light = WorldRenderer.getLightColor(level, pos);
+        net.minecraft.client.renderer.RenderType type = net.minecraft.client.renderer.RenderTypeLookup.getRenderType(state, false);
+        renderer.renderModel(stack.last(), buffer.getBuffer(type), state, model, red, green, blue, light, OverlayTexture.NO_OVERLAY, modelData);
     }
 
     /**
      * Renders text in the formatting of the experience level number above the hotbar.
      *
      * @param text     The text to render.
-     * @param graphics The {@link GuiGraphics} to use.
+     * @param graphics The {@link MatrixStack} to use.
      * @param centerX  The horizontal center of the text.
      * @param startY   The y coordinate of the text. Be aware that there will be a 1px outline above this position.
-     * @see net.minecraft.client.gui.Gui#renderExperienceLevel(GuiGraphics, net.minecraft.client.DeltaTracker)
+     * @see net.minecraft.client.gui.Gui#renderExperienceLevel(MatrixStack, net.minecraft.client.DeltaTracker)
      */
-    public static void renderXpText(String text, GuiGraphics graphics, int centerX, int startY) {
-        Font font = getFont();
+    public static void renderXpText(String text, MatrixStack graphics, int centerX, int startY) {
+        FontRenderer font = getFont();
         int startX = centerX - font.width(text) / 2;
-        graphics.drawString(font, text, startX + 1, startY, 0, false);
-        graphics.drawString(font, text, startX - 1, startY, 0, false);
-        graphics.drawString(font, text, startX, startY + 1, 0, false);
-        graphics.drawString(font, text, startX, startY - 1, 0, false);
-        graphics.drawString(font, text, startX, startY, 0x80ff20, false);
+        font.draw(graphics, text, startX + 1, startY, 0);
+        font.draw(graphics, text, startX - 1, startY, 0);
+        font.draw(graphics, text, startX, startY + 1, 0);
+        font.draw(graphics, text, startX, startY - 1, 0);
+        font.draw(graphics, text, startX, startY, 0x80ff20);
     }
 
     /**
@@ -310,7 +319,8 @@ public final class ClientUtil {
      * @param packet The packet containing the stockroom catalog contents.
      */
     public static void setStockroomCatalogList(StockroomCatalogListPacket packet) {
-        if (getMc().screen instanceof StockroomCatalogScreen screen) {
+        if (getMc().screen instanceof StockroomCatalogScreen) {
+            StockroomCatalogScreen screen = (StockroomCatalogScreen) getMc().screen;
             screen.setFromPacket(packet);
         }
     }

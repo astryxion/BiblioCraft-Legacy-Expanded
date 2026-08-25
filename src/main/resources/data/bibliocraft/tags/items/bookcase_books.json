@@ -1,6 +1,9 @@
 {
   "values": [
-    "#minecraft:bookshelf_books",
+    {
+      "id": "#minecraft:bookshelf_books",
+      "required": false
+    },
     "#minecraft:lectern_books",
     {
       "id": "actuallyadditions:booklet",

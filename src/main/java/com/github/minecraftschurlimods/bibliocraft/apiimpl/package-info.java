@@ -2,6 +2,6 @@
 @MethodsReturnNonnullByDefault
 package com.github.minecraftschurlimods.bibliocraft.apiimpl;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
+import mcp.MethodsReturnNonnullByDefault;
 
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -3,22 +3,22 @@ package com.github.minecraftschurlimods.bibliocraft.content.displaycase;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.util.ShapeUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.util.Rotation;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import javax.annotation.Nullable;
 
 public class WallDisplayCaseBlock extends AbstractDisplayCaseBlock {
-    private static final VoxelShape NORTH_SHAPE = Shapes.box(0.0625, 0, 0.5, 0.9375, 1, 1);
+    private static final VoxelShape NORTH_SHAPE = VoxelShapes.box(0.0625, 0, 0.5, 0.9375, 1, 1);
     private static final VoxelShape EAST_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.CLOCKWISE_90);
     private static final VoxelShape SOUTH_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.CLOCKWISE_180);
     private static final VoxelShape WEST_SHAPE = ShapeUtil.rotate(NORTH_SHAPE, Rotation.COUNTERCLOCKWISE_90);
@@ -41,17 +41,17 @@ public class WallDisplayCaseBlock extends AbstractDisplayCaseBlock {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(FACING)) {
-            default -> NORTH_SHAPE;
-            case EAST -> EAST_SHAPE;
-            case SOUTH -> SOUTH_SHAPE;
-            case WEST -> WEST_SHAPE;
-        };
+    public VoxelShape getShape(BlockState state, IBlockReader level, BlockPos pos, ISelectionContext context) {
+        switch (state.getValue(FACING)) {
+default: return NORTH_SHAPE;
+case EAST: return EAST_SHAPE;
+case SOUTH: return SOUTH_SHAPE;
+case WEST: return WEST_SHAPE;
+}
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
-        return woodType != null && color != null ? new ItemStack(BCItems.DISPLAY_CASE.get(woodType, color)) : super.getCloneItemStack(state, target, level, pos, player);
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader level, BlockPos pos, PlayerEntity player) {
+        return woodType != null && color != null ? new ItemStack(BCItems.DISPLAY_CASE.get(woodType, color)) : super.getPickBlock(state, target, level, pos, player);
     }
 }

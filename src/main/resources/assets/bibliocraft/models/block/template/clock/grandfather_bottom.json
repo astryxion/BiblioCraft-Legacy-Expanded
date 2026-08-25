@@ -4,7 +4,7 @@
 	"render_type": "cutout",
 	"textures": {
 		"0": "#texture",
-		"2": "block/copper_block",
+		"2": "block/gold_block",
 		"3": "block/brown_wool",
 		"particle": "#texture"
 	},

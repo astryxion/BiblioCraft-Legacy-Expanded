@@ -1,14 +1,14 @@
 package com.github.minecraftschurlimods.bibliocraft.content.printingtable;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.NonNullList;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 
 import java.util.List;
 
-/** 1.20.1: recipe input for PrintingTable implementing Container so Recipe&lt;PrintingTableRecipeInput&gt; is valid. */
-public class PrintingTableRecipeInput implements Container {
+/** 1.20.1: recipe input for PrintingTable implementing IInventory so Recipe&lt;PrintingTableRecipeInput&gt; is valid. */
+public class PrintingTableRecipeInput implements IInventory {
     private final NonNullList<ItemStack> items;
 
     public PrintingTableRecipeInput(List<ItemStack> left, ItemStack right) {
@@ -81,7 +81,7 @@ public class PrintingTableRecipeInput implements Container {
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         return false;
     }
 

@@ -4,48 +4,47 @@ import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ShapeUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCBlockEntity;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingInteractibleBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Equipable;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.LevelEvent;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DoublePlantBlock;
+import net.minecraft.util.Rotation;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.state.properties.DoubleBlockHalf;
+import net.minecraft.state.EnumProperty;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import javax.annotation.Nullable;
 
 public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     private static final VoxelShape Z_SHAPE_BOTTOM = ShapeUtil.combine(
-            Shapes.box(0, 0, 0, 1, 0.125, 1),
-            Shapes.box(0.375, 0.125, 0.375, 0.625, 1, 0.625));
+            VoxelShapes.box(0, 0, 0, 1, 0.125, 1),
+            VoxelShapes.box(0.375, 0.125, 0.375, 0.625, 1, 0.625));
     private static final VoxelShape Z_SHAPE_TOP = ShapeUtil.combine(
-            Shapes.box(0.375, 0, 0.375, 0.625, 0.875, 0.625),
-            Shapes.box(0.0625, 0.125, 0.375, 0.9375, 0.5, 0.625));
+            VoxelShapes.box(0.375, 0, 0.375, 0.625, 0.875, 0.625),
+            VoxelShapes.box(0.0625, 0.125, 0.375, 0.9375, 0.5, 0.625));
     private static final VoxelShape X_SHAPE_BOTTOM = ShapeUtil.rotate(Z_SHAPE_BOTTOM, Rotation.CLOCKWISE_90);
     private static final VoxelShape X_SHAPE_TOP = ShapeUtil.rotate(Z_SHAPE_TOP, Rotation.CLOCKWISE_90);
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
@@ -56,13 +55,13 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(HALF);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, IBlockReader level, BlockPos pos, ISelectionContext context) {
         if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             return state.getValue(FACING).getAxis() == Direction.Axis.X ? X_SHAPE_TOP : Z_SHAPE_TOP;
         } else {
@@ -71,7 +70,7 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+    public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, IWorld level, BlockPos currentPos, BlockPos facingPos) {
         DoubleBlockHalf half = state.getValue(HALF);
         if (facing.getAxis() == Direction.Axis.Y && half == DoubleBlockHalf.LOWER == (facing == Direction.UP) && (!facingState.is(this) || facingState.getValue(HALF) == half))
             return Blocks.AIR.defaultBlockState();
@@ -80,10 +79,10 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
 
     @Override
     @Nullable
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
         BlockPos pos = context.getClickedPos();
-        Level level = context.getLevel();
-        return pos.getY() < level.getMaxBuildHeight() - 1 && level.getBlockState(pos.above()).canBeReplaced(context)
+        World level = context.getLevel();
+        return pos.getY() < 256 - 1 && level.getBlockState(pos.above()).canBeReplaced(context)
                 ? BCUtil.nonNull(super.getStateForPlacement(context))
                 .setValue(FACING, context.getHorizontalDirection().getOpposite())
                 .setValue(HALF, DoubleBlockHalf.LOWER)
@@ -91,7 +90,7 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, IWorldReader level, BlockPos pos) {
         if (state.getValue(HALF) != DoubleBlockHalf.UPPER) return super.canSurvive(state, level, pos);
         BlockState blockstate = level.getBlockState(pos.below());
         if (state.getBlock() != this) return super.canSurvive(state, level, pos);
@@ -99,13 +98,17 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
+    public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
         BlockPos above = pos.above();
-        level.setBlock(above, DoublePlantBlock.copyWaterloggedFrom(level, above, state.setValue(HALF, DoubleBlockHalf.UPPER)), Block.UPDATE_ALL);
+        BlockState upper = state.setValue(HALF, DoubleBlockHalf.UPPER);
+        if (upper.hasProperty(net.minecraft.state.properties.BlockStateProperties.WATERLOGGED)) {
+            upper = upper.setValue(net.minecraft.state.properties.BlockStateProperties.WATERLOGGED, level.getFluidState(above).getType() == net.minecraft.fluid.Fluids.WATER);
+        }
+        level.setBlock(above, upper, 3);
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(World level, BlockPos pos, BlockState state, PlayerEntity player) {
         if (!level.isClientSide) {
             if (player.isCreative()) {
                 //Copy of protected method DoublePlantBlock#preventDropFromBottomPart
@@ -113,8 +116,8 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
                     BlockPos newPos = pos.below();
                     BlockState newState = level.getBlockState(newPos);
                     if (newState.is(state.getBlock()) && newState.getValue(HALF) == DoubleBlockHalf.LOWER) {
-                        level.setBlock(newPos, newState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_ALL);
-                        level.levelEvent(player, LevelEvent.PARTICLES_DESTROY_BLOCK, newPos, Block.getId(newState));
+                        level.setBlock(newPos, newState.getFluidState().getType() == Fluids.WATER ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), net.minecraftforge.common.util.Constants.BlockFlags.NO_NEIGHBOR_DROPS | 3);
+                        level.levelEvent(player, 2001, newPos, Block.getId(newState));
                     }
                 }
             } else {
@@ -125,23 +128,23 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity be, ItemStack stack) {
+    public void playerDestroy(World level, PlayerEntity player, BlockPos pos, BlockState state, @Nullable TileEntity be, ItemStack stack) {
         super.playerDestroy(level, player, pos, Blocks.AIR.defaultBlockState(), be, stack);
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public long getSeed(BlockState state, BlockPos pos) {
-        return Mth.getSeed(pos.getX(), pos.below(state.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), pos.getZ());
+        return MathHelper.getSeed(pos.getX(), pos.below(state.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), pos.getZ());
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
         ItemStack stack = player.getItemInHand(hand);
         if (player.isSecondaryUseActive() && canAccessFromDirection(state, hit.getDirection())) {
             int slot = lookingAtSlot(state, hit);
-            if (slot != -1 && trySwapArmor(stack, slot, hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : 40, state, level, pos, player))
-                return InteractionResult.SUCCESS;
+            if (slot != -1 && trySwapArmor(stack, slot, hand == Hand.MAIN_HAND ? player.inventory.selected : 40, state, level, pos, player))
+                return ActionResultType.SUCCESS;
         }
         if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             pos = pos.below();
@@ -150,20 +153,20 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
     }
 
     @Override
-    public int lookingAtSlot(BlockState state, BlockHitResult hit) {
-        EquipmentSlot slot;
+    public int lookingAtSlot(BlockState state, BlockRayTraceResult hit) {
+        EquipmentSlotType slot;
         double y = hit.getLocation().y - hit.getBlockPos().getY();
         if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             if (y < 0.5) {
-                slot = EquipmentSlot.CHEST;
+                slot = EquipmentSlotType.CHEST;
             } else {
-                slot = EquipmentSlot.HEAD;
+                slot = EquipmentSlotType.HEAD;
             }
         } else {
             if (y < 0.4375) {
-                slot = EquipmentSlot.FEET;
+                slot = EquipmentSlotType.FEET;
             } else {
-                slot = EquipmentSlot.LEGS;
+                slot = EquipmentSlotType.LEGS;
             }
         }
         return 3 - slot.getIndex();
@@ -176,34 +179,41 @@ public class FancyArmorStandBlock extends BCFacingInteractibleBlock {
 
     @Override
     @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? new FancyArmorStandBlockEntity(pos, state) : null;
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
+    }
+
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? new FancyArmorStandBlockEntity(BlockPos.ZERO, state) : null;
     }
 
     /**
      * Attempts to swap the armor in the given slot with the given armor stack.
      *
      * @param stack      The armor stack from the player inventory that should be swapped with.
-     * @param slot       The slot index. A result from {@link FancyArmorStandBlock#lookingAtSlot(BlockState, BlockHitResult)}.
+     * @param slot       The slot index. A result from {@link FancyArmorStandBlock#lookingAtSlot(BlockState, BlockRayTraceResult)}.
      * @param playerSlot The player inventory slot the armor stack (first parameter) is in, and where a swapped item will end up.
      * @param state      The {@link BlockState} to use.
-     * @param level      The {@link Level} to use.
+     * @param level      The {@link World} to use.
      * @param pos        The {@link BlockPos} to use.
-     * @param player     The {@link Player} attempting to swap the items.
+     * @param player     The {@link PlayerEntity} attempting to swap the items.
      * @return Whether swapping the items was successful or not.
      */
-    private boolean trySwapArmor(ItemStack stack, int slot, int playerSlot, BlockState state, Level level, BlockPos pos, Player player) {
+    private boolean trySwapArmor(ItemStack stack, int slot, int playerSlot, BlockState state, World level, BlockPos pos, PlayerEntity player) {
         if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             pos = pos.below();
         }
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof BCBlockEntity bcbe)) return false;
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof BCBlockEntity)) return false;
+        BCBlockEntity bcbe = (BCBlockEntity) blockEntity;
         ItemStack slotStack = bcbe.getItem(slot);
         if (!bcbe.canPlaceItem(slot, stack)) return false;
         bcbe.setItem(slot, stack);
-        player.getInventory().setItem(playerSlot, slotStack);
-        if (slotStack.getItem() instanceof Equipable equipable) {
-            level.playSound(null, player, equipable.getEquipSound(), SoundSource.PLAYERS, 1, 1);
+        player.inventory.setItem(playerSlot, slotStack);
+        if (slotStack.getItem() instanceof ArmorItem) {
+            ArmorItem armor = (ArmorItem) slotStack.getItem();
+            level.playSound(null, player.blockPosition(), armor.getMaterial().getEquipSound(), SoundCategory.PLAYERS, 1, 1);
         }
         return true;
     }

@@ -2,55 +2,55 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancylight;
 
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.ShapeUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.ToolActions;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.SoundCategory;
+import java.util.Random;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.util.Rotation;
+import net.minecraft.block.BlockState;
+
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraftforge.common.ToolType;
 
 public class FancyLanternBlock extends AbstractFancyLightBlock {
     private static final VoxelShape STANDING_SHAPE = ShapeUtil.combine(
-            Shapes.box(0.25, 0, 0.25, 0.75, 0.0625, 0.75),
-            Shapes.box(0.3125, 0.0625, 0.3125, 0.375, 0.625, 0.375),
-            Shapes.box(0.625, 0.0625, 0.3125, 0.6875, 0.625, 0.375),
-            Shapes.box(0.3125, 0.0625, 0.625, 0.375, 0.625, 0.6875),
-            Shapes.box(0.625, 0.0625, 0.625, 0.6875, 0.625, 0.6875),
-            Shapes.box(0.34375, 0.0625, 0.34375, 0.65625, 0.625, 0.65625),
-            Shapes.box(0.25, 0.625, 0.25, 0.75, 0.6875, 0.75),
-            Shapes.box(0.3125, 0.6875, 0.3125, 0.6875, 0.75, 0.6875),
-            Shapes.box(0.375, 0.75, 0.375, 0.625, 0.8125, 0.625));
+            VoxelShapes.box(0.25, 0, 0.25, 0.75, 0.0625, 0.75),
+            VoxelShapes.box(0.3125, 0.0625, 0.3125, 0.375, 0.625, 0.375),
+            VoxelShapes.box(0.625, 0.0625, 0.3125, 0.6875, 0.625, 0.375),
+            VoxelShapes.box(0.3125, 0.0625, 0.625, 0.375, 0.625, 0.6875),
+            VoxelShapes.box(0.625, 0.0625, 0.625, 0.6875, 0.625, 0.6875),
+            VoxelShapes.box(0.34375, 0.0625, 0.34375, 0.65625, 0.625, 0.65625),
+            VoxelShapes.box(0.25, 0.625, 0.25, 0.75, 0.6875, 0.75),
+            VoxelShapes.box(0.3125, 0.6875, 0.3125, 0.6875, 0.75, 0.6875),
+            VoxelShapes.box(0.375, 0.75, 0.375, 0.625, 0.8125, 0.625));
     private static final VoxelShape HANGING_SHAPE = ShapeUtil.combine(STANDING_SHAPE,
-            Shapes.box(0.40625, 0.8125, 0.40625, 0.59375, 1.0, 0.59375));
+            VoxelShapes.box(0.40625, 0.8125, 0.40625, 0.59375, 1.0, 0.59375));
     private static final VoxelShape NORTH_WALL_SHAPE = ShapeUtil.combine(STANDING_SHAPE,
-            Shapes.box(0.4375, 0.65625, 0.9375, 0.5625, 0.90625, 1),
-            Shapes.box(0.46875, 0.70625, 0.875, 0.53125, 0.83125, 0.9375),
-            Shapes.box(0.46875, 0.8125, 0.46875, 0.53125, 0.925, 0.9375));
+            VoxelShapes.box(0.4375, 0.65625, 0.9375, 0.5625, 0.90625, 1),
+            VoxelShapes.box(0.46875, 0.70625, 0.875, 0.53125, 0.83125, 0.9375),
+            VoxelShapes.box(0.46875, 0.8125, 0.46875, 0.53125, 0.925, 0.9375));
     private static final VoxelShape EAST_WALL_SHAPE = ShapeUtil.rotate(NORTH_WALL_SHAPE, Rotation.CLOCKWISE_90);
     private static final VoxelShape SOUTH_WALL_SHAPE = ShapeUtil.rotate(NORTH_WALL_SHAPE, Rotation.CLOCKWISE_180);
     private static final VoxelShape WEST_WALL_SHAPE = ShapeUtil.rotate(NORTH_WALL_SHAPE, Rotation.COUNTERCLOCKWISE_90);
     private static final ResourceLocation DEFAULT_PARTICLE = BCUtil.mcLoc("small_flame");
     private final ResourceLocation particleId;
-    private ParticleOptions particleCache;
+    private IParticleData particleCache;
 
     public FancyLanternBlock(Properties properties) {
         this(properties, DEFAULT_PARTICLE);
@@ -61,30 +61,30 @@ public class FancyLanternBlock extends AbstractFancyLightBlock {
         this.particleId = particle;
     }
 
-    private ParticleOptions getParticle() {
-        if (particleCache == null)
-            particleCache = BuiltInRegistries.PARTICLE_TYPE.get(particleId) instanceof ParticleOptions o ? o : ParticleTypes.FLAME;
+    private IParticleData getParticle() {
+        if (particleCache == null) {
+            net.minecraft.particles.ParticleType<?> type = Registry.PARTICLE_TYPE.get(particleId);
+            particleCache = type instanceof IParticleData ? (IParticleData) type : ParticleTypes.FLAME;
+        }
         return particleCache;
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(TYPE)) {
-            case STANDING -> STANDING_SHAPE;
-            case HANGING -> HANGING_SHAPE;
-            case WALL -> switch (state.getValue(FACING)) {
-                default -> NORTH_WALL_SHAPE;
-                case SOUTH -> SOUTH_WALL_SHAPE;
-                case WEST -> WEST_WALL_SHAPE;
-                case EAST -> EAST_WALL_SHAPE;
-            };
-        };
+    public VoxelShape getShape(BlockState state, IBlockReader level, BlockPos pos, ISelectionContext context) {
+        switch (state.getValue(TYPE)) {
+case STANDING: return STANDING_SHAPE;
+case HANGING: return HANGING_SHAPE;
+case WALL:
+switch (state.getValue(FACING)) {
+default: return NORTH_WALL_SHAPE; case SOUTH: return SOUTH_WALL_SHAPE; case WEST: return WEST_WALL_SHAPE; case EAST: return EAST_WALL_SHAPE;}
+default: return STANDING_SHAPE;
+}
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(BlockState state, World level, BlockPos pos, Random random) {
         if (!state.getValue(LIT)) return;
-        Vec3 offset = Vec3.atCenterOf(pos);
+        Vector3d offset = Vector3d.atCenterOf(pos);
         if (random.nextFloat() < 0.3f) {
             level.addParticle(ParticleTypes.SMOKE, offset.x, offset.y, offset.z, 0, 0, 0);
         }
@@ -92,21 +92,20 @@ public class FancyLanternBlock extends AbstractFancyLightBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hitResult) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem && !state.getValue(LIT)) {
+        if (stack.getItem() instanceof net.minecraft.item.FlintAndSteelItem && !state.getValue(LIT)) {
             if (!level.isClientSide()) {
-                level.setBlock(pos, state.setValue(LIT, true), Block.UPDATE_ALL_IMMEDIATE);
-                level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1f, 1f);
+                level.setBlock(pos, state.setValue(LIT, true), 11);
+                level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1f, 1f);
                 stack.hurtAndBreak(1, player, p -> {});
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return ActionResultType.sidedSuccess(level.isClientSide());
         }
-        if (player.getAbilities().mayBuild && state.getValue(LIT)) {
-            level.setBlock(pos, state.setValue(LIT, false), Block.UPDATE_ALL_IMMEDIATE);
-            level.playSound(null, pos, SoundEvents.CANDLE_EXTINGUISH, SoundSource.BLOCKS, 1f, 1f);
-            level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-            return InteractionResult.sidedSuccess(level.isClientSide());
+        if (player.abilities.mayBuild && state.getValue(LIT)) {
+            level.setBlock(pos, state.setValue(LIT, false), 11);
+            level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
+            return ActionResultType.sidedSuccess(level.isClientSide());
         }
         return super.use(state, level, pos, player, hand, hitResult);
     }

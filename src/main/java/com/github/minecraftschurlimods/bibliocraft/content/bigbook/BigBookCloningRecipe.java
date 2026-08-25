@@ -2,36 +2,31 @@ package com.github.minecraftschurlimods.bibliocraft.content.bigbook;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
-import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.ItemStack;
+import net.minecraft.inventory.CraftingInventory;
 
-public class BigBookCloningRecipe extends CustomRecipe {
-    public BigBookCloningRecipe(ResourceLocation id, CraftingBookCategory category) {
-        super(id, category);
-    }
+import net.minecraft.item.crafting.SpecialRecipe;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.World;
 
-    /** 1.20.1: SimpleCraftingRecipeSerializer may only pass id; use MISC category. */
+public class BigBookCloningRecipe extends SpecialRecipe {
     public BigBookCloningRecipe(ResourceLocation id) {
-        this(id, CraftingBookCategory.MISC);
+        super(id);
     }
 
     @Override
-    public boolean matches(CraftingContainer container, Level level) {
+    public boolean matches(CraftingInventory container, World level) {
         int books = 0;
         ItemStack stack = ItemStack.EMPTY;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack written = container.getItem(i);
             if (written.isEmpty()) continue;
-            if (written.is(BCItems.WRITTEN_BIG_BOOK.get())) {
+            if (written.getItem() == BCItems.WRITTEN_BIG_BOOK.get()) {
                 if (!stack.isEmpty()) return false;
                 stack = written;
-            } else if (written.is(BCItems.BIG_BOOK.get())) {
+            } else if (written.getItem() == BCItems.BIG_BOOK.get()) {
                 books++;
             } else return false;
         }
@@ -39,16 +34,16 @@ public class BigBookCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer container, net.minecraft.core.RegistryAccess registries) {
+    public ItemStack assemble(CraftingInventory container) {
         int books = 0;
         ItemStack stack = ItemStack.EMPTY;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack written = container.getItem(i);
             if (written.isEmpty()) continue;
-            if (written.is(BCItems.WRITTEN_BIG_BOOK.get())) {
+            if (written.getItem() == BCItems.WRITTEN_BIG_BOOK.get()) {
                 if (!stack.isEmpty()) return ItemStack.EMPTY;
                 stack = written;
-            } else if (written.is(BCItems.BIG_BOOK.get())) {
+            } else if (written.getItem() == BCItems.BIG_BOOK.get()) {
                 books++;
             } else return ItemStack.EMPTY;
         }
@@ -63,13 +58,13 @@ public class BigBookCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
+    public NonNullList<ItemStack> getRemainingItems(CraftingInventory container) {
         NonNullList<ItemStack> list = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
         for (int i = 0; i < list.size(); i++) {
             ItemStack stack = container.getItem(i);
-            if (!stack.getCraftingRemainingItem().isEmpty()) {
-                list.set(i, stack.getCraftingRemainingItem());
-            } else if (stack.is(BCItems.WRITTEN_BIG_BOOK.get())) {
+            if (stack.hasContainerItem()) {
+                list.set(i, stack.getContainerItem());
+            } else if (stack.getItem() == BCItems.WRITTEN_BIG_BOOK.get()) {
                 ItemStack one = stack.copy();
                 one.setCount(1);
                 list.set(i, one);
@@ -84,7 +79,7 @@ public class BigBookCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public IRecipeSerializer<?> getSerializer() {
         return BCRecipes.BIG_BOOK_CLONING.get();
     }
 }

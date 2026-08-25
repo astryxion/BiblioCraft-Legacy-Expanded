@@ -3,12 +3,11 @@ package com.github.minecraftschurlimods.bibliocraft.client.widget;
 import com.github.minecraftschurlimods.bibliocraft.client.screen.ClockScreen;
 import com.github.minecraftschurlimods.bibliocraft.content.clock.ClockTrigger;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraftforge.client.gui.widget.ScrollPanel;
-import org.jetbrains.annotations.Nullable;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.gui.widget.Widget;
+import net.minecraftforge.client.gui.ScrollPanel;
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ public class ClockTriggerPanel extends ScrollPanel {
     private final List<ClockTriggerElement> elements;
 
     public ClockTriggerPanel(int x, int y, int width, int height, List<ClockTrigger> triggers, ClockScreen owner) {
-        super(ClientUtil.getMc(), width, height, y, x, 0);
+        super(ClientUtil.getMc(), width, height, y, x);
         this.owner = owner;
         this.width = width;
         this.height = height;
@@ -34,8 +33,8 @@ public class ClockTriggerPanel extends ScrollPanel {
     }
 
     @Override
-    protected void drawPanel(GuiGraphics graphics, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
-        PoseStack pose = graphics.pose();
+    protected void drawPanel(MatrixStack graphics, int entryRight, int relativeY, Tessellator tess, int mouseX, int mouseY) {
+        MatrixStack pose = graphics;
         pose.pushPose();
         pose.translate(left, relativeY, 0);
         for (int i = 0; i < elements.size(); i++) {
@@ -47,11 +46,11 @@ public class ClockTriggerPanel extends ScrollPanel {
         pose.popPose();
     }
 
-    public void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    public void renderTooltip(MatrixStack graphics, int mouseX, int mouseY) {
         ClockTriggerElement hovered = getHovered(mouseX, mouseY);
         if (hovered == null) return;
         float y = mouseY - top + scrollDistance;
-        PoseStack pose = graphics.pose();
+        MatrixStack pose = graphics;
         pose.pushPose();
         pose.translate(left, mouseY, 0);
         hovered.renderTooltip(graphics, mouseX - left, (int) (y % ClockTriggerElement.HEIGHT));
@@ -61,15 +60,6 @@ public class ClockTriggerPanel extends ScrollPanel {
     @Override
     protected int getScrollAmount() {
         return hasScrollbar(elements.size()) ? ClockTriggerElement.HEIGHT / 2 : 0;
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.FOCUSED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {
     }
 
     @Override

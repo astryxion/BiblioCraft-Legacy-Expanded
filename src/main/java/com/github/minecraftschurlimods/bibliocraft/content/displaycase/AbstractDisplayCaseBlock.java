@@ -1,23 +1,25 @@
 package com.github.minecraftschurlimods.bibliocraft.content.displaycase;
 
+import net.minecraft.world.IBlockReader;
+
 import com.github.minecraftschurlimods.bibliocraft.init.BCSoundEvents;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCFacingInteractibleBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.util.math.BlockRayTraceResult;
+import javax.annotation.Nullable;
 
 public abstract class AbstractDisplayCaseBlock extends BCFacingInteractibleBlock {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
@@ -28,42 +30,50 @@ public abstract class AbstractDisplayCaseBlock extends BCFacingInteractibleBlock
     }
 
     @Override
-    public int lookingAtSlot(BlockState state, BlockHitResult hit) {
+    public int lookingAtSlot(BlockState state, BlockRayTraceResult hit) {
         return 0;
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public ActionResultType use(BlockState state, World level, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
         ItemStack stack = player.getItemInHand(hand);
         if (player.isSecondaryUseActive()) {
             setOpen(level, pos, state, !state.getValue(OPEN));
-            return InteractionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
         if (!state.getValue(OPEN)) {
             setOpen(level, pos, state, true);
-            return InteractionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
-        if (stack.isEmpty() && level.getBlockEntity(pos) instanceof DisplayCaseBlockEntity dcbe && dcbe.getItem(0).isEmpty()) {
-            setOpen(level, pos, state, false);
-            return InteractionResult.SUCCESS;
+        if (stack.isEmpty() && level.getBlockEntity(pos) instanceof DisplayCaseBlockEntity) {
+            DisplayCaseBlockEntity dcbe = (DisplayCaseBlockEntity) level.getBlockEntity(pos);
+            if (dcbe.getItem(0).isEmpty()) {
+                setOpen(level, pos, state, false);
+                return ActionResultType.SUCCESS;
+            }
         }
         return super.use(state, level, pos, player, hand, hit);
     }
 
     @Override
     @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new DisplayCaseBlockEntity(pos, state);
+    public TileEntity newBlockEntity(IBlockReader level) {
+        return createTileEntity(defaultBlockState(), level);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    public TileEntity createTileEntity(BlockState state, IBlockReader level) {
+        return new DisplayCaseBlockEntity(BlockPos.ZERO, state);
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(OPEN);
     }
 
-    private void setOpen(Level level, BlockPos pos, BlockState state, boolean open) {
-        level.setBlock(pos, state.setValue(OPEN, open), Block.UPDATE_ALL);
-        level.playSound(null, pos, open ? BCSoundEvents.DISPLAY_CASE_OPEN.get() : BCSoundEvents.DISPLAY_CASE_CLOSE.get(), SoundSource.BLOCKS);
+    private void setOpen(World level, BlockPos pos, BlockState state, boolean open) {
+        level.setBlock(pos, state.setValue(OPEN, open), 3);
+        level.playSound(null, pos, open ? BCSoundEvents.DISPLAY_CASE_OPEN.get() : BCSoundEvents.DISPLAY_CASE_CLOSE.get(), SoundCategory.BLOCKS, 1f, 1f);
     }
 }

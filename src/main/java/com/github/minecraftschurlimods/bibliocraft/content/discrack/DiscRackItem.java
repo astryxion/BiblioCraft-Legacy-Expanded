@@ -1,12 +1,12 @@
 package com.github.minecraftschurlimods.bibliocraft.content.discrack;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlocks;
-import net.minecraft.core.Direction;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.Direction;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import javax.annotation.Nullable;
 
 public class DiscRackItem extends BlockItem {
     public DiscRackItem(Properties properties) {
@@ -15,7 +15,7 @@ public class DiscRackItem extends BlockItem {
 
     @Override
     @Nullable
-    protected BlockState getPlacementState(BlockPlaceContext context) {
+    protected BlockState getPlacementState(BlockItemUseContext context) {
         Block block = context.getClickedFace() == Direction.UP ? BCBlocks.DISC_RACK.get() : BCBlocks.WALL_DISC_RACK.get();
         BlockState state = block.defaultBlockState().setValue(DiscRackBlock.FACING, context.getHorizontalDirection().getOpposite());
         return canPlace(context, state) ? state : null;

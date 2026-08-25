@@ -2,20 +2,20 @@ package com.github.minecraftschurlimods.bibliocraft.content.toolrack;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.util.block.BCMenu;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.entity.player.PlayerInventory;
 
 public class ToolRackMenu extends BCMenu<ToolRackBlockEntity> {
-    public ToolRackMenu(int id, Inventory inventory, ToolRackBlockEntity blockEntity) {
+    public ToolRackMenu(int id, PlayerInventory inventory, ToolRackBlockEntity blockEntity) {
         super(BCMenus.TOOL_RACK.get(), id, inventory, blockEntity);
     }
 
-    public ToolRackMenu(int id, Inventory inventory, FriendlyByteBuf data) {
+    public ToolRackMenu(int id, PlayerInventory inventory, PacketBuffer data) {
         super(BCMenus.TOOL_RACK.get(), id, inventory, data);
     }
 
     @Override
-    protected void addSlots(Inventory inventory) {
+    protected void addSlots(PlayerInventory inventory) {
         addSlot(new BCSlot(blockEntity, 0, 53, 15));
         addSlot(new BCSlot(blockEntity, 1, 107, 15));
         addSlot(new BCSlot(blockEntity, 2, 53, 53));

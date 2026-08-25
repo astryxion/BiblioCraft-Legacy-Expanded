@@ -2,17 +2,17 @@ package com.github.minecraftschurlimods.bibliocraft.api.datagen;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.TagsProvider;
+import net.minecraft.data.ItemTagsProvider;
+import net.minecraft.tags.ITag;
+import net.minecraft.item.Item;
+import net.minecraft.block.Block;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.BlockTagsProvider;
+import net.minecraft.data.BlockTagsProvider;
 import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 /**
  * This class provides helper methods to generate datagen entries for Bibliocraft blocks with your mod's wood type(s). Get via {@link BibliocraftApi#getDatagenHelper()}.
- * To use this class, during {@link net.minecraftforge.data.event.GatherDataEvent}, create a new instance of this class with your mod id.
+ * To use this class, during {@link net.minecraftforge.fml.event.lifecycle.GatherDataEvent}, create a new instance of this class with your mod id.
  * Then, call whatever methods you need from the respective providers. Always pass in your mod's corresponding data provider.
  */
 @SuppressWarnings("unused")
@@ -64,18 +64,18 @@ public interface BibliocraftDatagenHelper {
     /**
      * Generates the block tag files for Bibliocraft blocks with a {@link BibliocraftWoodType}.
      *
-     * @param tagAccessor A reference to your mod's {@link BlockTagsProvider#tag(TagKey)} method, as it is protected for some reason.
+     * @param tagAccessor A reference to your mod's {@link BlockTagsProvider#tag(ITag.INamedTag)} method, as it is protected for some reason.
      * @param woodType    The {@link BibliocraftWoodType} to generate the block tags for.
      */
-    void generateBlockTagsFor(Function<TagKey<Block>, IntrinsicHolderTagsProvider.IntrinsicTagAppender<Block>> tagAccessor, BibliocraftWoodType woodType);
+    void generateBlockTagsFor(Function<ITag.INamedTag<Block>, TagsProvider.Builder<Block>> tagAccessor, BibliocraftWoodType woodType);
 
     /**
      * Generates the item tag files for Bibliocraft blocks with a {@link BibliocraftWoodType}.
      *
-     * @param tagAccessor A reference to your mod's {@link ItemTagsProvider#tag(TagKey)} method, as it is protected for some reason.
+     * @param tagAccessor A reference to your mod's {@link ItemTagsProvider#tag(ITag.INamedTag)} method, as it is protected for some reason.
      * @param woodType    The {@link BibliocraftWoodType} to generate the item tags for.
      */
-    void generateItemTagsFor(Function<TagKey<Item>, IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item>> tagAccessor, BibliocraftWoodType woodType);
+    void generateItemTagsFor(Function<ITag.INamedTag<Item>, TagsProvider.Builder<Item>> tagAccessor, BibliocraftWoodType woodType);
 
     /**
      * Generates the loot table files for Bibliocraft blocks with a {@link BibliocraftWoodType}.
@@ -88,11 +88,11 @@ public interface BibliocraftDatagenHelper {
     /**
      * Generates the recipe files for Bibliocraft blocks with a {@link BibliocraftWoodType}.
      *
-     * @param output   The consumer to accept {@link FinishedRecipe}s.
+     * @param output   The consumer to accept {@link IFinishedRecipe}s.
      * @param woodType The {@link BibliocraftWoodType} to generate the recipes for.
      * @param modId    The namespace to store the recipes under.
      */
-    void generateRecipesFor(Consumer<FinishedRecipe> output, BibliocraftWoodType woodType, String modId);
+    void generateRecipesFor(Consumer<IFinishedRecipe> output, BibliocraftWoodType woodType, String modId);
 
     /**
      * Generates language files, block and item models, block and item tags, loot tables, and recipes for Bibliocraft blocks with a {@link BibliocraftWoodType}. Call this directly from a {@link GatherDataEvent} handler!
@@ -147,18 +147,18 @@ public interface BibliocraftDatagenHelper {
     /**
      * Generates the block tag files for Bibliocraft blocks with your mod's wood type(s).
      *
-     * @param tagAccessor A reference to your mod's {@link BlockTagsProvider#tag(TagKey)} method, as it is protected for some reason.
+     * @param tagAccessor A reference to your mod's {@link BlockTagsProvider#tag(ITag.INamedTag)} method, as it is protected for some reason.
      */
-    default void generateBlockTags(Function<TagKey<Block>, IntrinsicHolderTagsProvider.IntrinsicTagAppender<Block>> tagAccessor) {
+    default void generateBlockTags(Function<ITag.INamedTag<Block>, TagsProvider.Builder<Block>> tagAccessor) {
         getWoodTypesToGenerate().forEach(woodType -> generateBlockTagsFor(tagAccessor, woodType));
     }
 
     /**
      * Generates the item tag files for Bibliocraft blocks with your mod's wood type(s).
      *
-     * @param tagAccessor A reference to your mod's {@link ItemTagsProvider#tag(TagKey)} method, as it is protected for some reason.
+     * @param tagAccessor A reference to your mod's {@link ItemTagsProvider#tag(ITag.INamedTag)} method, as it is protected for some reason.
      */
-    default void generateItemTags(Function<TagKey<Item>, IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item>> tagAccessor) {
+    default void generateItemTags(Function<ITag.INamedTag<Item>, TagsProvider.Builder<Item>> tagAccessor) {
         getWoodTypesToGenerate().forEach(woodType -> generateItemTagsFor(tagAccessor, woodType));
     }
 
@@ -174,10 +174,10 @@ public interface BibliocraftDatagenHelper {
     /**
      * Generates the recipe files for Bibliocraft blocks with your mod's wood type(s).
      *
-     * @param output Consumer to accept {@link FinishedRecipe}s.
+     * @param output Consumer to accept {@link IFinishedRecipe}s.
      * @param modId  Your mod's namespace.
      */
-    default void generateRecipes(Consumer<FinishedRecipe> output, String modId) {
+    default void generateRecipes(Consumer<IFinishedRecipe> output, String modId) {
         getWoodTypesToGenerate().forEach(woodType -> generateRecipesFor(output, woodType, modId));
     }
 

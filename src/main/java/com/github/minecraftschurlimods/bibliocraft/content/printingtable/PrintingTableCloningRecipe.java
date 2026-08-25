@@ -4,15 +4,14 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.NonNullList;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +27,11 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
     }
 
     @Override
-    public boolean matches(PrintingTableRecipeInput input, Level level) {
+    public boolean matches(PrintingTableRecipeInput input, World level) {
         if (input.left().isEmpty()) return false;
         if (input.right().isEmpty()) return false;
-        if (!input.right().is(result.getItem())) return false;
-        CompoundTag rightTag = input.right().getTag();
+        if (input.right().getItem() != result.getItem()) return false;
+        CompoundNBT rightTag = input.right().getTag();
         if (rightTag != null) {
             for (String key : nbtKeysToCopy) {
                 if (!rightTag.contains(key)) return false;
@@ -56,11 +55,11 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
     }
 
     @Override
-    public ItemStack assemble(PrintingTableRecipeInput input, RegistryAccess registries) {
+    public ItemStack assemble(PrintingTableRecipeInput input) {
         ItemStack stack = result.copy();
-        CompoundTag rightTag = input.right().getTag();
+        CompoundNBT rightTag = input.right().getTag();
         if (rightTag != null) {
-            CompoundTag resultTag = stack.getOrCreateTag();
+            CompoundNBT resultTag = stack.getOrCreateTag();
             for (String key : nbtKeysToCopy) {
                 if (rightTag.contains(key)) {
                     resultTag.put(key, rightTag.get(key).copy());
@@ -71,7 +70,7 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public IRecipeSerializer<?> getSerializer() {
         return BCRecipes.PRINTING_TABLE_CLONING.get();
     }
 
@@ -97,20 +96,22 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
         ((Serializer) getSerializer()).toJson(json, this);
     }
 
-    public static class Serializer implements RecipeSerializer<PrintingTableCloningRecipe> {
+    public static class Serializer extends net.minecraftforge.registries.ForgeRegistryEntry<net.minecraft.item.crafting.IRecipeSerializer<?>> implements IRecipeSerializer<PrintingTableCloningRecipe> {
         /** Maps 1.21-style data component IDs to 1.20.1 NBT tag keys used for copying. */
         private static List<String> dataComponentsToNbtKeys(JsonArray dataComponents) {
             List<String> nbtKeys = new ArrayList<>();
-            for (var el : dataComponents) {
+            for (com.google.gson.JsonElement el : dataComponents) {
                 String comp = el.getAsString();
                 switch (comp) {
-                    case "minecraft:written_book_content" -> nbtKeys.addAll(List.of("pages", "author", "title", "resolved", "generation"));
-                    case "bibliocraft:typewriter_page" -> nbtKeys.add("TypewriterPage");
-                    case "bibliocraft:clipboard_content" -> nbtKeys.add("ClipboardContent");
-                    case "bibliocraft:written_big_book_content" -> nbtKeys.add("WrittenBigBookContent");
-                    case "bibliocraft:big_book_content" -> nbtKeys.add("BigBookContent");
-                    default -> nbtKeys.add(comp);
-                }
+case "minecraft:written_book_content": nbtKeys.addAll(java.util.Collections.unmodifiableList(java.util.Arrays.asList("pages", "author", "title", "resolved", "generation"))); break;
+case "minecraft:writable_book_content": nbtKeys.add("pages"); break;
+case "minecraft:stored_enchantments": nbtKeys.add("StoredEnchantments"); break;
+case "bibliocraft:typewriter_page": nbtKeys.add("TypewriterPage"); break;
+case "bibliocraft:clipboard_content": nbtKeys.add("ClipboardContent"); break;
+case "bibliocraft:written_big_book_content": nbtKeys.add("WrittenBigBookContent"); break;
+case "bibliocraft:big_book_content": nbtKeys.add("BigBookContent"); break;
+default: nbtKeys.add(comp); break;
+}
             }
             return nbtKeys;
         }
@@ -120,7 +121,7 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
             List<String> nbtKeys;
             if (json.has("nbt_keys") && json.get("nbt_keys").isJsonArray()) {
                 nbtKeys = new ArrayList<>();
-                for (var el : json.getAsJsonArray("nbt_keys")) nbtKeys.add(el.getAsString());
+                for (com.google.gson.JsonElement el : json.getAsJsonArray("nbt_keys")) nbtKeys.add(el.getAsString());
             } else if (json.has("data_components") && json.get("data_components").isJsonArray()) {
                 nbtKeys = dataComponentsToNbtKeys(json.getAsJsonArray("data_components"));
             } else {
@@ -128,14 +129,14 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
             }
             List<Ingredient> ingredients = new ArrayList<>();
             JsonArray ingredientsJson = json.has("ingredients") && json.get("ingredients").isJsonArray() ? json.getAsJsonArray("ingredients") : new JsonArray();
-            for (var el : ingredientsJson) ingredients.add(Ingredient.fromJson(el.getAsJsonObject(), false));
+            for (com.google.gson.JsonElement el : ingredientsJson) ingredients.add(Ingredient.fromJson(el.getAsJsonObject()));
             ItemStack result = net.minecraftforge.common.crafting.CraftingHelper.getItemStack(json.getAsJsonObject("result"), true);
             int duration = json.getAsJsonPrimitive("duration").getAsInt();
             return new PrintingTableCloningRecipe(id, nbtKeys, ingredients, result, duration);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buffer, PrintingTableCloningRecipe recipe) {
+        public void toNetwork(PacketBuffer buffer, PrintingTableCloningRecipe recipe) {
             buffer.writeVarInt(recipe.nbtKeysToCopy.size());
             for (String key : recipe.nbtKeysToCopy) buffer.writeUtf(key);
             buffer.writeVarInt(recipe.ingredients.size());
@@ -145,7 +146,7 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
         }
 
         @Override
-        public PrintingTableCloningRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
+        public PrintingTableCloningRecipe fromNetwork(ResourceLocation id, PacketBuffer buffer) {
             int n = buffer.readVarInt();
             List<String> nbtKeys = new ArrayList<>(n);
             for (int i = 0; i < n; i++) nbtKeys.add(buffer.readUtf());
@@ -166,7 +167,7 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
             for (Ingredient ing : r.ingredients) ings.add(ing.toJson());
             json.add("ingredients", ings);
             JsonObject resultObj = new JsonObject();
-            resultObj.addProperty("item", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(r.result.getItem()).toString());
+            resultObj.addProperty("item", net.minecraft.util.registry.Registry.ITEM.getKey(r.result.getItem()).toString());
             if (r.result.getCount() != 1) resultObj.addProperty("count", r.result.getCount());
             if (r.result.hasTag()) resultObj.addProperty("nbt", r.result.getTag().toString());
             json.add("result", resultObj);
@@ -194,7 +195,7 @@ public class PrintingTableCloningRecipe extends PrintingTableRecipe {
 
         @Override
         public PrintingTableRecipe build() {
-            return new PrintingTableCloningRecipe(new ResourceLocation(com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi.MOD_ID, "printing_table_cloning"), List.copyOf(nbtKeysToCopy), List.copyOf(ingredients), result, duration);
+            return new PrintingTableCloningRecipe(new ResourceLocation(com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi.MOD_ID, "printing_table_cloning"), java.util.Collections.unmodifiableList(new java.util.ArrayList<>(nbtKeysToCopy)), java.util.Collections.unmodifiableList(new java.util.ArrayList<>(ingredients)), result, duration);
         }
     }
 }

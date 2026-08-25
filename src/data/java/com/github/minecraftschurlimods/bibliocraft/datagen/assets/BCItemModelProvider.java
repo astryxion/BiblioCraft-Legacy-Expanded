@@ -2,13 +2,15 @@ package com.github.minecraftschurlimods.bibliocraft.datagen.assets;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
-import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.DyeColor;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.Item;
+import net.minecraftforge.client.model.generators.ItemModelBuilder;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class BCItemModelProvider extends ItemModelProvider {
-    public BCItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
+    public BCItemModelProvider(DataGenerator output, ExistingFileHelper existingFileHelper) {
         super(output, BibliocraftApi.MOD_ID, existingFileHelper);
     }
 
@@ -53,5 +55,10 @@ public class BCItemModelProvider extends ItemModelProvider {
         withExistingParent("slotted_book",           mcLoc("item/written_book"));
         withExistingParent("written_big_book",       modLoc("item/big_book"));
         // @formatter:on
+    }
+
+    private ItemModelBuilder basicItem(Item item) {
+        net.minecraft.util.ResourceLocation loc = item.getRegistryName();
+        return withExistingParent(loc.getPath(), mcLoc("item/generated")).texture("layer0", modLoc("item/" + loc.getPath()));
     }
 }

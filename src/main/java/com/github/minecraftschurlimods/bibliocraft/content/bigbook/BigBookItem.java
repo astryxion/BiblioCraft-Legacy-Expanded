@@ -1,17 +1,19 @@
 package com.github.minecraftschurlimods.bibliocraft.content.bigbook;
 
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import com.github.minecraftschurlimods.bibliocraft.util.ClientUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.Translations;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.StringUtil;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.StringUtils;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResult;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -29,33 +31,33 @@ public class BigBookItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public ActionResult<ItemStack> use(World level, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide()) {
             ClientUtil.openBigBookScreen(stack, player, hand);
         }
-        return InteractionResultHolder.success(stack);
+        return ActionResult.success(stack);
     }
 
     @Override
-    public Component getName(ItemStack stack) {
+    public ITextComponent getName(ItemStack stack) {
         WrittenBigBookContent content = WrittenBigBookContent.getFromStack(stack);
         if (!content.equals(WrittenBigBookContent.DEFAULT)) {
             String title = content.title();
-            if (title != null && !title.trim().isEmpty()) return Component.literal(title);
+            if (title != null && !title.trim().isEmpty()) return new StringTextComponent(title);
         }
         return super.getName(stack);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, World level, List<ITextComponent> tooltipComponents, ITooltipFlag tooltipFlag) {
         WrittenBigBookContent content = WrittenBigBookContent.getFromStack(stack);
         if (!content.equals(WrittenBigBookContent.DEFAULT)) {
             String author = content.author();
             if (author != null && !author.trim().isEmpty()) {
-                tooltipComponents.add(Component.translatable(Translations.VANILLA_BY_AUTHOR_KEY, author).withStyle(ChatFormatting.GRAY));
+                tooltipComponents.add(new TranslationTextComponent(Translations.VANILLA_BY_AUTHOR_KEY, author).withStyle(TextFormatting.GRAY));
             }
-            tooltipComponents.add(Component.translatable("book.generation." + content.generation()).withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(new TranslationTextComponent("book.generation." + content.generation()).withStyle(TextFormatting.GRAY));
         }
         super.appendHoverText(stack, level, tooltipComponents, tooltipFlag);
     }

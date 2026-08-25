@@ -1,22 +1,22 @@
 package com.github.minecraftschurlimods.bibliocraft.content.printingtable;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.tags.ITag;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 public class PrintingTableTank implements IFluidHandler, IFluidTank {
-    private static final TagKey<Fluid> EXPERIENCE_FLUID_TAG = TagKey.create(Registries.FLUID, new ResourceLocation("forge", "experience"));
+    /** Do not use {@code FluidTags.createOptional}: that registers a wrapper vanilla iterates every entity tick. */
+    private static final ResourceLocation EXPERIENCE_FLUID_ID = new ResourceLocation("forge", "experience");
     private static final String FLUID_KEY = "fluid";
     private static final String ID_KEY = "id";
     private static final String AMOUNT_KEY = "amount";
@@ -25,6 +25,11 @@ public class PrintingTableTank implements IFluidHandler, IFluidTank {
     private final boolean acceptAutomation;
     private Fluid fluid = Fluids.EMPTY;
     private int amount = 0;
+
+    static java.util.Collection<Fluid> experienceFluids() {
+        ITag<Fluid> resolved = net.minecraft.tags.FluidTags.getAllTags().getTag(EXPERIENCE_FLUID_ID);
+        return resolved == null ? java.util.Collections.emptyList() : resolved.getValues();
+    }
 
     public PrintingTableTank(PrintingTableBlockEntity blockEntity, boolean acceptAutomation) {
         this.blockEntity = blockEntity;
@@ -48,9 +53,8 @@ public class PrintingTableTank implements IFluidHandler, IFluidTank {
 
     @Override
     public boolean isFluidValid(FluidStack stack) {
-        if (blockEntity.level() == null) return false;
-        var registry = blockEntity.level().registryAccess().registryOrThrow(Registries.FLUID);
-        return registry.getTag(EXPERIENCE_FLUID_TAG).flatMap(holderSet -> registry.getResourceKey(stack.getFluid()).map(registry::getHolderOrThrow).map(holderSet::contains)).orElse(false);
+        ITag<Fluid> resolved = net.minecraft.tags.FluidTags.getAllTags().getTag(EXPERIENCE_FLUID_ID);
+        return resolved != null && resolved.contains(stack.getFluid());
     }
 
     @Override
@@ -104,27 +108,28 @@ public class PrintingTableTank implements IFluidHandler, IFluidTank {
         FluidStack drain = capability.drain(new FluidStack(fluid, getCapacity() - amount), FluidAction.EXECUTE);
         if (!drain.isEmpty()) {
             fillManually(drain, FluidAction.EXECUTE);
-            if (blockEntity.level() instanceof ServerLevel serverLevel) {
+            if (blockEntity.getLevel() instanceof ServerWorld) {
+                ServerWorld serverLevel = (ServerWorld) blockEntity.getLevel();
                 BlockPos pos = blockEntity.getBlockPos();
                 com.github.minecraftschurlimods.bibliocraft.BCEventHandler.getChannel().send(PacketDistributor.TRACKING_CHUNK.with(() -> serverLevel.getChunkAt(pos)), new PrintingTableTankSyncPacket(pos, this.fluid, amount));
             }
         }
     }
 
-    public void loadAdditional(CompoundTag tag) {
+    public void loadAdditional(CompoundNBT tag) {
         if (!tag.contains(FLUID_KEY)) return;
-        CompoundTag fluidTag = tag.getCompound(FLUID_KEY);
+        CompoundNBT fluidTag = tag.getCompound(FLUID_KEY);
         if (fluidTag.contains(ID_KEY)) {
-            fluid = BuiltInRegistries.FLUID.get(new ResourceLocation(fluidTag.getString(ID_KEY)));
+            fluid = Registry.FLUID.get(new ResourceLocation(fluidTag.getString(ID_KEY)));
         }
         if (fluidTag.contains(AMOUNT_KEY)) {
             amount = tag.getInt(AMOUNT_KEY);
         }
     }
 
-    public void saveAdditional(CompoundTag tag) {
-        CompoundTag fluidTag = new CompoundTag();
-        fluidTag.putString(ID_KEY, BuiltInRegistries.FLUID.getKey(fluid).toString());
+    public void saveAdditional(CompoundNBT tag) {
+        CompoundNBT fluidTag = new CompoundNBT();
+        fluidTag.putString(ID_KEY, Registry.FLUID.getKey(fluid).toString());
         fluidTag.putInt(AMOUNT_KEY, amount);
         tag.put(FLUID_KEY, fluidTag);
     }

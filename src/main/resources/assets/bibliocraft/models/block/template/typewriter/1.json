@@ -4,7 +4,9 @@
 		"0": "#color",
 		"1": "block/iron_block",
 		"2": "bibliocraft:block/typewriter_paper",
-		"particle": "#color"
+		"particle": "#color",
+		"color": "block/terracotta",
+		"missing": "block/iron_block"
 	},
 	"elements": [
 		{

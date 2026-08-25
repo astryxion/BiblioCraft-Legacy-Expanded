@@ -1,96 +1,30 @@
 package com.github.minecraftschurlimods.bibliocraft.api.datagen;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.tags.TagBuilder;
-import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
+import net.minecraft.data.BlockTagsProvider;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.ItemTagsProvider;
+import net.minecraft.data.TagsProvider;
+import net.minecraft.item.Item;
+import net.minecraft.tags.ITag;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 
 /**
- * The default {@link ItemTagsProvider} implementation clears the builders before calling {@link ItemTagsProvider#addTags(HolderLookup.Provider)}.
- * We don't want that, so we override {@link ItemTagsProvider#addTags(HolderLookup.Provider)} to not do that.
+ * The default {@link ItemTagsProvider} implementation in 1.20.1 clears the builders before calling {@code addTags}.
+ * 1.16.5 does not clear that way; this subclass still exposes {@link #getBuilder(ITag.INamedTag)} for datagen helpers.
  */
 @SuppressWarnings("unused")
 public abstract class NonClearingItemTagsProvider extends ItemTagsProvider {
-    // Store the provider here because while the superclass has it, it is private there.
-    private final CompletableFuture<HolderLookup.Provider> lookupProvider;
-    // Store blockTags for createContentsProvider (parent field is private).
-    private final CompletableFuture<TagLookup<Block>> blockTagsFuture;
-
     /**
      * See super constructor for information.
      */
-    public NonClearingItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTags) {
-        super(output, lookupProvider, blockTags);
-        this.lookupProvider = lookupProvider;
-        this.blockTagsFuture = blockTags;
+    public NonClearingItemTagsProvider(DataGenerator output, BlockTagsProvider blockTags, String modId, @Nullable ExistingFileHelper existingFileHelper) {
+        super(output, blockTags, modId, existingFileHelper);
     }
 
-    /**
-     * See super constructor for information.
-     */
-    @Deprecated
-    public NonClearingItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Item>> parentProvider, CompletableFuture<TagLookup<Block>> blockTags) {
-        super(output, lookupProvider, parentProvider, blockTags);
-        this.lookupProvider = lookupProvider;
-        this.blockTagsFuture = blockTags;
-    }
-
-    /**
-     * See super constructor for information.
-     */
-    public NonClearingItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTags, String modId, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, blockTags, modId, existingFileHelper);
-        this.lookupProvider = lookupProvider;
-        this.blockTagsFuture = blockTags;
-    }
-
-    /**
-     * See super constructor for information.
-     */
-    public NonClearingItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Item>> parentProvider, CompletableFuture<TagLookup<Block>> blockTags, String modId, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, parentProvider, blockTags, modId, existingFileHelper);
-        this.lookupProvider = lookupProvider;
-        this.blockTagsFuture = blockTags;
-    }
-
-    /** Public accessor for {@link #tag(TagKey)} for use by datagen helpers. */
-    public IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> getTagAppender(TagKey<Item> key) {
+    /** Public accessor for {@link #tag(ITag.INamedTag)} for use by datagen helpers. */
+    public TagsProvider.Builder<Item> getBuilder(ITag.INamedTag<Item> key) {
         return tag(key);
-    }
-
-    @Override
-    protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
-        return lookupProvider.thenApply(provider -> {
-            addTags(provider);
-            return provider;
-        }).thenCombine(blockTagsFuture, (provider, tagLookup) -> {
-            Map<TagKey<Block>, TagKey<Item>> tagsToCopy = getTagsToCopy();
-            tagsToCopy.forEach((block, item) -> {
-                TagBuilder tagBuilder = getOrCreateRawBuilder(item);
-                tagLookup.apply(block).orElseThrow(() -> new IllegalStateException("Missing block tag " + item.location())).build().forEach(tagBuilder::add);
-            });
-            return provider;
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<TagKey<Block>, TagKey<Item>> getTagsToCopy() {
-        try {
-            Field f = ItemTagsProvider.class.getDeclaredField("tagsToCopy");
-            f.setAccessible(true);
-            return (Map<TagKey<Block>, TagKey<Item>>) f.get(this);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access ItemTagsProvider.tagsToCopy", e);
-        }
     }
 }

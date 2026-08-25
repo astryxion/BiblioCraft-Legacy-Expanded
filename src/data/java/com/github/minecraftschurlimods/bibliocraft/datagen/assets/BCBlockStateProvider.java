@@ -5,19 +5,18 @@ import com.github.minecraftschurlimods.bibliocraft.content.cookiejar.CookieJarBl
 import com.github.minecraftschurlimods.bibliocraft.content.table.TableBlock;
 import com.github.minecraftschurlimods.bibliocraft.content.typewriter.TypewriterBlock;
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlocks;
-import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
 import com.github.minecraftschurlimods.bibliocraft.util.DatagenUtil;
-import net.minecraft.core.Direction;
-import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.ChainBlock;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.util.Direction;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.item.DyeColor;
+import net.minecraft.block.ChainBlock;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class BCBlockStateProvider extends BlockStateProvider {
-    public BCBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
+    public BCBlockStateProvider(DataGenerator output, ExistingFileHelper exFileHelper) {
         super(output, BibliocraftApi.MOD_ID, exFileHelper);
     }
 
@@ -31,16 +30,16 @@ public class BCBlockStateProvider extends BlockStateProvider {
         for (DyeColor color : DyeColor.values()) {
             DatagenUtil.fancyLampModel(this, BCBlocks.FANCY_IRON_LAMP.holder(color), "block/color/" + color.getSerializedName() + "/", "iron", DatagenUtil.GLASS_TEXTURES.get(color));
         }
-        DatagenUtil.fancyLanternModel(this, BCBlocks.CLEAR_FANCY_GOLD_LANTERN, "block/", "gold", mcLoc("block/candle_lit"));
+        DatagenUtil.fancyLanternModel(this, BCBlocks.CLEAR_FANCY_GOLD_LANTERN, "block/", "gold", mcLoc("block/end_rod"));
         for (DyeColor color : DyeColor.values()) {
             DatagenUtil.fancyLanternModel(this, BCBlocks.FANCY_GOLD_LANTERN.holder(color), "block/color/" + color.getSerializedName() + "/", "gold", DatagenUtil.CANDLE_TEXTURES.get(color));
         }
-        DatagenUtil.fancyLanternModel(this, BCBlocks.SOUL_FANCY_GOLD_LANTERN, "block/soul_", "gold", BCUtil.modLoc("buzzier_bees", "block/soul_candle_lit"));
-        DatagenUtil.fancyLanternModel(this, BCBlocks.CLEAR_FANCY_IRON_LANTERN, "block/", "iron", mcLoc("block/candle_lit"));
+        DatagenUtil.fancyLanternModel(this, BCBlocks.SOUL_FANCY_GOLD_LANTERN, "block/soul_", "gold", mcLoc("block/soul_sand"));
+        DatagenUtil.fancyLanternModel(this, BCBlocks.CLEAR_FANCY_IRON_LANTERN, "block/", "iron", mcLoc("block/end_rod"));
         for (DyeColor color : DyeColor.values()) {
             DatagenUtil.fancyLanternModel(this, BCBlocks.FANCY_IRON_LANTERN.holder(color), "block/color/" + color.getSerializedName() + "/", "iron", DatagenUtil.CANDLE_TEXTURES.get(color));
         }
-        DatagenUtil.fancyLanternModel(this, BCBlocks.SOUL_FANCY_IRON_LANTERN, "block/soul_", "iron", BCUtil.modLoc("buzzier_bees", "block/soul_candle_lit"));
+        DatagenUtil.fancyLanternModel(this, BCBlocks.SOUL_FANCY_IRON_LANTERN, "block/soul_", "iron", mcLoc("block/soul_sand"));
         DatagenUtil.horizontalBlockModel(this, BCBlocks.CLEAR_TYPEWRITER, state -> models()
                         .withExistingParent("block/typewriter_" + state.getValue(TypewriterBlock.PAPER), modLoc("block/template/typewriter/" + state.getValue(TypewriterBlock.PAPER)))
                         .texture("color", mcLoc("block/terracotta")),
@@ -62,7 +61,7 @@ public class BCBlockStateProvider extends BlockStateProvider {
         horizontalBlock(BCBlocks.WALL_DISC_RACK.get(), models().getExistingFile(modLoc("block/wall_disc_rack")));
         DatagenUtil.doubleHighHorizontalBlockModel(this, BCBlocks.IRON_FANCY_ARMOR_STAND, models().getExistingFile(modLoc("block/template/fancy_armor_stand/iron_bottom")), models().getExistingFile(modLoc("block/template/fancy_armor_stand/iron_top")), false);
         getVariantBuilder(BCBlocks.GOLD_CHAIN.get()).forAllStates(state -> ConfiguredModel.builder()
-                .modelFile(models().withExistingParent("block/gold_chain", mcLoc("block/chain")).renderType("cutout").texture("all", modLoc("block/gold_chain")).texture("particle", modLoc("block/gold_chain")))
+                .modelFile(models().withExistingParent("block/gold_chain", mcLoc("block/chain")).texture("all", modLoc("block/gold_chain")).texture("particle", modLoc("block/gold_chain")))
                 .rotationX(state.getValue(ChainBlock.AXIS) != Direction.Axis.Y ? 90 : 0)
                 .rotationY(state.getValue(ChainBlock.AXIS) == Direction.Axis.X ? 90 : 0)
                 .build());
@@ -70,13 +69,13 @@ public class BCBlockStateProvider extends BlockStateProvider {
                 .modelFile(models().withExistingParent(
                                 state.getValue(BlockStateProperties.HANGING) ? "block/gold_lantern_hanging" : "block/gold_lantern",
                                 mcLoc(state.getValue(BlockStateProperties.HANGING) ? "block/template_hanging_lantern" : "block/template_lantern")
-                        ).renderType("cutout").texture("lantern", modLoc("block/gold_lantern"))
+                        ).texture("lantern", modLoc("block/gold_lantern"))
                 ).build());
         getVariantBuilder(BCBlocks.GOLD_SOUL_LANTERN.get()).forAllStates(state -> ConfiguredModel.builder()
                 .modelFile(models().withExistingParent(
                                 state.getValue(BlockStateProperties.HANGING) ? "block/gold_soul_lantern_hanging" : "block/gold_soul_lantern",
                                 mcLoc(state.getValue(BlockStateProperties.HANGING) ? "block/template_hanging_lantern" : "block/template_lantern")
-                        ).renderType("cutout").texture("lantern", modLoc("block/gold_soul_lantern"))
+                        ).texture("lantern", modLoc("block/gold_soul_lantern"))
                 ).build());
         DatagenUtil.horizontalBlockModel(this, BCBlocks.PRINTING_TABLE, state -> models().getExistingFile(modLoc("block/printing_table")), false);
         DatagenUtil.horizontalBlockModel(this, BCBlocks.IRON_PRINTING_TABLE, state -> models().getExistingFile(modLoc("block/iron_printing_table")), false);

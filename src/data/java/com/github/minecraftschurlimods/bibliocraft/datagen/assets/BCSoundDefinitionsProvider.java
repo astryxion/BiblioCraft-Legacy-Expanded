@@ -3,8 +3,8 @@ package com.github.minecraftschurlimods.bibliocraft.datagen.assets;
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
 import com.github.minecraftschurlimods.bibliocraft.init.BCSoundEvents;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
-import net.minecraft.data.PackOutput;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.SoundDefinition;
 import net.minecraftforge.common.data.SoundDefinitionsProvider;
@@ -12,7 +12,7 @@ import net.minecraftforge.common.data.SoundDefinitionsProvider;
 import java.util.stream.IntStream;
 
 public class BCSoundDefinitionsProvider extends SoundDefinitionsProvider {
-    public BCSoundDefinitionsProvider(PackOutput output, ExistingFileHelper helper) {
+    public BCSoundDefinitionsProvider(DataGenerator output, ExistingFileHelper helper) {
         super(output, BibliocraftApi.MOD_ID, helper);
     }
 

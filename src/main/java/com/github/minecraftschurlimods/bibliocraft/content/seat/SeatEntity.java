@@ -1,19 +1,21 @@
 package com.github.minecraftschurlimods.bibliocraft.content.seat;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCEntities;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.network.IPacket;
+import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 public class SeatEntity extends Entity {
-    public SeatEntity(EntityType<?> entityType, Level level) {
+    public SeatEntity(EntityType<?> entityType, World level) {
         super(entityType, level);
     }
 
-    public SeatEntity(Level level) {
+    public SeatEntity(World level) {
         this(BCEntities.SEAT.get(), level);
     }
 
@@ -24,24 +26,29 @@ public class SeatEntity extends Entity {
     @Override
     public void tick() {
         BlockPos pos = blockPosition();
-        BlockState state = level().getBlockState(pos);
-        if (level().isClientSide()) return;
+        BlockState state = this.level.getBlockState(pos);
+        if (this.level.isClientSide()) return;
         if (!(state.getBlock() instanceof SeatBlock)) {
             getPassengers().forEach(Entity::stopRiding);
-            discard();
+            remove();
         } else if (getPassengers().isEmpty()) {
-            discard();
+            remove();
             if (state.getBlock() instanceof SeatBlock) {
-                level().setBlockAndUpdate(pos, state.setValue(SeatBlock.OCCUPIED, false));
+                this.level.setBlockAndUpdate(pos, state.setValue(SeatBlock.OCCUPIED, false));
             }
         }
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(CompoundNBT tag) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(CompoundNBT tag) {
+    }
+
+    @Override
+    public IPacket<?> getAddEntityPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
     }
 }

@@ -2,24 +2,24 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancysign;
 
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlockEntities;
 import com.github.minecraftschurlimods.bibliocraft.util.CodecUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
 
-public class FancySignBlockEntity extends BlockEntity {
+public class FancySignBlockEntity extends TileEntity {
     private static final String FRONT_CONTENT_KEY = "front_content";
     private static final String BACK_CONTENT_KEY = "back_content";
     private FancySignContent frontContent = FancySignContent.withSize(16);
     private FancySignContent backContent = FancySignContent.withSize(16);
 
     public FancySignBlockEntity(BlockPos pos, BlockState state) {
-        super(BCBlockEntities.FANCY_SIGN.get(), pos, state);
+        super(BCBlockEntities.FANCY_SIGN.get());
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         if (tag.contains(FRONT_CONTENT_KEY)) {
             setFrontContent(CodecUtil.decodeNbt(FancySignContent.CODEC, tag.get(FRONT_CONTENT_KEY)));
         }
@@ -29,15 +29,16 @@ public class FancySignBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        super.save(tag);
         tag.put(FRONT_CONTENT_KEY, CodecUtil.encodeNbt(FancySignContent.CODEC, getFrontContent()));
         tag.put(BACK_CONTENT_KEY, CodecUtil.encodeNbt(FancySignContent.CODEC, getBackContent()));
+            return tag;
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT tag = super.getUpdateTag();
         if (!getFrontContent().lines().isEmpty()) {
             tag.put(FRONT_CONTENT_KEY, CodecUtil.encodeNbt(FancySignContent.CODEC, getFrontContent()));
         }
@@ -48,8 +49,8 @@ public class FancySignBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+        super.handleUpdateTag(state, tag);
         if (tag.contains(FRONT_CONTENT_KEY)) {
             setFrontContent(CodecUtil.decodeNbt(FancySignContent.CODEC, tag.get(FRONT_CONTENT_KEY)));
         }

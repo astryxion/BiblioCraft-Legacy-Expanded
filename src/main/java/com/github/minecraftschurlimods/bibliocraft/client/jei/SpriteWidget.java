@@ -1,37 +1,34 @@
 package com.github.minecraftschurlimods.bibliocraft.client.jei;
 
-import mezz.jei.api.gui.widgets.IRecipeWidget;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenPosition;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.util.ResourceLocation;
 
 @SuppressWarnings("unused")
-public class SpriteWidget implements IRecipeWidget {
+public class SpriteWidget {
     private final ResourceLocation sprite;
-    private final ScreenPosition position;
+    private final int x;
+    private final int y;
     private final int blitOffset;
     private final int width;
     private final int height;
 
     public SpriteWidget(ResourceLocation sprite, int x, int y, int blitOffset, int width, int height) {
         this.sprite = sprite;
+        this.x = x;
+        this.y = y;
         this.blitOffset = blitOffset;
         this.width = width;
         this.height = height;
-        position = new ScreenPosition(x, y);
     }
 
     public SpriteWidget(ResourceLocation sprite, int x, int y, int width, int height) {
         this(sprite, x, y, 0, width, height);
     }
 
-    @Override
-    public ScreenPosition getPosition() {
-        return position;
-    }
-
-    @Override
-    public void draw(GuiGraphics graphics, double mouseX, double mouseY) {
-        graphics.blit(sprite, position.x(), position.y(), blitOffset, 0, 0, width, height, width, height);
+    public void draw(MatrixStack graphics, double mouseX, double mouseY) {
+        Minecraft.getInstance().getTextureManager().bind(sprite);
+        AbstractGui.blit(graphics, x, y, blitOffset, 0, 0, width, height, width, height);
     }
 }

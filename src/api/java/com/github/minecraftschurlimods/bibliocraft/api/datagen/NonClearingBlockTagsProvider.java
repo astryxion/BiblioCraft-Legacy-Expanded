@@ -1,42 +1,27 @@
 package com.github.minecraftschurlimods.bibliocraft.api.datagen;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.data.BlockTagsProvider;
+import net.minecraft.block.Block;
+import net.minecraft.data.BlockTagsProvider;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.TagsProvider;
+import net.minecraft.tags.ITag;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 
 /**
- * The default {@link BlockTagsProvider} implementation clears the builders before calling {@link BlockTagsProvider#addTags(HolderLookup.Provider)}.
- * We don't want that, so we override {@link BlockTagsProvider#addTags(HolderLookup.Provider)} to not do that.
+ * The default {@link BlockTagsProvider} implementation in 1.20.1 clears the builders before calling {@code addTags}.
+ * 1.16.5 does not clear that way; this subclass still exposes {@link #getBuilder(ITag.INamedTag)} for datagen helpers.
  */
 public abstract class NonClearingBlockTagsProvider extends BlockTagsProvider {
-    // Store the provider here because while the superclass has it, it is private there.
-    private final CompletableFuture<HolderLookup.Provider> lookupProvider;
-
     /**
      * See super constructor for information.
      */
-    public NonClearingBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, modId, existingFileHelper);
-        this.lookupProvider = lookupProvider;
+    public NonClearingBlockTagsProvider(DataGenerator output, String modId, @Nullable ExistingFileHelper existingFileHelper) {
+        super(output, modId, existingFileHelper);
     }
 
-    /** Public accessor for {@link #tag(TagKey)} for use by datagen helpers. */
-    public IntrinsicHolderTagsProvider.IntrinsicTagAppender<Block> getTagAppender(TagKey<Block> key) {
+    /** Public accessor for {@link #tag(ITag.INamedTag)} for use by datagen helpers. */
+    public TagsProvider.Builder<Block> getBuilder(ITag.INamedTag<Block> key) {
         return tag(key);
-    }
-
-    @Override
-    protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
-        return lookupProvider.thenApply(provider -> {
-            addTags(provider);
-            return provider;
-        });
     }
 }

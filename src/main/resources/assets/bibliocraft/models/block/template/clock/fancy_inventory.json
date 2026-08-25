@@ -5,7 +5,7 @@
 	"textures": {
 		"0": "#texture",
 		"1": "block/quartz_block_bottom",
-		"2": "block/copper_block",
+		"2": "block/gold_block",
 		"3": "block/brown_wool",
 		"4": "bibliocraft:block/clock_hand",
 		"particle": "#texture"

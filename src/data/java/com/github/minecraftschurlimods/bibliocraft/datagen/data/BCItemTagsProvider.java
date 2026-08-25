@@ -5,28 +5,23 @@ import com.github.minecraftschurlimods.bibliocraft.api.datagen.NonClearingItemTa
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCTags;
 import com.github.minecraftschurlimods.bibliocraft.util.BCUtil;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.tags.ITag;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.Items;
+import net.minecraft.block.Block;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
-import java.util.concurrent.CompletableFuture;
-
 public final class BCItemTagsProvider extends NonClearingItemTagsProvider {
-    public BCItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> lookup, ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, lookup, BibliocraftApi.MOD_ID, existingFileHelper);
+    public BCItemTagsProvider(DataGenerator output, BCBlockTagsProvider blockTags, ExistingFileHelper existingFileHelper) {
+        super(output, blockTags, BibliocraftApi.MOD_ID, existingFileHelper);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void addTags(HolderLookup.Provider lookupProvider) {
+    protected void addTags() {
         copy(BCTags.Blocks.FANCY_ARMOR_STANDS, BCTags.Items.FANCY_ARMOR_STANDS);
         copy(BCTags.Blocks.FANCY_LAMPS, BCTags.Items.FANCY_LAMPS);
         copy(BCTags.Blocks.FANCY_LAMPS_GOLD, BCTags.Items.FANCY_LAMPS_GOLD);
@@ -37,10 +32,10 @@ public final class BCItemTagsProvider extends NonClearingItemTagsProvider {
         copy(BCTags.Blocks.PRINTING_TABLES, BCTags.Items.PRINTING_TABLES);
         copy(BCTags.Blocks.TYPEWRITERS, BCTags.Items.TYPEWRITERS);
         for (DyeColor color : DyeColor.values()) {
-            tag(TagKey.create(Registries.ITEM, BCUtil.cLoc("dyed/" + color.getSerializedName()))).add(BuiltInRegistries.ITEM.get(BCUtil.mcLoc(color.getSerializedName() + "_stained_glass")));
+            tag(net.minecraft.tags.ItemTags.createOptional(BCUtil.cLoc("dyed/" + color.getSerializedName()))).add(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(BCUtil.mcLoc(color.getSerializedName() + "_stained_glass")));
         }
         tag(BCTags.Items.SEAT_BACKS).addTags(BCTags.Items.SEAT_BACKS_SMALL, BCTags.Items.SEAT_BACKS_RAISED, BCTags.Items.SEAT_BACKS_FLAT, BCTags.Items.SEAT_BACKS_TALL, BCTags.Items.SEAT_BACKS_FANCY);
-        tag(BCTags.Items.BOOKCASE_BOOKS).addTags(ItemTags.BOOKSHELF_BOOKS, ItemTags.LECTERN_BOOKS)
+        tag(BCTags.Items.BOOKCASE_BOOKS).addTags(ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "bookshelf_books")), ItemTags.LECTERN_BOOKS)
                 .addOptional(BCUtil.modLoc("actuallyadditions", "booklet"))
                 .addOptional(BCUtil.modLoc("aether", "book_of_lore"))
                 .addOptional(BCUtil.modLoc("akashictome", "tome"))
@@ -416,10 +411,22 @@ public final class BCItemTagsProvider extends NonClearingItemTagsProvider {
                 .addOptional(BCUtil.modLoc("vampirism", "pure_salt_water"))
                 .addOptional(BCUtil.modLoc("vampirism", "vampire_blood_bottle"))
                 .addOptional(BCUtil.modLoc("vegandelight", "soymilk_bottle"));
-        tag(BCTags.Items.SWORD_PEDESTAL_SWORDS).addTag(ItemTags.SWORDS);
-        tag(BCTags.Items.TOOL_RACK_TOOLS).addTag(Tags.Items.TOOLS);
+        ITag.INamedTag<net.minecraft.item.Item> vanillaPickaxes = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "pickaxes"));
+        ITag.INamedTag<net.minecraft.item.Item> vanillaAxes = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "axes"));
+        ITag.INamedTag<net.minecraft.item.Item> vanillaShovels = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "shovels"));
+        ITag.INamedTag<net.minecraft.item.Item> vanillaHoes = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "hoes"));
+        ITag.INamedTag<net.minecraft.item.Item> vanillaSwords = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "swords"));
+        tag(vanillaPickaxes).add(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
+        tag(vanillaAxes).add(Items.WOODEN_AXE, Items.STONE_AXE, Items.IRON_AXE, Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
+        tag(vanillaShovels).add(Items.WOODEN_SHOVEL, Items.STONE_SHOVEL, Items.IRON_SHOVEL, Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL);
+        tag(vanillaHoes).add(Items.WOODEN_HOE, Items.STONE_HOE, Items.IRON_HOE, Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE);
+        tag(vanillaSwords).add(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD);
+        ITag.INamedTag<net.minecraft.item.Item> forgeTools = ItemTags.createOptional(new net.minecraft.util.ResourceLocation("forge", "tools"));
+        tag(forgeTools).addTags(vanillaPickaxes, vanillaAxes, vanillaShovels, vanillaHoes, vanillaSwords);
+        tag(BCTags.Items.SWORD_PEDESTAL_SWORDS).addTag(vanillaSwords);
+        tag(BCTags.Items.TOOL_RACK_TOOLS).addTag(forgeTools);
         tag(BCTags.Items.TYPEWRITER_PAPER).add(Items.PAPER);
-        tag(ItemTags.BOOKSHELF_BOOKS).add(BCItems.BIG_BOOK.get(), BCItems.WRITTEN_BIG_BOOK.get(), BCItems.REDSTONE_BOOK.get(), BCItems.SLOTTED_BOOK.get(), BCItems.STOCKROOM_CATALOG.get());
+        tag(ItemTags.createOptional(new net.minecraft.util.ResourceLocation("minecraft", "bookshelf_books"))).add(BCItems.BIG_BOOK.get(), BCItems.WRITTEN_BIG_BOOK.get(), BCItems.REDSTONE_BOOK.get(), BCItems.SLOTTED_BOOK.get(), BCItems.STOCKROOM_CATALOG.get());
         tag(BCTags.Items.DYEABLE).add(BCItems.SWORD_PEDESTAL.get());
         tag(ItemTags.LECTERN_BOOKS).add(BCItems.BIG_BOOK.get(), BCItems.WRITTEN_BIG_BOOK.get(), BCItems.STOCKROOM_CATALOG.get());
     }

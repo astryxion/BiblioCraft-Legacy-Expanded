@@ -4,31 +4,28 @@ import com.github.minecraftschurlimods.bibliocraft.init.BCRecipes;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.ICriterionInstance;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.item.crafting.IRecipeSerializer;
 import java.util.Optional;
 import java.util.function.Consumer;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeType;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class PrintingTableRecipe implements Recipe<PrintingTableRecipeInput> {
+public abstract class PrintingTableRecipe implements IRecipe<PrintingTableRecipeInput> {
     protected final ResourceLocation id;
     protected final ItemStack result;
     protected final int duration;
@@ -50,13 +47,13 @@ public abstract class PrintingTableRecipe implements Recipe<PrintingTableRecipeI
     }
 
     @Override
-    public RecipeType<?> getType() {
-        return BCRecipes.PRINTING_TABLE.get();
+    public IRecipeType<?> getType() {
+        return BCRecipes.PRINTING_TABLE;
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registries) {
-        return getResultItem();
+    public boolean isSpecial() {
+        return true;
     }
 
     public ItemStack getResultItem() {
@@ -67,7 +64,7 @@ public abstract class PrintingTableRecipe implements Recipe<PrintingTableRecipeI
         return duration;
     }
 
-    public int getExperienceLevelCost(ItemStack result, ServerLevel level) {
+    public int getExperienceLevelCost(ItemStack result, ServerWorld level) {
         return 0;
     }
 
@@ -80,26 +77,25 @@ public abstract class PrintingTableRecipe implements Recipe<PrintingTableRecipeI
     }
 
     public Pair<List<Ingredient>, Ingredient> getDisplayIngredients() {
-        return Pair.of(List.of(), Ingredient.EMPTY);
+        return Pair.of(java.util.Collections.emptyList(), Ingredient.EMPTY);
     }
 
     public abstract PrintingTableMode getMode();
 
-    /** Serialize this recipe to JSON for datagen (1.20.1: RecipeSerializer has no toJson in interface). */
+    /** Serialize this recipe to JSON for datagen (1.20.1: IRecipeSerializer has no toJson in interface). */
     public abstract void toRecipeJson(JsonObject json);
 
-    public static abstract class Builder implements RecipeBuilder {
+    public static abstract class Builder {
         protected final ItemStack result;
         protected final int duration;
-        protected final Map<String, CriterionTriggerInstance> criteria = new LinkedHashMap<>();
+        protected final Map<String, ICriterionInstance> criteria = new LinkedHashMap<>();
 
         public Builder(ItemStack result, int duration) {
             this.result = result;
             this.duration = duration;
         }
 
-        @Override
-        public Builder unlockedBy(String name, CriterionTriggerInstance criterion) {
+        public Builder unlockedBy(String name, ICriterionInstance criterion) {
             criteria.put(name, criterion);
             return this;
         }
@@ -112,23 +108,20 @@ public abstract class PrintingTableRecipe implements Recipe<PrintingTableRecipeI
             return result.getItem();
         }
 
-        @Override
-        public void save(Consumer<FinishedRecipe> consumer, ResourceLocation id) {
+        public void save(Consumer<IFinishedRecipe> consumer, ResourceLocation id) {
             Advancement.Builder advancementBuilder = Advancement.Builder.advancement()
                     .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                    .rewards(AdvancementRewards.Builder.recipe(id));
-            criteria.forEach((name, inst) -> advancementBuilder.addCriterion(name, new Criterion(inst)));
-            String[][] req = new String[1][];
-            req[0] = criteria.keySet().toArray(new String[0]);
-            advancementBuilder.requirements(req);
+                    .rewards(AdvancementRewards.Builder.recipe(id))
+                    .requirements(net.minecraft.advancements.IRequirementsStrategy.AND);
+            criteria.forEach(advancementBuilder::addCriterion);
             ResourceLocation advId = new ResourceLocation(id.getNamespace(), "recipes/" + id.getPath());
             Advancement advancement = advancementBuilder.build(advId);
             PrintingTableRecipe recipe = build();
-            consumer.accept(new FinishedRecipe() {
+            consumer.accept(new IFinishedRecipe() {
                 @Override
                 public ResourceLocation getId() { return id; }
                 @Override
-                public net.minecraft.world.item.crafting.RecipeSerializer<?> getType() { return recipe.getSerializer(); }
+                public net.minecraft.item.crafting.IRecipeSerializer<?> getType() { return recipe.getSerializer(); }
                 @Override
                 public void serializeRecipeData(JsonObject json) {
                     recipe.toRecipeJson(json);

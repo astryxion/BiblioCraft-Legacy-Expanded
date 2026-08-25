@@ -4,10 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.nbt.INBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.IStringSerializable;
 
 import java.util.function.Supplier;
 
@@ -20,8 +20,15 @@ public final class CodecUtil {
      * @param <E>            The enum type.
      * @return An enum {@link Codec}.
      */
-    public static <E extends Enum<E> & StringRepresentable> Codec<E> enumCodec(Supplier<E[]> valuesSupplier) {
-        return StringRepresentable.fromEnum(valuesSupplier);
+    public static <E extends Enum<E> & IStringSerializable> Codec<E> enumCodec(Supplier<E[]> valuesSupplier) {
+        return IStringSerializable.fromEnum(valuesSupplier, name -> {
+            for (E e : valuesSupplier.get()) {
+                if (e.getSerializedName().equals(name)) {
+                    return e;
+                }
+            }
+            return null;
+        });
     }
 
     /**
@@ -29,7 +36,7 @@ public final class CodecUtil {
      * @param <T>   The type of the {@link Codec}.
      * @return Encodes the value to JSON and writes as UTF string to the buffer.
      */
-    public static <T> void encodeToBuffer(FriendlyByteBuf buffer, Codec<T> codec, T value) {
+    public static <T> void encodeToBuffer(PacketBuffer buffer, Codec<T> codec, T value) {
         buffer.writeUtf(encodeJson(codec, value).toString());
     }
 
@@ -38,8 +45,8 @@ public final class CodecUtil {
      * @param <T>   The type of the {@link Codec}.
      * @return Decodes from UTF string in the buffer using the given codec.
      */
-    public static <T> T decodeFromBuffer(FriendlyByteBuf buffer, Codec<T> codec) {
-        return decodeJson(codec, JsonParser.parseString(buffer.readUtf()));
+    public static <T> T decodeFromBuffer(PacketBuffer buffer, Codec<T> codec) {
+        return decodeJson(codec, new com.google.gson.JsonParser().parse(buffer.readUtf()));
     }
 
     /**
@@ -50,8 +57,8 @@ public final class CodecUtil {
      * @param <T>   The type of the value and the {@link Codec}.
      * @return The NBT representation of the given value.
      */
-    public static <T> Tag encodeNbt(Codec<T> codec, T value) {
-        return codec.encodeStart(NbtOps.INSTANCE, value).result().orElseThrow(() -> new IllegalArgumentException("Failed to encode to NBT"));
+    public static <T> INBT encodeNbt(Codec<T> codec, T value) {
+        return codec.encodeStart(NBTDynamicOps.INSTANCE, value).result().orElseThrow(() -> new IllegalArgumentException("Failed to encode to NBT"));
     }
 
     /**
@@ -62,8 +69,8 @@ public final class CodecUtil {
      * @param <T>   The type of the value and the {@link Codec}.
      * @return The decoded value.
      */
-    public static <T> T decodeNbt(Codec<T> codec, Tag tag) {
-        return codec.decode(NbtOps.INSTANCE, tag).result().orElseThrow(() -> new IllegalArgumentException("Failed to decode from NBT")).getFirst();
+    public static <T> T decodeNbt(Codec<T> codec, INBT tag) {
+        return codec.decode(NBTDynamicOps.INSTANCE, tag).result().orElseThrow(() -> new IllegalArgumentException("Failed to decode from NBT")).getFirst();
     }
 
     /**

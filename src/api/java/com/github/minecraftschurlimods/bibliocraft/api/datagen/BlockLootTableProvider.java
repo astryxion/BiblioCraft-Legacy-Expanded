@@ -3,27 +3,17 @@ package com.github.minecraftschurlimods.bibliocraft.api.datagen;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.Util;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.RandomSequence;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.levelgen.RandomSupport;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.data.DirectoryCache;
+import net.minecraft.data.IDataProvider;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.block.Block;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootTableManager;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import org.apache.commons.lang3.Validate;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,46 +21,54 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /** Same semantics as NeoForge WithConditions: holds conditions + carrier for conditional loot table JSON. */
-record WithConditions<T>(List<ICondition> conditions, T carrier) {
+ final class WithConditions<T>  {
+    private final List<ICondition> conditions;
+    private final T carrier;
+
+    public WithConditions(List<ICondition> conditions, T carrier) {
+        this.conditions = conditions;
+        this.carrier = carrier;
+    }
+
+    public List<ICondition> conditions() { return this.conditions; }
+    public T carrier() { return this.carrier; }
+
     static final String CONDITIONS_KEY = "forge:conditions";
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WithConditions other = (WithConditions) o;
+        return java.util.Objects.equals(this.conditions, other.conditions) && java.util.Objects.equals(this.carrier, other.carrier);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(this.conditions, this.carrier);
+    }
+
+    @Override
+    public String toString() {
+        return "WithConditions[" + "conditions=" + this.conditions + ", " + "carrier=" + this.carrier + "]";
+    }
+
 }
 
 /**
- * An adaptation of {@link net.minecraft.data.loot.LootTableProvider} and {@link net.minecraft.data.loot.BlockLootSubProvider} that is optimized to Bibliocraft's needs.
+ * An adaptation of {@link net.minecraft.data.LootTableProvider} and {@link net.minecraft.data.loot.BlockLootTables} that is optimized to Bibliocraft's needs.
  * Among other features, this class eliminates the sub provider abstraction layer and natively supports data load conditions.
  * If you are an addon developer, you should rarely need to interact with this class outside of the two {@code add()} methods.
  */
-public abstract class BlockLootTableProvider implements DataProvider {
-    private final CompletableFuture<HolderLookup.Provider> registries;
-    private final PackOutput output;
-    private final Map<ResourceKey<LootTable>, WithConditionsBuilder<LootTable.Builder>> map = new HashMap<>();
+public abstract class BlockLootTableProvider implements IDataProvider {
+    private final DataGenerator output;
+    private final Map<ResourceLocation, WithConditionsBuilder<LootTable.Builder>> map = new HashMap<>();
 
-    @SuppressWarnings("unchecked")
-    private static JsonElement encodeLootTableWithReflection(RegistryOps ops, LootTable table) {
-        Codec<LootTable> codec;
-        try {
-            Field codecField = LootTable.class.getDeclaredField("CODEC");
-            codecField.setAccessible(true);
-            codec = (Codec<LootTable>) codecField.get(null);
-        } catch (NoSuchFieldException e) {
-            try {
-                Field mapCodecField = LootTable.class.getDeclaredField("MAP_CODEC");
-                mapCodecField.setAccessible(true);
-                Object mapCodec = mapCodecField.get(null);
-                codec = ((com.mojang.serialization.MapCodec<LootTable>) mapCodec).codec();
-            } catch (ReflectiveOperationException e2) {
-                throw new IllegalStateException("Could not get LootTable codec", e2);
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Could not get LootTable codec", e);
-        }
-        return (JsonElement) codec.encodeStart(ops, table).getOrThrow(false, msg -> {
-            throw new IllegalStateException("Loot table encoding failed: " + msg);
-        });
+    private static JsonElement encodeLootTable(LootTable table) {
+        return LootTableManager.serialize(table);
     }
 
     private static String getModLoadedModid(net.minecraftforge.common.crafting.conditions.ModLoadedCondition c) {
@@ -88,12 +86,10 @@ public abstract class BlockLootTableProvider implements DataProvider {
     }
 
     /**
-     * @param output     The {@link PackOutput} to use.
-     * @param registries The {@link HolderLookup.Provider} to use.
+     * @param output The {@link DataGenerator} to use.
      */
-    public BlockLootTableProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+    public BlockLootTableProvider(DataGenerator output) {
         this.output = output;
-        this.registries = registries;
     }
 
     /**
@@ -107,30 +103,24 @@ public abstract class BlockLootTableProvider implements DataProvider {
     }
 
     @Override
-    public CompletableFuture<?> run(CachedOutput output) {
-        return registries.thenCompose(provider -> run(output, provider));
-    }
-
-    private CompletableFuture<?> run(CachedOutput cachedOutput, HolderLookup.Provider provider) {
+    public void run(DirectoryCache cachedOutput) throws java.io.IOException {
         generate();
-        Map<RandomSupport.Seed128bit, ResourceLocation> seeds = new Object2ObjectOpenHashMap<>();
-        return CompletableFuture.allOf(map.entrySet().stream().map(entry -> {
-            ResourceLocation location = entry.getKey().location();
-            ResourceLocation sequence = seeds.put(RandomSequence.seedForKey(location), location);
-            if (sequence != null) {
-                Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + sequence + " and " + location);
-            }
+        com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+        Path folder = this.output.getOutputFolder();
+        for (Map.Entry<ResourceLocation, WithConditionsBuilder<LootTable.Builder>> entry : map.entrySet()) {
+            ResourceLocation location = entry.getKey();
             WithConditions<LootTable> conditional = entry.getValue()
-                    .map(builder -> builder.setRandomSequence(location).setParamSet(LootContextParamSets.BLOCK).build())
+                    .map(builder -> builder.setParamSet(LootParameterSets.BLOCK).build())
                     .build();
-            JsonElement json = encodeLootTableWithReflection(RegistryOps.create(JsonOps.INSTANCE, provider), conditional.carrier());
+            JsonElement json = encodeLootTable(conditional.carrier());
             JsonObject root = json.getAsJsonObject();
             if (!conditional.conditions().isEmpty()) {
                 JsonArray conditionsArray = new JsonArray();
                 for (ICondition c : conditional.conditions()) {
                     JsonObject condObj = new JsonObject();
                     condObj.addProperty("type", c.getID().toString());
-                    if (c instanceof net.minecraftforge.common.crafting.conditions.ModLoadedCondition modLoaded) {
+                    if (c instanceof net.minecraftforge.common.crafting.conditions.ModLoadedCondition) {
+                        net.minecraftforge.common.crafting.conditions.ModLoadedCondition modLoaded = (net.minecraftforge.common.crafting.conditions.ModLoadedCondition) c;
                         String modid = getModLoadedModid(modLoaded);
                         condObj.addProperty("modid", modid);
                     } else {
@@ -140,9 +130,9 @@ public abstract class BlockLootTableProvider implements DataProvider {
                 }
                 root.add(WithConditions.CONDITIONS_KEY, conditionsArray);
             }
-            Path path = this.output.getOutputFolder().resolve("data").resolve(location.getNamespace()).resolve("loot_tables").resolve(location.getPath() + ".json");
-            return DataProvider.saveStable(cachedOutput, root, path);
-        }).toArray(CompletableFuture[]::new));
+            Path path = folder.resolve("data").resolve(location.getNamespace()).resolve("loot_tables").resolve(location.getPath() + ".json");
+            IDataProvider.save(gson, cachedOutput, root, path);
+        }
     }
 
     /**
@@ -152,7 +142,7 @@ public abstract class BlockLootTableProvider implements DataProvider {
      * @param builder The builder from which to generate the loot table.
      */
     public void add(Block block, WithConditionsBuilder<LootTable.Builder> builder) {
-        map.put(ResourceKey.create(ResourceKey.createRegistryKey(new ResourceLocation("minecraft", "loot_table")), block.getLootTable()), builder);
+        map.put(block.getLootTable(), builder);
     }
 
     /**
@@ -227,7 +217,7 @@ public abstract class BlockLootTableProvider implements DataProvider {
          * @return This builder, for chaining.
          */
         public WithConditionsBuilder<T> addCondition(ICondition... conditions) {
-            this.conditions.addAll(List.of(conditions));
+            this.conditions.addAll(java.util.Arrays.asList(conditions));
             return this;
         }
 

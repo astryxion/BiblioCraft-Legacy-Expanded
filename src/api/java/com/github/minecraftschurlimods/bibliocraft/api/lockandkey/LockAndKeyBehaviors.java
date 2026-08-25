@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.bibliocraft.api.lockandkey;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.tileentity.TileEntity;
+import javax.annotation.Nullable;
 
 /**
  * Holds the behaviors of the Lock and Key item for different block entities. Get via {@link BibliocraftApi#getLockAndKeyBehaviors()}.
@@ -11,10 +11,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface LockAndKeyBehaviors {
     /**
-     * @param blockEntity The {@link BlockEntity} to get the behavior for.
-     * @param <T>         The type of the {@link BlockEntity}.
-     * @return The {@link LockAndKeyBehavior} associated with the given {@link BlockEntity}, or null if no such {@link LockAndKeyBehavior} has been registered.
+     * @param blockEntity The {@link TileEntity} to get the behavior for.
+     * @param <T>         The type of the {@link TileEntity}.
+     * @return The {@link LockAndKeyBehavior} associated with the given {@link TileEntity}, or null if no such {@link LockAndKeyBehavior} has been registered.
      */
     @Nullable
-    <T extends BlockEntity> LockAndKeyBehavior<T> get(T blockEntity);
+    <T extends TileEntity> LockAndKeyBehavior<T> get(T blockEntity);
 }

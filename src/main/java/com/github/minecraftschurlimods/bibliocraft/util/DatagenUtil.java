@@ -1,28 +1,27 @@
 package com.github.minecraftschurlimods.bibliocraft.util;
 
 import com.github.minecraftschurlimods.bibliocraft.content.fancylight.AbstractFancyLightBlock;
-import net.minecraft.Util;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
-import net.minecraft.core.Registry;
-import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
-import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.util.Util;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.data.TagsProvider;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.tags.ITag;
+import net.minecraft.item.DyeColor;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.state.properties.DoubleBlockHalf;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.ItemLootEntry;
+import net.minecraft.loot.StandaloneLootEntry;
+import net.minecraft.loot.functions.CopyName;
+import net.minecraft.loot.functions.CopyNbt;
+import net.minecraft.loot.conditions.SurvivesExplosion;
+import net.minecraft.loot.conditions.BlockStateProperty;
+import net.minecraft.loot.ConstantRange;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
@@ -39,7 +38,8 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unused")
 public final class DatagenUtil {
-    public static final Map<DyeColor, ResourceLocation> CANDLE_TEXTURES = Util.make(new HashMap<>(), map -> Arrays.stream(DyeColor.values()).forEach(color -> map.put(color, BCUtil.mcLoc("block/" + color.getName() + "_candle_lit"))));
+    /** 1.16 has no candles; colored wool is the existing-block stand-in for lantern candle faces (same pattern as copper → gold). */
+    public static final Map<DyeColor, ResourceLocation> CANDLE_TEXTURES = Util.make(new HashMap<>(), map -> Arrays.stream(DyeColor.values()).forEach(color -> map.put(color, BCUtil.mcLoc("block/" + color.getName() + "_wool"))));
     public static final Map<DyeColor, ResourceLocation> GLASS_TEXTURES = Util.make(new HashMap<>(), map -> Arrays.stream(DyeColor.values()).forEach(color -> map.put(color, BCUtil.mcLoc("block/" + color.getName() + "_stained_glass"))));
     public static final Map<DyeColor, ResourceLocation> WOOL_TEXTURES = Util.make(new HashMap<>(), map -> Arrays.stream(DyeColor.values()).forEach(color -> map.put(color, BCUtil.mcLoc("block/" + color.getName() + "_wool"))));
 
@@ -155,10 +155,16 @@ public final class DatagenUtil {
      * @param uvLock   Whether to UV-lock the models or not.
      */
     public static void fancyLightBlockModel(BlockStateProvider provider, Supplier<? extends Block> block, ModelFile standing, ModelFile hanging, ModelFile wall, boolean uvLock) {
-        horizontalBlockModel(provider, block, state -> switch (state.getValue(AbstractFancyLightBlock.TYPE)) {
-            case STANDING -> standing;
-            case HANGING -> hanging;
-            case WALL -> wall;
+        horizontalBlockModel(provider, block, state -> {
+            switch (state.getValue(AbstractFancyLightBlock.TYPE)) {
+                case STANDING:
+                    return standing;
+                case HANGING:
+                    return hanging;
+                case WALL:
+                    return wall;
+            }
+            return standing;
         }, uvLock);
     }
 
@@ -202,8 +208,8 @@ public final class DatagenUtil {
      * @param builder The entry builder to use.
      * @return A standard loot table with the given entry builder.
      */
-    public static LootTable.Builder createStandardTable(LootPoolSingletonContainer.Builder<?> builder) {
-        return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(builder).when(ExplosionCondition.survivesExplosion()));
+    public static LootTable.Builder createStandardTable(StandaloneLootEntry.Builder<?> builder) {
+        return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantRange.exactly(1)).add(builder).when(SurvivesExplosion.survivesExplosion()));
     }
 
     /**
@@ -213,7 +219,7 @@ public final class DatagenUtil {
      * @return A standard loot table that drops the given block.
      */
     public static LootTable.Builder createDefaultTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block));
+        return createStandardTable(ItemLootEntry.lootTableItem(block));
     }
 
     /**
@@ -223,7 +229,7 @@ public final class DatagenUtil {
      * @return A standard loot table that drops the given nameable block.
      */
     public static LootTable.Builder createNameableTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block).apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY)));
+        return createStandardTable(ItemLootEntry.lootTableItem(block).apply(CopyName.copyName(CopyName.Source.BLOCK_ENTITY)));
     }
 
     /**
@@ -233,7 +239,13 @@ public final class DatagenUtil {
      * @return A standard loot table that drops the block with BlockEntityTag.
      */
     public static LootTable.Builder createCopyNbtBlockEntityTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block).apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy(".", "BlockEntityTag")));
+        // 1.16 NBT paths cannot be "." (that is 1.20+). Copy the BE keys this block actually stores.
+        return createStandardTable(ItemLootEntry.lootTableItem(block).apply(CopyNbt.copyData(CopyNbt.Source.BLOCK_ENTITY)
+                .copy("color", "BlockEntityTag.color")
+                .copy("items", "BlockEntityTag.items")
+                .copy("Lock", "BlockEntityTag.Lock")
+                .copy("color.rgb", "rgb")
+                .copy("color.show_in_tooltip", "show_in_tooltip")));
     }
 
     /**
@@ -241,7 +253,7 @@ public final class DatagenUtil {
      * so the dropped item has clipboard data at the key used by {@link com.github.minecraftschurlimods.bibliocraft.content.clipboard.ClipboardContent#getFromStack}.
      */
     public static LootTable.Builder createClipboardLootTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block).apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("clipboard_content", "ClipboardContent")));
+        return createStandardTable(ItemLootEntry.lootTableItem(block).apply(CopyNbt.copyData(CopyNbt.Source.BLOCK_ENTITY).copy("clipboard_content", "ClipboardContent")));
     }
 
     /**
@@ -251,9 +263,9 @@ public final class DatagenUtil {
      * @return A loot table for a fancy armor stand, dropping the given block.
      */
     public static LootTable.Builder createFancyArmorStandTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block)
-                .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER)))
-                .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY)));
+        return createStandardTable(ItemLootEntry.lootTableItem(block)
+                .when(BlockStateProperty.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER)))
+                .apply(CopyName.copyName(CopyName.Source.BLOCK_ENTITY)));
     }
 
     /**
@@ -263,33 +275,33 @@ public final class DatagenUtil {
      * @return A loot table for a grandfather clock, dropping the given block.
      */
     public static LootTable.Builder createGrandfatherClockTable(Block block) {
-        return createStandardTable(LootItem.lootTableItem(block)
-                .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER))));
+        return createStandardTable(ItemLootEntry.lootTableItem(block)
+                .when(BlockStateProperty.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER))));
     }
 
     /**
-     * Adds all elements of the given collection to the {@link TagsProvider.TagAppender}
+     * Adds all elements of the given collection to the {@link TagsProvider.Builder}
      *
      * @param registry   The {@link Registry} associated with the collection elements.
      * @param collection The collection containing the elements to add.
-     * @param tag        The given {@link TagsProvider.TagAppender}, obtainable through {@link TagsProvider#tag(TagKey)}.
+     * @param tag        The given {@link TagsProvider.Builder}, obtainable through {@link TagsProvider#tag(ITag.INamedTag)}.
      * @param <T>        The type of the collection elements.
      */
     @SuppressWarnings("DataFlowIssue")
-    public static <T> void addAll(Registry<T> registry, Collection<? extends T> collection, TagsProvider.TagAppender<T> tag) {
-        collection.stream().map(e -> ResourceKey.create(registry.key(), registry.getKey(e))).forEach(tag::add);
+    public static <T> void addAll(Registry<T> registry, Collection<? extends T> collection, TagsProvider.Builder<T> tag) {
+        collection.forEach(tag::add);
     }
 
     /**
-     * Adds all elements of the given collection to the {@link TagsProvider.TagAppender}
+     * Adds all elements of the given collection to the {@link TagsProvider.Builder}
      *
      * @param registry   The {@link Registry} associated with the collection elements.
      * @param collection The collection containing the elements to add.
-     * @param tag        The given {@link TagsProvider.TagAppender}, obtainable through {@link TagsProvider#tag(TagKey)}.
+     * @param tag        The given {@link TagsProvider.Builder}, obtainable through {@link TagsProvider#tag(ITag.INamedTag)}.
      * @param <T>        The type of the collection elements.
      */
     @SuppressWarnings("DataFlowIssue")
-    public static <T> void addAllOptional(Registry<T> registry, Collection<? extends T> collection, TagsProvider.TagAppender<T> tag) {
+    public static <T> void addAllOptional(Registry<T> registry, Collection<? extends T> collection, TagsProvider.Builder<T> tag) {
         collection.stream().map(registry::getKey).forEach(tag::addOptional);
     }
 }

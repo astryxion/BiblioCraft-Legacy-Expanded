@@ -3,28 +3,28 @@ package com.github.minecraftschurlimods.bibliocraft.content.slottedbook;
 import com.github.minecraftschurlimods.bibliocraft.init.BCItems;
 import com.github.minecraftschurlimods.bibliocraft.init.BCMenus;
 import com.github.minecraftschurlimods.bibliocraft.util.slot.ViewSlot;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.util.Hand;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
 
-public class SlottedBookMenu extends AbstractContainerMenu {
-    private final InteractionHand hand;
+public class SlottedBookMenu extends Container {
+    private final Hand hand;
 
-    public SlottedBookMenu(int id, Inventory inventory, InteractionHand hand) {
+    public SlottedBookMenu(int id, PlayerInventory inventory, Hand hand) {
         super(BCMenus.SLOTTED_BOOK.get(), id);
         this.hand = hand;
         ItemStack stack = inventory.player.getItemInHand(hand);
-        Container container = new SlottedBookContainer(stack);
+        IInventory container = new SlottedBookContainer(stack);
         addSlot(new SlottedBookSlot(container, 0, 80, 34));
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 int slot = i * 9 + j + 9;
-                if (inventory.getItem(slot).is(BCItems.SLOTTED_BOOK.get())) {
+                if (inventory.getItem(slot).getItem() == BCItems.SLOTTED_BOOK.get()) {
                     addSlot(new ViewSlot(inventory, slot, 8 + j * 18, 141 + i * 18));
                 } else {
                     addSlot(new Slot(inventory, slot, 8 + j * 18, 141 + i * 18));
@@ -32,7 +32,7 @@ public class SlottedBookMenu extends AbstractContainerMenu {
             }
         }
         for (int i = 0; i < 9; i++) {
-            if (inventory.getItem(i).is(BCItems.SLOTTED_BOOK.get())) {
+            if (inventory.getItem(i).getItem() == BCItems.SLOTTED_BOOK.get()) {
                 addSlot(new ViewSlot(inventory, i, 8 + i * 18, 199));
             } else {
                 addSlot(new Slot(inventory, i, 8 + i * 18, 199));
@@ -40,12 +40,12 @@ public class SlottedBookMenu extends AbstractContainerMenu {
         }
     }
 
-    public SlottedBookMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
-        this(id, inventory, buf.readEnum(InteractionHand.class));
+    public SlottedBookMenu(int id, PlayerInventory inventory, PacketBuffer buf) {
+        this(id, inventory, buf.readEnum(Hand.class));
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
         int slotCount = 1;
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return ItemStack.EMPTY;
@@ -79,18 +79,18 @@ public class SlottedBookMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean stillValid(Player player) {
-        return player.getItemInHand(hand).is(BCItems.SLOTTED_BOOK.get());
+    public boolean stillValid(PlayerEntity player) {
+        return player.getItemInHand(hand).getItem() == BCItems.SLOTTED_BOOK.get();
     }
 
     public static class SlottedBookSlot extends Slot {
-        public SlottedBookSlot(Container container, int slot, int x, int y) {
+        public SlottedBookSlot(IInventory container, int slot, int x, int y) {
             super(container, slot, x, y);
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return !stack.is(BCItems.SLOTTED_BOOK.get()) && super.mayPlace(stack);
+            return stack.getItem() != BCItems.SLOTTED_BOOK.get() && super.mayPlace(stack);
         }
     }
 }

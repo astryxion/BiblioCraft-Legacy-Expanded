@@ -3,9 +3,9 @@ package com.github.minecraftschurlimods.bibliocraft.content.fancysign;
 import com.github.minecraftschurlimods.bibliocraft.api.woodtype.BibliocraftWoodType;
 import com.github.minecraftschurlimods.bibliocraft.init.BCBlocks;
 import com.github.minecraftschurlimods.bibliocraft.util.block.WoodTypeBlockItem;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.block.BlockState;
+import javax.annotation.Nullable;
 
 public class FancySignItem extends WoodTypeBlockItem {
     public FancySignItem(BibliocraftWoodType woodType) {
@@ -14,12 +14,20 @@ public class FancySignItem extends WoodTypeBlockItem {
 
     @Override
     @Nullable
-    protected BlockState getPlacementState(BlockPlaceContext context) {
-        BlockState state = (switch (context.getClickedFace()) {
-            case UP -> BCBlocks.FANCY_SIGN.get(woodType).defaultBlockState();
-            case DOWN -> BCBlocks.FANCY_SIGN.get(woodType).defaultBlockState().setValue(FancySignBlock.HANGING, true);
-            default -> BCBlocks.WALL_FANCY_SIGN.get(woodType).defaultBlockState();
-        }).setValue(FancySignBlock.FACING, context.getHorizontalDirection().getOpposite());
+    protected BlockState getPlacementState(BlockItemUseContext context) {
+        BlockState state;
+        switch (context.getClickedFace()) {
+            case UP:
+                state = BCBlocks.FANCY_SIGN.get(woodType).defaultBlockState();
+                break;
+            case DOWN:
+                state = BCBlocks.FANCY_SIGN.get(woodType).defaultBlockState().setValue(FancySignBlock.HANGING, true);
+                break;
+            default:
+                state = BCBlocks.WALL_FANCY_SIGN.get(woodType).defaultBlockState();
+                break;
+        }
+        state = state.setValue(FancySignBlock.FACING, context.getHorizontalDirection().getOpposite());
         return canPlace(context, state) ? state : null;
     }
 }

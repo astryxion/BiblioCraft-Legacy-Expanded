@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.bibliocraft.client.model;
 
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraftforge.client.model.IDynamicBakedModel;
+import net.minecraftforge.client.model.data.IDynamicBakedModel;
 
 public abstract class DynamicBlockModel implements IDynamicBakedModel {
     private final boolean useAmbientOcclusion;
@@ -38,12 +38,17 @@ public abstract class DynamicBlockModel implements IDynamicBakedModel {
     }
 
     @Override
+    public boolean doesHandlePerspectives() {
+        return true;
+    }
+
+    @Override
     public TextureAtlasSprite getParticleIcon() {
         return particle;
     }
 
     @Override
-    public ItemOverrides getOverrides() {
-        return ItemOverrides.EMPTY;
+    public ItemOverrideList getOverrides() {
+        return ItemOverrideList.EMPTY;
     }
 }

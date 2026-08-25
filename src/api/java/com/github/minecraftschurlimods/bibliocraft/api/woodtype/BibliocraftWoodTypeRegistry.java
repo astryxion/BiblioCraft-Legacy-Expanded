@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.bibliocraft.api.woodtype;
 
 import com.github.minecraftschurlimods.bibliocraft.api.BibliocraftApi;
-import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.ResourceLocation;
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 
@@ -25,7 +25,7 @@ public interface BibliocraftWoodTypeRegistry {
      */
     @Nullable
     default BibliocraftWoodType get(String id) {
-        return get(ResourceLocation.parse(id));
+        return get(new ResourceLocation(id));
     }
 
     /**
